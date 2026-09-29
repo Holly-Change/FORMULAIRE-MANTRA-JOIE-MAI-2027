@@ -450,7 +450,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
       <div class="champ" id="champ-membres" style="display:none">
         <label class="etiquette" for="nombre-membres">Combien de personnes composent le groupe ? <span class="astuce">(1 à 4, toi compris·e si tu participes)</span></label>
         <select id="nombre-membres" onchange="actualiserMembres()"><option value="1">1 personne</option><option value="2">2 personnes</option><option value="3">3 personnes</option><option value="4">4 personnes</option></select>
-        <p class="aide">Chacun·e aura sa bio et son portrait. La personne à contacter peut être différente.</p>
+        <p class="aide">Chacun·e aura sa bio et son portrait.</p><label class="consentement" id="option-contact-different" style="display:none"><input type="checkbox" id="contact-different" onchange="actualiserMembres()"> La personne à contacter est différente de la personne inscrite</label>
       </div>
 
       <div class="champ">
@@ -1300,7 +1300,7 @@ async function envoyer() {
   envoiEnCours = true;
   let membres, technique;
   try { membres = await lireMembres(); technique = await lireTechnique(); }
-  catch(e) { envoiEnCours = false; return erreur(7, 'Impossible de lire une pièce jointe. Vérifie les portraits et la fiche technique.'); }
+  catch(e) { envoiEnCours = false; return erreur(7, 'Pièce jointe : ' + (e && e.message ? e.message : String(e))); }
   // Cles identiques au schema partage, copiees telles quelles
   const donnees = {
     submission_id: submissionIds.participant,
@@ -1404,6 +1404,7 @@ function groupeActif() { return ['Artiste','Atelier',"L'Antre deux mondes"].incl
 function actualiserMembres() {
   const count = groupeActif() ? Number(valeur('nombre-membres')) : 0;
   $('champ-bio-generale').style.display = groupeActif() && count === 1 ? 'none' : 'block';
+  $('option-contact-different').style.display = count === 1 ? 'block' : 'none';
   $('etiquette-bio').innerHTML = groupeActif() ? 'Bio du groupe <span class="astuce">(optionnel, pour présenter le groupe dans son ensemble)</span>' : 'Ta bio <span class="astuce">(optionnel : ton parcours, en quelques lignes)</span>';
   if (groupeActif() && count === 1) $('bio').value = '';
   const list = $('liste-membres');
@@ -1413,8 +1414,20 @@ function actualiserMembres() {
     item.innerHTML = '<strong>Personne ' + (list.children.length+1) + '</strong><label class="etiquette">Prénom</label><input class="membre-prenom" autocomplete="off"><label class="etiquette">Nom</label><input class="membre-nom" autocomplete="off"><label class="etiquette">Bio courte</label><textarea class="membre-bio" rows="3"></textarea>';
     list.appendChild(item);
   }
+  if (count === 1) {
+    const first = list.firstElementChild;
+    const different = $('contact-different').checked;
+    ['prenom', 'nom'].forEach((part, index) => {
+      const input = first.querySelector('.membre-' + part);
+      input.previousElementSibling.style.display = different ? '' : 'none';
+      input.style.display = different ? '' : 'none';
+      if (!different) input.value = valeur(index ? 'last_name' : 'first_name');
+    });
+  }
   afficherPortraits();
 }
+$('first_name').addEventListener('input', actualiserMembres);
+$('last_name').addEventListener('input', actualiserMembres);
 function afficherPortraits() {
   const c=$('liste-portraits'); c.innerHTML='';
   Array.from(document.querySelectorAll('.membre')).forEach((m,i)=>{
