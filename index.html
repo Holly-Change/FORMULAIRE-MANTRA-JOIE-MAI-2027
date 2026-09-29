@@ -353,6 +353,11 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 @media(max-width:550px){.choix-accueil{grid-template-columns:1fr}}
 .portrait-bloc { padding:15px; border:1px solid var(--ligne); border-radius:12px; margin:14px 0; }
 #recadreur-portrait { margin:18px 0; }
+#questions-techniques label.etiquette, .membre label.etiquette { margin-top:18px; }
+#questions-techniques label.etiquette:first-child, .membre label.etiquette:first-child { margin-top:0; }
+#questions-techniques input[type="file"], #vol-portrait { width:100%; padding:12px; border:2px solid var(--ligne); border-radius:12px; background:var(--creme); font:inherit; }
+#questions-techniques input[type="file"]::file-selector-button, #vol-portrait::file-selector-button { border:1px solid var(--violet); border-radius:20px; background:white; color:var(--violet); padding:8px 12px; font:inherit; font-weight:700; margin-right:12px; cursor:pointer; }
+#questions-techniques .duo { margin:10px 0 4px; }
 </style>
 </head>
 <body>
@@ -377,7 +382,7 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
       <div class="fleur" data-etape="6">🌻</div>
       <div class="fleur" data-etape="7">✨</div>
     </div>
-    <img id="colibri" src="colibri.png" alt="">
+    <img id="colibri" src="colibri-droit.png" alt="">
   </div>
 
   <main class="carte">
@@ -389,7 +394,7 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
       <p class="intro">Quel bonheur de t'accueillir dans l'aventure Mantra Joie ! 🌈</p>
       <div class="choix-accueil">
         <article><h2>Devenir bénévole 💛</h2><p>Tu souhaites rejoindre l'équipe du festival ? Présente-toi ici.</p><button class="btn btn-avant" type="button" onclick="aller('benevole')">Devenir bénévole</button></article>
-        <article><h2>Déjà inscrit·e et validé·e ✨</h2><p>Complète tes informations pour ta participation et nos supports de communication.</p><button class="btn btn-avant" type="button" onclick="aller('acces')">Compléter mon inscription</button></article>
+        <article><h2>Participants ✨</h2><p>Tu es déjà inscrit·e et validé·e ? Complète tes informations pour ta participation et nos supports de communication.</p><button class="btn btn-avant" type="button" onclick="aller('acces')">Compléter mon inscription</button></article>
       </div>
 
       <div class="hp" aria-hidden="true">
@@ -436,6 +441,12 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
         <div class="puces" id="puces-type"></div>
       </div>
 
+      <div class="champ" id="champ-membres" style="display:none">
+        <label class="etiquette" for="nombre-membres">Combien de personnes composent le groupe ? <span class="astuce">(1 à 4, toi compris·e si tu participes)</span></label>
+        <select id="nombre-membres" onchange="actualiserMembres()"><option value="1">1 personne</option><option value="2">2 personnes</option><option value="3">3 personnes</option><option value="4">4 personnes</option></select>
+        <p class="aide">Chacun·e aura sa bio et son portrait. La personne à contacter peut être différente.</p>
+      </div>
+
       <div class="champ">
         <label class="etiquette obligatoire" for="name">Ton nom de scène, de marque ou de stand <span class="astuce">(celui qu'on affichera sur ta page ; si tu n'as pas de nom de marque, mets simplement ton prénom et ton nom)</span></label>
         <input type="text" id="name">
@@ -451,10 +462,8 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
         <input type="text" id="last_name" autocomplete="family-name">
       </div>
 
-      <div class="champ" id="champ-membres" style="display:none">
-        <label class="etiquette" for="nombre-membres">Combien de personnes composent le groupe ? <span class="astuce">(1 à 4, toi compris·e si tu participes)</span></label>
-        <select id="nombre-membres" onchange="actualiserMembres()"><option value="1">1 personne</option><option value="2">2 personnes</option><option value="3">3 personnes</option><option value="4">4 personnes</option></select>
-        <p class="aide">Chaque personne aura sa bio et son portrait à l'étape photos. La personne à contacter peut être différente.</p>
+      <div class="champ" id="membres-details" style="display:none">
+        <label class="etiquette">Prénoms, noms et bios <span class="astuce">(les portraits seront ajoutés à l'étape photos)</span></label>
         <div id="liste-membres"></div>
       </div>
 
@@ -708,7 +717,7 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 
     <!-- ============ MERCI ============ -->
     <section class="ecran" id="ecran-merci">
-      <img class="colibri-final" src="colibri.png" alt="">
+      <img class="colibri-final" src="colibri-droit.png" alt="">
       <h1 id="titre-merci">Merci ! 🎉</h1>
       <p class="intro">Tes informations ont bien été reçues. Elles nous aideront à préparer ta participation et les supports de communication du festival : site, réseaux sociaux, affiches…</p>
       <p class="intro" style="margin-top:10px"><strong>À très vite au festival ! 🌈</strong></p>
@@ -735,7 +744,7 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.2-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.3-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzmvi-oxRup8i6RMNFFjjO6dQQavKu9h-5guVyh6uO5wOUPHVgcu0F3uCSTjejhuYPjxw/exec',
@@ -828,6 +837,7 @@ creerPuces('puces-categorie', CONFIG.categories, v => {
     ? 'Le titre de ton atelier <span class="astuce">(ex : \u00ab Danse intuitive \u00bb, \u00ab Cercle de parole \u00bb, \u00ab Yoga du rire \u00bb)</span>'
     : 'Ton titre ou ton activit\u00e9 <span class="astuce">(ex : \u00ab C\u00e9ramiste \u00bb, \u00ab Facilitatrice de cercles de femmes \u00bb, \u00ab Cuisine vivante \u00bb)</span>';
   $('champ-membres').style.display = groupeActif() ? 'block' : 'none';
+  $('membres-details').style.display = groupeActif() ? 'block' : 'none';
   $('portraits-participants').style.display = groupeActif() ? 'block' : 'none';
   actualiserMembres();
   ['tech-artiste','tech-atelier','tech-stand'].forEach(id => $(id).style.display = 'none');
@@ -1252,7 +1262,7 @@ function construireRecap() {
         </div>
         <p class="texte-page">${echapper(valeur('presentation'))}</p>
         ${valeur('bio') ? `<p class="surtitre" style="margin-top:12px">Bio</p><p class="bio-page" style="margin-top:2px">${echapper(valeur('bio'))}</p>` : ''}
-        ${(groupeActif() ? Array.from(document.querySelectorAll('.membre')) : []).map(el => `<p class="bio-page">${echapper(el.querySelector('.membre-prenom').value + ' ' + el.querySelector('.membre-nom').value)} : ${echapper(el.querySelector('.membre-bio').value)}</p>`).join('')}
+        ${(groupeActif() ? Array.from(document.querySelectorAll('.membre')) : []).map(el => `<div class="portrait-bloc"><img src="${el.portraitData}" alt="Portrait" style="width:90px;border-radius:10px;float:left;margin:0 12px 8px 0"><strong>${echapper(el.querySelector('.membre-prenom').value + ' ' + el.querySelector('.membre-nom').value)}</strong><p class="bio-page">${echapper(el.querySelector('.membre-bio').value)}</p><div style="clear:both"></div></div>`).join('')}
         ${galerie ? `<div class="galerie-page">${galerie}</div>` : ''}
         ${liens ? `<div class="liens-page">${liens}</div>` : ''}
         ${etat.video === 'oui' ? apercuVideoHtml(valeur('video_url')) : ''}
@@ -1424,6 +1434,7 @@ function garderPortrait(){
   if(!ciblePortrait||!recPortrait.actif)return;
   const volunteer=ciblePortrait===volunteerPortrait;
   ciblePortrait.portraitData=recPortrait.exporter(900,900,320);
+  ciblePortrait.portraitOriginal=copieSociale($('img-portrait'));
   annulerPortrait();
   if(volunteer)$('vol-portrait-etat').textContent='Portrait prêt ✨';
   else afficherPortraits();
@@ -1435,7 +1446,7 @@ async function lireMembres(){
   return Array.from(document.querySelectorAll('.membre')).map(el=>({
     first_name:el.querySelector('.membre-prenom').value.trim(),
     last_name:el.querySelector('.membre-nom').value.trim(),
-    bio:el.querySelector('.membre-bio').value.trim(),photo:el.portraitData
+    bio:el.querySelector('.membre-bio').value.trim(),photo:el.portraitData,original:el.portraitOriginal
   }));
 }
 async function lireTechnique() {
@@ -1462,7 +1473,7 @@ async function envoyerBenevole() {
     const res = await fetch(CONFIG.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({
       kind:'volunteer', submission_id:submissionIds.volunteer, access_code:CONFIG.code, honeypot:$('honeypot').value, email:v('vol_email'),
       first_name:v('vol_first_name'), last_name:v('vol_last_name'), phone:v('vol_phone'),
-      teams:teams, motivation:v('vol_motivation'), portrait:volunteerPortrait.portraitData
+      teams:teams, motivation:v('vol_motivation'), portrait:volunteerPortrait.portraitData, portrait_original:volunteerPortrait.portraitOriginal
     }) });
     const rep = await res.json();
     if (!rep.ok) throw new Error(rep.error || 'Envoi refusé');
