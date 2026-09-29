@@ -105,7 +105,7 @@ h2 { font-size: clamp(22px, 5vw, 27px); }
 label.etiquette { display: block; font-weight: 700; font-size: 15px; margin-bottom: 6px; }
 label.etiquette .astuce { font-weight: 400; color: rgba(28,27,58,.7); font-size: 14px; }
 .obligatoire::after { content: " *"; color: var(--magenta); }
-input[type="text"], input[type="email"], input[type="url"], input[type="tel"], input[type="number"], select, textarea {
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]):not([type="range"]):not([type="button"]):not([type="submit"]), select, textarea {
   width: 100%; font: inherit; font-size: 16px; color: var(--navy);
   background: var(--creme); border: 2px solid var(--ligne);
   border-radius: 12px; padding: 12px 14px; transition: border-color .2s;
@@ -355,8 +355,8 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 #recadreur-portrait { margin:18px 0; }
 #questions-techniques label.etiquette, .membre label.etiquette { margin-top:18px; }
 #questions-techniques label.etiquette:first-child, .membre label.etiquette:first-child { margin-top:0; }
-#questions-techniques input[type="file"], #vol-portrait { width:100%; padding:12px; border:2px solid var(--ligne); border-radius:12px; background:var(--creme); font:inherit; }
-#questions-techniques input[type="file"]::file-selector-button, #vol-portrait::file-selector-button { border:1px solid var(--violet); border-radius:20px; background:white; color:var(--violet); padding:8px 12px; font:inherit; font-weight:700; margin-right:12px; cursor:pointer; }
+input[type="file"]:not([hidden]) { width:100%; padding:12px; border:2px solid var(--ligne); border-radius:12px; background:var(--creme); font:inherit; }
+input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--violet); border-radius:20px; background:white; color:var(--violet); padding:8px 12px; font:inherit; font-weight:700; margin-right:12px; cursor:pointer; }
 #questions-techniques .duo { margin:10px 0 4px; }
 </style>
 </head>
@@ -419,9 +419,15 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
       <div class="champ"><label class="etiquette obligatoire" for="vol_last_name">Nom</label><input id="vol_last_name" autocomplete="family-name"></div>
       <div class="champ"><label class="etiquette obligatoire" for="vol_first_name">Prénom</label><input id="vol_first_name" autocomplete="given-name"></div>
       <div class="champ"><label class="etiquette obligatoire" for="vol_phone">Téléphone</label><input id="vol_phone" type="tel" autocomplete="tel" placeholder="06 12 34 56 78"><p class="aide">En France, indique ton numéro habituel. Ajoute l'indicatif seulement pour un numéro étranger.</p></div>
-      <div class="champ"><label class="etiquette" for="vol-portrait">Ton portrait <span class="astuce">(facultatif, à recadrer ici)</span></label><input id="vol-portrait" type="file" accept="image/*"><div id="vol-portrait-etat" class="etat-photo"></div></div>
       <div class="champ"><label class="etiquette obligatoire">Deux pôles préférés</label><div id="vol-teams"></div></div>
       <div class="champ"><label class="etiquette obligatoire" for="vol_motivation">Motivation et compétences</label><textarea id="vol_motivation" rows="4"></textarea></div>
+      <div class="champ" id="champ-vol-portrait"><label class="etiquette" for="vol-portrait">Ton portrait <span class="astuce">(facultatif, à recadrer ici)</span></label><input id="vol-portrait" type="file" accept="image/*"><div id="vol-portrait-etat" class="etat-photo"></div></div>
+      <div class="recadreur" id="recadreur-portrait">
+        <h2 id="titre-portrait">Recadrer le portrait</h2>
+        <div class="cadre" id="cadre-portrait"><img id="img-portrait" alt=""><div class="indication">✋ Clique et déplace la photo</div></div>
+        <div class="zoom-ligne"><span class="zoom-mot">Zoom</span><button type="button" class="btn-zoom" id="zoom-moins-portrait" aria-label="Zoom arrière">−</button><button type="button" class="btn-zoom" id="zoom-plus-portrait" aria-label="Zoom avant">+</button></div>
+        <div class="nav-etapes"><button class="btn btn-retour" onclick="annulerPortrait()">Annuler</button><button class="btn btn-avant" onclick="garderPortrait()">Valider le portrait</button></div>
+      </div>
       <div class="message-erreur" id="erreur-benevole"></div>
       <div class="nav-etapes"><button class="btn btn-retour" onclick="aller(0)">Retour</button><button class="btn btn-avant" id="btn-benevole" onclick="envoyerBenevole()">Envoyer ma candidature 💛</button></div>
     </section>
@@ -524,8 +530,8 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
         <div class="jauge-texte" id="mots-cles-texte"></div>
       </div>
 
-      <div class="champ">
-        <label class="etiquette" for="bio">Ta bio <span class="astuce">(optionnel : ton parcours, en quelques lignes)</span></label>
+      <div class="champ" id="champ-bio-generale">
+        <label class="etiquette" id="etiquette-bio" for="bio">Ta bio <span class="astuce">(optionnel : ton parcours, en quelques lignes)</span></label>
         <textarea id="bio" rows="3"></textarea>
       </div>
 
@@ -723,12 +729,6 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
       <p class="intro" style="margin-top:10px"><strong>À très vite au festival ! 🌈</strong></p>
     </section>
 
-    <div class="recadreur" id="recadreur-portrait">
-      <h2 id="titre-portrait">Recadrer le portrait</h2>
-      <div class="cadre" id="cadre-portrait"><img id="img-portrait" alt=""><div class="indication">✋ Clique et déplace la photo</div></div>
-      <div class="zoom-ligne"><span class="zoom-mot">Zoom</span><button type="button" class="btn-zoom" id="zoom-moins-portrait" aria-label="Zoom arrière">−</button><button type="button" class="btn-zoom" id="zoom-plus-portrait" aria-label="Zoom avant">+</button></div>
-      <div class="nav-etapes"><button class="btn btn-retour" onclick="annulerPortrait()">Annuler</button><button class="btn btn-avant" onclick="garderPortrait()">Valider le portrait</button></div>
-    </div>
   </main>
 
   <div class="pied">Festival Mantra Joie · Tes infos servent à préparer ta participation et à te contacter. · <span id="version-form"></span></div>
@@ -744,7 +744,7 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.3-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.6-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzmvi-oxRup8i6RMNFFjjO6dQQavKu9h-5guVyh6uO5wOUPHVgcu0F3uCSTjejhuYPjxw/exec',
@@ -1272,6 +1272,7 @@ function construireRecap() {
 
 // ------------------ Envoi ------------------
 const NOMS_ETAPES_SERVEUR = {
+  deployment: 'version du script Google',
   parse:    'lecture des donn\u00e9es',
   security: 'v\u00e9rification du code',
   validate: 'v\u00e9rification des champs',
@@ -1352,6 +1353,9 @@ async function envoyer() {
     const texte = await res.text();
     let rep = {};
     try { rep = JSON.parse(texte); } catch (e) {}
+    if (res.ok && rep.ok && (rep.version !== CONFIG.version || !rep.folder_url || !rep.document_url)) {
+      return echecEnvoi({ stage: 'deployment', error: 'Mets à jour et redéploie Code.gs avant de réessayer.' }, { status: res.status, statusText: res.statusText, responseText: texte });
+    }
     if (res.ok && rep.ok) {
       const prenom = valeur('first_name') || valeur('name');
       $('titre-merci').textContent = `Merci ${prenom} ! \ud83c\udf89`;
@@ -1395,6 +1399,9 @@ document.querySelectorAll('.vol-team').forEach(el => el.addEventListener('change
 function groupeActif() { return ['Artiste','Atelier',"L'Antre deux mondes"].includes(etat.category); }
 function actualiserMembres() {
   const count = groupeActif() ? Number(valeur('nombre-membres')) : 0;
+  $('champ-bio-generale').style.display = groupeActif() && count === 1 ? 'none' : 'block';
+  $('etiquette-bio').innerHTML = groupeActif() ? 'Bio du groupe <span class="astuce">(optionnel, pour présenter le groupe dans son ensemble)</span>' : 'Ta bio <span class="astuce">(optionnel : ton parcours, en quelques lignes)</span>';
+  if (groupeActif() && count === 1) $('bio').value = '';
   const list = $('liste-membres');
   while (list.children.length > count) list.lastElementChild.remove();
   while (list.children.length < count) {
@@ -1423,6 +1430,8 @@ let ciblePortrait=null;
 function ouvrirPortrait(input,target,label){
   if(!input.files[0])return;
   ciblePortrait=target;$('titre-portrait').textContent='Recadrer le '+label;
+  if(target===volunteerPortrait) $('champ-vol-portrait').after($('recadreur-portrait'));
+  else $('portraits-participants').after($('recadreur-portrait'));
   chargerImage(input,$('img-portrait'),()=>{
     $('recadreur-portrait').style.display='block';
     recPortrait.demarrer('1 / 1');
@@ -1465,6 +1474,8 @@ async function lireTechnique() {
 }
 async function envoyerBenevole() {
   const v = id => valeur(id), teams = Array.from(document.querySelectorAll('.vol-team:checked')).map(e => e.value);
+  if ($('vol-portrait').files[0] && !volunteerPortrait.portraitData)
+    return erreur('benevole', 'Valide le recadrage du portrait avant d’envoyer.');
   if (!/^\S+@\S+\.\S+$/.test(v('vol_email')) || !v('vol_last_name') || !v('vol_first_name') || !v('vol_phone') || !v('vol_motivation') || teams.length !== 2)
     return erreur('benevole', 'Remplis tous les champs et choisis exactement deux pôles.');
   if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur('benevole', 'Le nouveau script doit être déployé avant le premier envoi.');
@@ -1477,6 +1488,7 @@ async function envoyerBenevole() {
     }) });
     const rep = await res.json();
     if (!rep.ok) throw new Error(rep.error || 'Envoi refusé');
+    if (rep.version !== CONFIG.version || !rep.folder_url || !rep.document_url) throw new Error('Ancienne version du script Google : mets à jour et redéploie Code.gs, puis réessaie.');
     $('titre-merci').textContent = `Merci ${v('vol_first_name')} ! 🎉`;
     document.querySelector('#ecran-merci .intro').textContent = 'Ta candidature bénévole a bien été reçue. Elle nous aidera à préparer l’équipe et le festival.';
     aller('merci'); confettis();
