@@ -1279,7 +1279,12 @@ const NOMS_ETAPES_SERVEUR = {
   folders:  'cr\u00e9ation du dossier Drive',
   featured: 'enregistrement de la photo principale',
   gallery:  'enregistrement de la galerie',
-  sheet:    '\u00e9criture dans le tableau'
+  technical: 'enregistrement de la fiche technique',
+  sheet:    '\u00e9criture dans le tableau',
+  document: 'cr\u00e9ation de la fiche r\u00e9capitulative',
+  'participant-document': 'cr\u00e9ation de la fiche r\u00e9capitulative',
+  'volunteer-document': 'cr\u00e9ation de la fiche b\u00e9n\u00e9vole',
+  'volunteer-repair': 'r\u00e9paration du dossier b\u00e9n\u00e9vole'
 };
 
 let envoiEnCours = false;
@@ -1326,7 +1331,6 @@ async function envoyer() {
     gallery: etat.gallery
   };
 
-  if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur(7, 'Le nouveau script doit être déployé avant le premier envoi.');
   $('nav-7').style.display = 'none';
   $('envoi-progression').style.display = 'block';
 
@@ -1375,9 +1379,9 @@ function echecEnvoi(rep, xhr) {
   envoiEnCours = false;
   $('envoi-progression').style.display = 'none';
   $('nav-7').style.display = 'flex';
-  if (rep && rep.stage) {
+  if (rep && (rep.stage || rep.error)) {
     // Diagnostic precis : etape serveur + message exact
-    const etapeFr = NOMS_ETAPES_SERVEUR[rep.stage] || rep.stage;
+    const etapeFr = NOMS_ETAPES_SERVEUR[rep.stage] || rep.stage || 'traitement de la fiche';
     erreur(7, `L\u2019envoi a \u00e9chou\u00e9 pendant : ${etapeFr}.\nD\u00e9tail technique : ${rep.error || 'inconnu'}\nRien n\u2019est perdu, tu peux r\u00e9essayer.`);
   } else if (xhr) {
     // Pas de reponse structuree : on montre TOUT ce qu'on a pour diagnostiquer
