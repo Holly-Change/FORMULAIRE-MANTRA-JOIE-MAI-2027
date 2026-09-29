@@ -668,13 +668,13 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
       <p class="surtitre">Étape 6 sur 7</p><h2>Besoins techniques</h2>
       <div class="champ" id="questions-techniques">
         <div id="tech-artiste" style="display:none">
-          <label class="etiquette" for="tech_duration">Durée de la prestation</label><input id="tech_duration" type="text" placeholder="Ex. 45 minutes">
+          <label class="etiquette" for="tech_duration">Durée de la prestation (en min)</label><input id="tech_duration" type="text" placeholder="Ex. 45 minutes">
           <label class="etiquette" for="tech_people">Nombre de personnes sur scène</label><input id="tech_people" type="number" min="1">
           <label class="etiquette" for="tech_sound">Instruments, micros ou appareils à brancher à la sonorisation</label><textarea id="tech_sound" rows="3"></textarea>
           <label class="etiquette" for="tech_sheet">Fiche technique existante <span class="astuce">(facultatif, PDF, 5 Mo maximum)</span></label><input id="tech_sheet" type="file" accept="application/pdf">
         </div>
         <div id="tech-atelier" style="display:none">
-          <label class="etiquette" for="workshop_duration">Durée de l’atelier</label><input id="workshop_duration" type="text">
+          <label class="etiquette" for="workshop_duration">Durée de l’atelier (en min)</label><input id="workshop_duration" type="text">
           <label class="etiquette" for="workshop_capacity">Nombre maximum de participant·es</label><input id="workshop_capacity" type="number" min="1">
           <label class="etiquette" for="workshop_audio">Besoin d’un micro ou d’une enceinte fournie par le festival ?</label><select id="workshop_audio"><option value="">Choisir</option><option>Non</option><option>Micro</option><option>Enceinte</option><option>Micro et enceinte</option></select>
           <label class="etiquette" for="workshop_electricity">Besoin d’électricité ? Si oui, pour quels appareils ?</label><textarea id="workshop_electricity" rows="2"></textarea>
@@ -747,8 +747,8 @@ const CONFIG = {
   version:   'v3.6-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
-scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
-   categories: ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'],
+  scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
+  categories: ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'],
   typesArtiste: ['DJ ecstatic', 'Cercle de chants', 'Sieste musicale', 'Spectacle', 'Concert', 'Musicien accompagnant'],
   couleursConfettis: ['#D6248C', '#8E3DA6', '#2BB8C4', '#F0663C', '#E0A93B']
 };
@@ -1461,6 +1461,14 @@ async function lireMembres(){
     last_name:el.querySelector('.membre-nom').value.trim(),
     bio:el.querySelector('.membre-bio').value.trim(),photo:el.portraitData,original:el.portraitOriginal
   }));
+}
+function lireFichier(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
 }
 async function lireTechnique() {
   const t = {other_needs:valeur('other_needs')};
