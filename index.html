@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<title>Ta page - Festival Mantra Joie</title>
+<title>Inscriptions - Festival Mantra Joie 2027</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⭐</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -105,12 +105,12 @@ h2 { font-size: clamp(22px, 5vw, 27px); }
 label.etiquette { display: block; font-weight: 700; font-size: 15px; margin-bottom: 6px; }
 label.etiquette .astuce { font-weight: 400; color: rgba(28,27,58,.7); font-size: 14px; }
 .obligatoire::after { content: " *"; color: var(--magenta); }
-input[type="text"], input[type="email"], input[type="url"], textarea {
+input[type="text"], input[type="email"], input[type="url"], input[type="tel"], input[type="number"], select, textarea {
   width: 100%; font: inherit; font-size: 16px; color: var(--navy);
   background: var(--creme); border: 2px solid var(--ligne);
   border-radius: 12px; padding: 12px 14px; transition: border-color .2s;
 }
-input:focus, textarea:focus { outline: none; border-color: var(--magenta); }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--magenta); }
 textarea { resize: none; overflow: hidden; min-height: 90px; }
 
 /* Jauge de longueur : orange vers vert, avec repere de minimum */
@@ -345,6 +345,14 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+.choix-accueil { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:25px 0; }
+.choix-accueil article { background:var(--creme); border:2px solid var(--ligne); border-radius:16px; padding:18px; display:flex; flex-direction:column; gap:12px; }
+.choix-accueil h2 { font-size:21px; margin:0; }
+.choix-accueil p { margin:0; flex:1; }
+.choix-accueil button { width:100%; }
+@media(max-width:550px){.choix-accueil{grid-template-columns:1fr}}
+.portrait-bloc { padding:15px; border:1px solid var(--ligne); border-radius:12px; margin:14px 0; }
+#recadreur-portrait { margin:18px 0; }
 </style>
 </head>
 <body>
@@ -366,7 +374,8 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
       <div class="fleur" data-etape="3">🌺</div>
       <div class="fleur" data-etape="4">🌷</div>
       <div class="fleur" data-etape="5">🌻</div>
-      <div class="fleur" data-etape="6">✨</div>
+      <div class="fleur" data-etape="6">🌻</div>
+      <div class="fleur" data-etape="7">✨</div>
     </div>
     <img id="colibri" src="colibri.png" alt="">
   </div>
@@ -377,31 +386,35 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
     <section class="ecran actif" id="ecran-0">
       <p class="surtitre">Festival Mantra Joie 2027</p>
       <h1>Bienvenue ! 🌈</h1>
-      <p class="intro">Tu t'apprêtes à créer <strong>ta page</strong> sur le site du festival. C'est toi qui choisis tes mots et tes photos, on s'occupe de tout le reste. Ça prend 5 minutes, promis.</p>
-
-      <div class="champ">
-        <label class="etiquette obligatoire" for="access_code">Ton code d'accès <span class="astuce">(il est dans le message que tu as reçu)</span></label>
-        <input type="text" id="access_code" autocomplete="off" autocapitalize="characters" placeholder="Le code du festival">
+      <p class="intro">Quel bonheur de t'accueillir dans l'aventure Mantra Joie ! 🌈</p>
+      <div class="choix-accueil">
+        <article><h2>Devenir bénévole 💛</h2><p>Tu souhaites rejoindre l'équipe du festival ? Présente-toi ici.</p><button class="btn btn-avant" type="button" onclick="aller('benevole')">Devenir bénévole</button></article>
+        <article><h2>Déjà inscrit·e et validé·e ✨</h2><p>Complète tes informations pour ta participation et nos supports de communication.</p><button class="btn btn-avant" type="button" onclick="aller('acces')">Compléter mon inscription</button></article>
       </div>
 
       <div class="hp" aria-hidden="true">
         <label>Votre site web <input type="text" id="honeypot" tabindex="-1" autocomplete="off"></label>
       </div>
 
-      <div class="message-erreur" id="erreur-0"></div>
-      <div class="nav-etapes">
-        <button class="btn btn-avant" onclick="verifierCode()">C'est parti 🕊️</button>
-      </div>
-      <div class="nav-etapes"><button class="btn btn-retour" onclick="aller('benevole')">Devenir bénévole 💛</button></div>
+    </section>
+
+    <section class="ecran" id="ecran-acces">
+      <h2>Compléter mon inscription</h2>
+      <p>Ce formulaire est réservé aux personnes déjà inscrites et validées.</p>
+      <div class="champ"><label class="etiquette obligatoire" for="access_code">Ton code d'accès <span class="astuce">(dans le message reçu)</span></label><input type="text" id="access_code" autocomplete="off" autocapitalize="characters"></div>
+      <div class="message-erreur" id="erreur-acces"></div>
+      <div class="nav-etapes"><button class="btn btn-retour" onclick="aller(0)">Retour</button><button class="btn btn-avant" onclick="verifierCode()">Continuer</button></div>
     </section>
 
     <section class="ecran" id="ecran-benevole">
       <p class="surtitre">Festival Mantra Joie 2027</p><h1>Devenir bénévole 💛</h1>
+      <p class="intro">Quel bonheur que tu aies envie de rejoindre l'aventure ! Ensemble, faisons vibrer Mantra Joie 💛</p>
       <p>Choisis deux pôles dans lesquels tu as, de préférence, des compétences.</p>
       <div class="champ"><label class="etiquette obligatoire" for="vol_email">Email</label><input id="vol_email" type="email" autocomplete="email"></div>
       <div class="champ"><label class="etiquette obligatoire" for="vol_last_name">Nom</label><input id="vol_last_name" autocomplete="family-name"></div>
       <div class="champ"><label class="etiquette obligatoire" for="vol_first_name">Prénom</label><input id="vol_first_name" autocomplete="given-name"></div>
-      <div class="champ"><label class="etiquette obligatoire" for="vol_phone">Téléphone</label><input id="vol_phone" type="tel" autocomplete="tel"></div>
+      <div class="champ"><label class="etiquette obligatoire" for="vol_phone">Téléphone</label><input id="vol_phone" type="tel" autocomplete="tel" placeholder="06 12 34 56 78"><p class="aide">En France, indique ton numéro habituel. Ajoute l'indicatif seulement pour un numéro étranger.</p></div>
+      <div class="champ"><label class="etiquette" for="vol-portrait">Ton portrait <span class="astuce">(facultatif, à recadrer ici)</span></label><input id="vol-portrait" type="file" accept="image/*"><div id="vol-portrait-etat" class="etat-photo"></div></div>
       <div class="champ"><label class="etiquette obligatoire">Deux pôles préférés</label><div id="vol-teams"></div></div>
       <div class="champ"><label class="etiquette obligatoire" for="vol_motivation">Motivation et compétences</label><textarea id="vol_motivation" rows="4"></textarea></div>
       <div class="message-erreur" id="erreur-benevole"></div>
@@ -410,7 +423,7 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 
     <!-- ============ ETAPE 1 : QUI ES-TU ============ -->
     <section class="ecran" id="ecran-1">
-      <p class="surtitre">Étape 1 sur 6</p>
+      <p class="surtitre">Étape 1 sur 7</p>
       <h2>Qui es-tu ?</h2>
 
       <div class="champ">
@@ -438,15 +451,11 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
         <input type="text" id="last_name" autocomplete="family-name">
       </div>
 
-      <div class="champ" id="personne2-wrapper">
-        <button type="button" class="btn-inserer" id="btn-deux" onclick="basculerPersonne2()">✌️ Nous sommes deux ?</button>
-      </div>
-
-      <div class="champ" id="champ-personne2" style="display:none; margin-top:8px">
-        <label class="etiquette" for="first_name_2">Prénom de la deuxième personne</label>
-        <input type="text" id="first_name_2">
-        <label class="etiquette" for="last_name_2" style="margin-top:12px">Nom de la deuxième personne</label>
-        <input type="text" id="last_name_2">
+      <div class="champ" id="champ-membres" style="display:none">
+        <label class="etiquette" for="nombre-membres">Combien de personnes composent le groupe ? <span class="astuce">(1 à 4, toi compris·e si tu participes)</span></label>
+        <select id="nombre-membres" onchange="actualiserMembres()"><option value="1">1 personne</option><option value="2">2 personnes</option><option value="3">3 personnes</option><option value="4">4 personnes</option></select>
+        <p class="aide">Chaque personne aura sa bio et son portrait à l'étape photos. La personne à contacter peut être différente.</p>
+        <div id="liste-membres"></div>
       </div>
 
       <div class="champ" id="champ-title-pro">
@@ -461,12 +470,8 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 
       <div class="champ">
         <label class="etiquette obligatoire" for="phone">Ton téléphone <span class="astuce">(jamais publié)</span></label>
-        <input type="tel" id="phone" autocomplete="tel">
-      </div>
-      <div class="champ" id="champ-membres" style="display:none">
-        <label class="etiquette">Membres du groupe <span class="astuce">(jusqu’à 4 personnes, chacune avec sa bio et son portrait)</span></label>
-        <div id="liste-membres"></div>
-        <button type="button" class="btn-inserer" id="ajouter-membre" onclick="ajouterMembre()">+ Ajouter une personne</button>
+        <input type="tel" id="phone" autocomplete="tel" placeholder="06 12 34 56 78">
+        <p class="aide">Ajoute l'indicatif uniquement si ton numéro est étranger.</p>
       </div>
       <div class="message-erreur" id="erreur-1"></div>
       <div class="nav-etapes">
@@ -477,7 +482,7 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 
     <!-- ============ ETAPE 2 : TES MOTS ============ -->
     <section class="ecran" id="ecran-2">
-      <p class="surtitre">Étape 2 sur 6</p>
+      <p class="surtitre">Étape 2 sur 7</p>
       <h2>Tes mots</h2>
 
       <div class="champ">
@@ -524,7 +529,7 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 
     <!-- ============ ETAPE 3 : PHOTOS ============ -->
     <section class="ecran" id="ecran-3">
-      <p class="surtitre">Étape 3 sur 6</p>
+      <p class="surtitre">Étape 3 sur 7</p>
       <h2>Tes photos</h2>
 
       <div class="champ">
@@ -575,6 +580,8 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
         <div class="vignettes" id="vignettes"></div>
       </div>
 
+      <div class="champ" id="portraits-participants" style="display:none"><h2>Portraits des personnes</h2><div id="liste-portraits"></div></div>
+
       <div class="message-erreur" id="erreur-3"></div>
       <div class="nav-etapes">
         <button class="btn btn-retour" onclick="aller(2)">Retour</button>
@@ -584,7 +591,7 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 
     <!-- ============ ETAPE 4 : RESEAUX ============ -->
     <section class="ecran" id="ecran-4">
-      <p class="surtitre">Étape 4 sur 6</p>
+      <p class="surtitre">Étape 4 sur 7</p>
       <h2>Tes réseaux</h2>
       <p>Tout est optionnel : mets ce que tu veux qu'on relie à ta page.</p>
 
@@ -619,7 +626,7 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 
     <!-- ============ ETAPE 5 : VIDEO ============ -->
     <section class="ecran" id="ecran-5">
-      <p class="surtitre">Étape 5 sur 6</p>
+      <p class="surtitre">Étape 5 sur 7</p>
       <h2>Une vidéo sur ta page ?</h2>
 
       <div class="champ">
@@ -635,8 +642,16 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
         <div id="apercu-video"></div>
       </div>
 
+      <div class="message-erreur" id="erreur-5"></div>
+      <div class="nav-etapes">
+        <button class="btn btn-retour" onclick="aller(4)">Retour</button>
+        <button class="btn btn-avant" onclick="validerVideo()">Continuer</button>
+      </div>
+    </section>
+
+    <section class="ecran" id="ecran-tech">
+      <p class="surtitre">Étape 6 sur 7</p><h2>Besoins techniques</h2>
       <div class="champ" id="questions-techniques">
-        <h2>Besoins techniques</h2>
         <div id="tech-artiste" style="display:none">
           <label class="etiquette" for="tech_duration">Durée de la prestation</label><input id="tech_duration" type="text" placeholder="Ex. 45 minutes">
           <label class="etiquette" for="tech_people">Nombre de personnes sur scène</label><input id="tech_people" type="number" min="1">
@@ -656,18 +671,15 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
         </div>
         <label class="etiquette" for="other_needs">Autres besoins ou contraintes à signaler ?</label><textarea id="other_needs" rows="2"></textarea>
       </div>
-      <div class="message-erreur" id="erreur-5"></div>
-      <div class="nav-etapes">
-        <button class="btn btn-retour" onclick="aller(4)">Retour</button>
-        <button class="btn btn-avant" onclick="valider5()">Continuer</button>
-      </div>
+      <div class="message-erreur" id="erreur-tech"></div>
+      <div class="nav-etapes"><button class="btn btn-retour" onclick="aller(5)">Retour</button><button class="btn btn-avant" onclick="valider5()">Continuer</button></div>
     </section>
 
     <!-- ============ ETAPE 6 : RECAP ============ -->
-    <section class="ecran" id="ecran-6">
-      <p class="surtitre">Étape 6 sur 6</p>
+    <section class="ecran" id="ecran-7">
+      <p class="surtitre">Étape 7 sur 7</p>
       <h2>Ton récapitulatif 👀</h2>
-      <p>Vérifie que toutes tes infos sont justes. La mise en page finale de ta page sera faite avec amour sur le site du festival.</p>
+      <p>Vérifie tes informations pour préparer ta participation et nos supports de communication.</p>
 
       <div id="recap"></div>
 
@@ -681,15 +693,15 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
         </div>
       </div>
 
-      <div class="message-erreur" id="erreur-6"></div>
+      <div class="message-erreur" id="erreur-7"></div>
 
       <div class="envoi-progression" id="envoi-progression">
         <div class="rail"><div class="remplissage" id="remplissage"></div></div>
-        <div class="texte-envoi" id="texte-envoi">Le colibri s'envole avec ta page…</div>
+        <div class="texte-envoi" id="texte-envoi">Envoi en cours… Merci de garder cette page ouverte pendant le traitement de tes informations.</div>
       </div>
 
-      <div class="nav-etapes" id="nav-6">
-        <button class="btn btn-retour" onclick="aller(5)">Retour</button>
+      <div class="nav-etapes" id="nav-7">
+        <button class="btn btn-retour" onclick="aller('tech')">Retour</button>
         <button class="btn btn-avant" id="btn-envoyer" onclick="envoyer()">Envoyer ma page 🕊️</button>
       </div>
     </section>
@@ -698,13 +710,19 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
     <section class="ecran" id="ecran-merci">
       <img class="colibri-final" src="colibri.png" alt="">
       <h1 id="titre-merci">Merci ! 🎉</h1>
-      <p class="intro">Ta page est entre de bonnes mains. On la prépare avec amour et tu la verras bientôt sur le site.</p>
+      <p class="intro">Tes informations ont bien été reçues. Elles nous aideront à préparer ta participation et les supports de communication du festival : site, réseaux sociaux, affiches…</p>
       <p class="intro" style="margin-top:10px"><strong>À très vite au festival ! 🌈</strong></p>
     </section>
 
+    <div class="recadreur" id="recadreur-portrait">
+      <h2 id="titre-portrait">Recadrer le portrait</h2>
+      <div class="cadre" id="cadre-portrait"><img id="img-portrait" alt=""><div class="indication">✋ Clique et déplace la photo</div></div>
+      <div class="zoom-ligne"><span class="zoom-mot">Zoom</span><button type="button" class="btn-zoom" id="zoom-moins-portrait" aria-label="Zoom arrière">−</button><button type="button" class="btn-zoom" id="zoom-plus-portrait" aria-label="Zoom avant">+</button></div>
+      <div class="nav-etapes"><button class="btn btn-retour" onclick="annulerPortrait()">Annuler</button><button class="btn btn-avant" onclick="garderPortrait()">Valider le portrait</button></div>
+    </div>
   </main>
 
-  <div class="pied">Festival Mantra Joie · Tes infos servent uniquement à créer ta page et à te contacter. · <span id="version-form"></span></div>
+  <div class="pied">Festival Mantra Joie · Tes infos servent à préparer ta participation et à te contacter. · <span id="version-form"></span></div>
   <div class="pied" style="margin-top:6px">Créé par <a href="https://holly-berridge.netlify.app" target="_blank" rel="noopener" style="color:inherit">Holly Berridge</a></div>
 </div>
 
@@ -717,7 +735,7 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.1-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.2-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzmvi-oxRup8i6RMNFFjjO6dQQavKu9h-5guVyh6uO5wOUPHVgcu0F3uCSTjejhuYPjxw/exec',
@@ -752,17 +770,17 @@ function aller(n) {
   $(n === 'merci' ? 'ecran-merci' : 'ecran-' + n).classList.add('actif');
   etapeCourante = n;
   majColibri(n);
-  if (n === 6) setTimeout(() => $('boite-consent').scrollIntoView({ behavior: 'smooth', block: 'center' }), 700);
+  if (n === 7) setTimeout(() => $('boite-consent').scrollIntoView({ behavior: 'smooth', block: 'center' }), 700);
   else window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function majColibri(n) {
   const sentier = $('sentier');
-  if (n === 0 || n === 'benevole') { sentier.hidden = true; return; }
+  if (n === 0 || n === 'benevole' || n === 'acces') { sentier.hidden = true; return; }
   sentier.hidden = false;
-  const etape = (n === 'merci') ? 6 : n;
+  const etape = (n === 'merci') ? 7 : n === 'tech' ? 6 : n;
   const largeur = sentier.offsetWidth - 76;
-  $('colibri').style.left = (12 + largeur * (etape - 1) / 5) + 'px';
+  $('colibri').style.left = (12 + largeur * (etape - 1) / 6) + 'px';
   document.querySelectorAll('.fleur').forEach(f => {
     f.classList.toggle('eclose', Number(f.dataset.etape) < etape || n === 'merci');
   });
@@ -778,8 +796,8 @@ function erreur(n, msg) {
 // ------------------ Ecran 0 ------------------
 function verifierCode() {
   const code = valeur('access_code').toUpperCase();
-  if (!code) return erreur(0, 'Il te faut le code d\u2019acc\u00e8s du festival pour continuer.');
-  if (code !== CONFIG.code) return erreur(0, 'Ce code ne correspond pas. V\u00e9rifie le message que tu as re\u00e7u.');
+  if (!code) return erreur('acces', 'Il te faut le code d\u2019acc\u00e8s du festival pour continuer.');
+  if (code !== CONFIG.code) return erreur('acces', 'Ce code ne correspond pas. V\u00e9rifie le message que tu as re\u00e7u.');
   aller(1);
 }
 
@@ -809,9 +827,9 @@ creerPuces('puces-categorie', CONFIG.categories, v => {
   $('etiquette-title-pro').innerHTML = (v === 'Atelier')
     ? 'Le titre de ton atelier <span class="astuce">(ex : \u00ab Danse intuitive \u00bb, \u00ab Cercle de parole \u00bb, \u00ab Yoga du rire \u00bb)</span>'
     : 'Ton titre ou ton activit\u00e9 <span class="astuce">(ex : \u00ab C\u00e9ramiste \u00bb, \u00ab Facilitatrice de cercles de femmes \u00bb, \u00ab Cuisine vivante \u00bb)</span>';
-  $('champ-membres').style.display = artiste ? 'block' : 'none';
-  $('personne2-wrapper').style.display = artiste ? 'none' : 'block';
-  $('champ-personne2').style.display = artiste ? 'none' : $('champ-personne2').style.display;
+  $('champ-membres').style.display = groupeActif() ? 'block' : 'none';
+  $('portraits-participants').style.display = groupeActif() ? 'block' : 'none';
+  actualiserMembres();
   ['tech-artiste','tech-atelier','tech-stand'].forEach(id => $(id).style.display = 'none');
   if (artiste || v === 'Atelier' || v === 'Bien-être' || v === 'Artisan')
     $(artiste ? 'tech-artiste' : v === 'Atelier' ? 'tech-atelier' : 'tech-stand').style.display = 'block';
@@ -829,7 +847,7 @@ function valider1() {
   if (!valeur('phone')) return erreur(1, 'Ajoute ton numéro de téléphone.');
   if (!valeur('email') || !/^\S+@\S+\.\S+$/.test(valeur('email')))
     return erreur(1, 'Un email valide nous permet de te joindre si besoin.');
-  if (etat.category === 'Artiste' && Array.from(document.querySelectorAll('.membre')).some(el => !el.querySelector('.membre-prenom').value.trim() || !el.querySelector('.membre-nom').value.trim() || !el.querySelector('.membre-bio').value.trim() || !el.querySelector('.membre-photo').files[0])) return erreur(1, 'Chaque membre ajouté doit avoir un nom, une bio et un portrait.');
+  if (groupeActif() && Array.from(document.querySelectorAll('.membre')).some(el => !el.querySelector('.membre-prenom').value.trim() || !el.querySelector('.membre-nom').value.trim() || !el.querySelector('.membre-bio').value.trim())) return erreur(1, 'Ajoute le nom et la bio de chaque personne.');
   majMotsCles();
   aller(2);
 }
@@ -838,13 +856,6 @@ function valider1() {
 function nomEtTitre() {
   const n = valeur('name'), t = valeur('title_pro');
   return t ? n + ', ' + t : n;
-}
-function basculerPersonne2() {
-  const c = $('champ-personne2');
-  const ouvert = c.style.display !== 'none';
-  c.style.display = ouvert ? 'none' : 'block';
-  $('btn-deux').textContent = ouvert ? '\u270c\ufe0f Nous sommes deux ?' : '\u2716 Finalement non';
-  if (ouvert) { $('first_name_2').value = ''; $('last_name_2').value = ''; }
 }
 function inserer(idChamp, texte) {
   if (!texte) return;
@@ -915,6 +926,7 @@ function valider2() {
   if (valeur('snippet').length < 70)
     return erreur(2, 'Ta phrase courte fait moins de 70 caract\u00e8res : Google ne pourrait pas l\u2019utiliser. Ajoute quelques mots.');
   if (!valeur('presentation')) return erreur(2, 'Quelques lignes de pr\u00e9sentation et ta page prend vie.');
+  afficherPortraits();
   aller(3);
 }
 
@@ -1115,6 +1127,7 @@ function valider3() {
       ? 'Ta photo est presque pr\u00eate : clique sur \u00ab Valider la photo principale \u00bb pour la garder.'
       : 'Ajoute et valide ta photo principale avant de continuer : c\u2019est elle qui fait briller ta page.');
   }
+  if (groupeActif() && Array.from(document.querySelectorAll('.membre')).some(el => !el.portraitData)) return erreur(3, 'Ajoute et valide le portrait de chaque personne.');
   aller(4);
 }
 
@@ -1181,13 +1194,15 @@ document.querySelectorAll('#duo-video .puce').forEach(b => {
     $('champ-video').style.display = etat.video === 'oui' ? 'block' : 'none';
   };
 });
+function validerVideo() {
+  if (etat.video === 'oui' && !valeur('video_url')) return erreur(5, 'Colle le lien de ta vidéo, ou choisis « Non merci ».');
+  aller('tech');
+}
 function valider5() {
   if (etat.category === 'Artiste' && $('tech_sheet').files[0] && $('tech_sheet').files[0].size > 5 * 1024 * 1024)
-    return erreur(5, 'La fiche technique doit faire moins de 5 Mo.');
-  if (etat.video === 'oui' && !valeur('video_url'))
-    return erreur(5, 'Colle le lien de ta vid\u00e9o, ou choisis \u00ab Non merci \u00bb.');
+    return erreur('tech', 'La fiche technique doit faire moins de 5 Mo.');
   construireRecap();
-  aller(6);
+  aller(7);
 }
 
 // ------------------ Etape 6 : recap facon page finale ------------------
@@ -1237,7 +1252,7 @@ function construireRecap() {
         </div>
         <p class="texte-page">${echapper(valeur('presentation'))}</p>
         ${valeur('bio') ? `<p class="surtitre" style="margin-top:12px">Bio</p><p class="bio-page" style="margin-top:2px">${echapper(valeur('bio'))}</p>` : ''}
-        ${(etat.category === 'Artiste' ? Array.from(document.querySelectorAll('.membre')) : []).map(el => `<p class="bio-page">${echapper(el.querySelector('.membre-prenom').value + ' ' + el.querySelector('.membre-nom').value)} : ${echapper(el.querySelector('.membre-bio').value)}</p>`).join('')}
+        ${(groupeActif() ? Array.from(document.querySelectorAll('.membre')) : []).map(el => `<p class="bio-page">${echapper(el.querySelector('.membre-prenom').value + ' ' + el.querySelector('.membre-nom').value)} : ${echapper(el.querySelector('.membre-bio').value)}</p>`).join('')}
         ${galerie ? `<div class="galerie-page">${galerie}</div>` : ''}
         ${liens ? `<div class="liens-page">${liens}</div>` : ''}
         ${etat.video === 'oui' ? apercuVideoHtml(valeur('video_url')) : ''}
@@ -1262,14 +1277,14 @@ async function envoyer() {
   if (envoiEnCours) return;
   if (!$('consent').checked) {
     $('boite-consent').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return erreur(6, 'Coche la case dans l\u2019encadr\u00e9 color\u00e9 pour nous autoriser \u00e0 publier tes contenus.');
+    return erreur(7, 'Coche la case dans l\u2019encadr\u00e9 color\u00e9 pour nous autoriser \u00e0 publier tes contenus.');
   }
 
-  if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur(6, 'Le nouveau script doit être déployé avant le premier envoi.');
+  if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur(7, 'Le nouveau script doit être déployé avant le premier envoi.');
   envoiEnCours = true;
   let membres, technique;
   try { membres = await lireMembres(); technique = await lireTechnique(); }
-  catch(e) { envoiEnCours = false; return erreur(6, 'Impossible de lire une pièce jointe. Vérifie les portraits et la fiche technique.'); }
+  catch(e) { envoiEnCours = false; return erreur(7, 'Impossible de lire une pièce jointe. Vérifie les portraits et la fiche technique.'); }
   // Cles identiques au schema partage, copiees telles quelles
   const donnees = {
     submission_id: submissionIds.participant,
@@ -1280,8 +1295,6 @@ async function envoyer() {
     name: valeur('name'),
     first_name: valeur('first_name'),
     last_name: valeur('last_name'),
-    first_name_2: valeur('first_name_2'),
-    last_name_2: valeur('last_name_2'),
     title_pro: valeur('title_pro'),
     email: valeur('email'),
     phone: valeur('phone'),
@@ -1302,8 +1315,8 @@ async function envoyer() {
     gallery: etat.gallery
   };
 
-  if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur(6, 'Le nouveau script doit être déployé avant le premier envoi.');
-  $('nav-6').style.display = 'none';
+  if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur(7, 'Le nouveau script doit être déployé avant le premier envoi.');
+  $('nav-7').style.display = 'none';
   $('envoi-progression').style.display = 'block';
 
   // Barre animee : fetch ne donne pas de progression d'envoi,
@@ -1312,7 +1325,7 @@ async function envoyer() {
   const minuteur = setInterval(() => {
     if (pct < 90) { pct += 2; $('remplissage').style.width = pct + '%'; }
   }, 350);
-  $('texte-envoi').textContent = "Le colibri s'envole avec ta page\u2026";
+  $('texte-envoi').textContent = 'Envoi en cours… Merci de garder cette page ouverte pendant le traitement de tes informations.';
 
   // fetch et non XHR : les POST vers Apps Script passent par une
   // redirection Google que fetch suit proprement (XHR echoue parfois
@@ -1347,17 +1360,17 @@ async function envoyer() {
 function echecEnvoi(rep, xhr) {
   envoiEnCours = false;
   $('envoi-progression').style.display = 'none';
-  $('nav-6').style.display = 'flex';
+  $('nav-7').style.display = 'flex';
   if (rep && rep.stage) {
     // Diagnostic precis : etape serveur + message exact
     const etapeFr = NOMS_ETAPES_SERVEUR[rep.stage] || rep.stage;
-    erreur(6, `L\u2019envoi a \u00e9chou\u00e9 pendant : ${etapeFr}.\nD\u00e9tail technique : ${rep.error || 'inconnu'}\nRien n\u2019est perdu, tu peux r\u00e9essayer.`);
+    erreur(7, `L\u2019envoi a \u00e9chou\u00e9 pendant : ${etapeFr}.\nD\u00e9tail technique : ${rep.error || 'inconnu'}\nRien n\u2019est perdu, tu peux r\u00e9essayer.`);
   } else if (xhr) {
     // Pas de reponse structuree : on montre TOUT ce qu'on a pour diagnostiquer
     const debut = (xhr.responseText || '').substring(0, 300);
-    erreur(6, `\u00c9chec de l\u2019envoi.\nStatut HTTP : ${xhr.status} ${xhr.statusText || ''}\nR\u00e9ponse re\u00e7ue : ${debut || '(vide)'}\n\nCela veut souvent dire que le script n\u2019a pas \u00e9t\u00e9 red\u00e9ploy\u00e9 en \u00ab Nouvelle version \u00bb apr\u00e8s la mise \u00e0 jour du code.`);
+    erreur(7, `\u00c9chec de l\u2019envoi.\nStatut HTTP : ${xhr.status} ${xhr.statusText || ''}\nR\u00e9ponse re\u00e7ue : ${debut || '(vide)'}\n\nCela veut souvent dire que le script n\u2019a pas \u00e9t\u00e9 red\u00e9ploy\u00e9 en \u00ab Nouvelle version \u00bb apr\u00e8s la mise \u00e0 jour du code.`);
   } else {
-    erreur(6, 'L\u2019envoi n\u2019est pas pass\u00e9 (connexion capricieuse ?). R\u00e9essaie simplement.');
+    erreur(7, 'L\u2019envoi n\u2019est pas pass\u00e9 (connexion capricieuse ?). R\u00e9essaie simplement.');
   }
 }
 
@@ -1369,33 +1382,61 @@ document.querySelectorAll('.vol-team').forEach(el => el.addEventListener('change
   const checked = document.querySelectorAll('.vol-team:checked');
   if (checked.length > 2) { el.checked = false; erreur('benevole', 'Choisis exactement deux pôles.'); }
 }));
-function ajouterMembre() {
+function groupeActif() { return ['Artiste','Atelier',"L'Antre deux mondes"].includes(etat.category); }
+function actualiserMembres() {
+  const count = groupeActif() ? Number(valeur('nombre-membres')) : 0;
   const list = $('liste-membres');
-  if (list.children.length >= 4) return;
-  const item = document.createElement('div'); item.className = 'membre champ';
-  item.style.cssText = 'padding:14px;border:1px solid var(--ligne);border-radius:12px;margin:12px 0';
-  item.innerHTML = `<label class="etiquette">Prénom</label><input class="membre-prenom" autocomplete="off"><label class="etiquette">Nom</label><input class="membre-nom" autocomplete="off"><label class="etiquette">Bio courte</label><textarea class="membre-bio" rows="3"></textarea><label class="etiquette">Portrait</label><input type="file" class="membre-photo" accept="image/*"><button type="button" class="btn-inserer" onclick="this.parentElement.remove();$('ajouter-membre').style.display='inline-block'">Retirer cette personne</button>`;
-  list.appendChild(item);
-  if (list.children.length === 4) $('ajouter-membre').style.display = 'none';
+  while (list.children.length > count) list.lastElementChild.remove();
+  while (list.children.length < count) {
+    const item = document.createElement('div'); item.className = 'membre champ portrait-bloc';
+    item.innerHTML = '<strong>Personne ' + (list.children.length+1) + '</strong><label class="etiquette">Prénom</label><input class="membre-prenom" autocomplete="off"><label class="etiquette">Nom</label><input class="membre-nom" autocomplete="off"><label class="etiquette">Bio courte</label><textarea class="membre-bio" rows="3"></textarea>';
+    list.appendChild(item);
+  }
+  afficherPortraits();
 }
-function lireFichier(f) { return new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsDataURL(f); }); }
-async function reduirePortrait(f) {
-  const src = await lireFichier(f);
-  return new Promise((resolve, reject) => {
-    const img = new Image(); img.onload = () => {
-      const c = document.createElement('canvas'), scale = Math.min(1, 900 / Math.max(img.width, img.height));
-      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      resolve(c.toDataURL('image/jpeg', .78));
-    }; img.onerror = reject; img.src = src;
+function afficherPortraits() {
+  const c=$('liste-portraits'); c.innerHTML='';
+  Array.from(document.querySelectorAll('.membre')).forEach((m,i)=>{
+    const name=[m.querySelector('.membre-prenom').value,m.querySelector('.membre-nom').value].filter(Boolean).join(' ') || 'personne '+(i+1);
+    const div=document.createElement('div');div.className='portrait-bloc';
+    const label=document.createElement('label');label.className='etiquette obligatoire';label.textContent='Portrait de '+name;
+    const input=document.createElement('input');input.type='file';input.accept='image/*';input.hidden=true;
+    const button=document.createElement('button');button.type='button';button.className='zone-depot';button.textContent=m.portraitData?'Changer le portrait':'📷 Choisir et recadrer le portrait';
+    const preview=document.createElement('div');preview.className='etat-photo';
+    if(m.portraitData){const img=document.createElement('img');img.src=m.portraitData;img.alt='Portrait de '+name;img.style.cssText='width:110px;border-radius:12px;display:block';preview.appendChild(img);}
+    button.onclick=()=>input.click();input.onchange=()=>ouvrirPortrait(input,m,'portrait de '+name);
+    div.append(label,button,input,preview);c.appendChild(div);
   });
 }
-async function lireMembres() {
-  if (etat.category !== 'Artiste') return [];
-  return Promise.all(Array.from(document.querySelectorAll('.membre')).map(async el => ({
-    first_name: el.querySelector('.membre-prenom').value.trim(), last_name: el.querySelector('.membre-nom').value.trim(),
-    bio: el.querySelector('.membre-bio').value.trim(), photo: await reduirePortrait(el.querySelector('.membre-photo').files[0])
-  })));
+const recPortrait=creerRecadreur('cadre-portrait','img-portrait','zoom-moins-portrait','zoom-plus-portrait');
+let ciblePortrait=null;
+function ouvrirPortrait(input,target,label){
+  if(!input.files[0])return;
+  ciblePortrait=target;$('titre-portrait').textContent='Recadrer le '+label;
+  chargerImage(input,$('img-portrait'),()=>{
+    $('recadreur-portrait').style.display='block';
+    recPortrait.demarrer('1 / 1');
+    $('recadreur-portrait').scrollIntoView({behavior:'smooth',block:'center'});
+  });
+}
+function annulerPortrait(){$('recadreur-portrait').style.display='none';ciblePortrait=null;}
+function garderPortrait(){
+  if(!ciblePortrait||!recPortrait.actif)return;
+  const volunteer=ciblePortrait===volunteerPortrait;
+  ciblePortrait.portraitData=recPortrait.exporter(900,900,320);
+  annulerPortrait();
+  if(volunteer)$('vol-portrait-etat').textContent='Portrait prêt ✨';
+  else afficherPortraits();
+}
+const volunteerPortrait={portraitData:null};
+$('vol-portrait').onchange=()=>ouvrirPortrait($('vol-portrait'),volunteerPortrait,'portrait bénévole');
+async function lireMembres(){
+  if(!groupeActif())return [];
+  return Array.from(document.querySelectorAll('.membre')).map(el=>({
+    first_name:el.querySelector('.membre-prenom').value.trim(),
+    last_name:el.querySelector('.membre-nom').value.trim(),
+    bio:el.querySelector('.membre-bio').value.trim(),photo:el.portraitData
+  }));
 }
 async function lireTechnique() {
   const t = {other_needs:valeur('other_needs')};
@@ -1416,17 +1457,17 @@ async function envoyerBenevole() {
   if (!/^\S+@\S+\.\S+$/.test(v('vol_email')) || !v('vol_last_name') || !v('vol_first_name') || !v('vol_phone') || !v('vol_motivation') || teams.length !== 2)
     return erreur('benevole', 'Remplis tous les champs et choisis exactement deux pôles.');
   if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur('benevole', 'Le nouveau script doit être déployé avant le premier envoi.');
-  const btn = $('btn-benevole'); btn.disabled = true; btn.textContent = 'Envoi en cours…';
+  const btn = $('btn-benevole'); btn.disabled = true; btn.textContent = 'Envoi en cours… Garde cette page ouverte.';
   try {
     const res = await fetch(CONFIG.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({
       kind:'volunteer', submission_id:submissionIds.volunteer, access_code:CONFIG.code, honeypot:$('honeypot').value, email:v('vol_email'),
       first_name:v('vol_first_name'), last_name:v('vol_last_name'), phone:v('vol_phone'),
-      teams:teams, motivation:v('vol_motivation')
+      teams:teams, motivation:v('vol_motivation'), portrait:volunteerPortrait.portraitData
     }) });
     const rep = await res.json();
     if (!rep.ok) throw new Error(rep.error || 'Envoi refusé');
     $('titre-merci').textContent = `Merci ${v('vol_first_name')} ! 🎉`;
-    document.querySelector('#ecran-merci .intro').textContent = 'Ta candidature bénévole a bien été reçue.';
+    document.querySelector('#ecran-merci .intro').textContent = 'Ta candidature bénévole a bien été reçue. Elle nous aidera à préparer l’équipe et le festival.';
     aller('merci'); confettis();
   } catch(e) { erreur('benevole', 'Envoi impossible : ' + e.message); }
   finally { btn.disabled = false; btn.textContent = 'Envoyer ma candidature 💛'; }
