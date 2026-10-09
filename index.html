@@ -813,7 +813,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.9-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.10-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
@@ -1674,7 +1674,8 @@ const CAND_POLE = {
     { k: 'origin', l: 'Ces produits sont…', t: 'chips', multi: 1, o: ['Conçus par moi', 'Fabriqués par moi', 'Fabriqués par des artisans ou ateliers partenaires', 'Issus en partie d’achat-revente'], r: 1, n: 'Plusieurs choix possibles.' },
     { k: 'process', l: 'Ta démarche de conception et de fabrication', t: 'a', n: 'Précise l’origine de ce qui est acheté pour la revente, si c’est le cas.' },
     { k: 'stand', l: 'Combien de personnes seront sur le stand ?', t: 'chips', o: ['Individuel (1 personne)', 'Duo (2 personnes)'], r: 1 },
-    { k: 'duo_names', l: 'Nom et activité des deux exposants', t: 't', r: 1, si: ['stand', 'Duo (2 personnes)'] }
+    { k: 'duo1', l: 'Exposant 1 : nom', t: 't', r: 1, si: ['stand', 'Duo (2 personnes)'] },
+    { k: 'duo2', l: 'Exposant 2 : nom', t: 't', r: 1, si: ['stand', 'Duo (2 personnes)'] }
   ].concat(CAND_SURFACE, CAND_ELEC),
   'Bien-être': [
     { k: 'practices', l: 'Pratiques ou prestations proposées', t: 'a', r: 1 },
@@ -1748,7 +1749,7 @@ function candChamp(f) {
     div.appendChild(box);
   } else {
     const el = document.createElement(f.t === 'a' ? 'textarea' : 'input');
-    if (f.t === 'a') el.rows = 3; else el.type = f.t === 'n' ? 'number' : (f.type || 'text');
+    if (f.t === 'a') { el.rows = 3; el.maxLength = 2000; } else { el.type = f.t === 'n' ? 'number' : (f.type || 'text'); if (f.t !== 'n') el.maxLength = 300; }
     if (f.t === 'n') { el.min = '0'; el.step = 'any'; }
     el.value = cand.vals[f.k] || '';
     el.addEventListener('input', () => { cand.vals[f.k] = el.value.trim(); if (f.t === 'a') autoGrow(el); });
