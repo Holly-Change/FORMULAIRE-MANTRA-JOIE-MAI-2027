@@ -139,9 +139,12 @@ main { padding: 0 0 40px; min-width: 0; }
 .meta { color: var(--doux); font-size: .92rem; overflow-wrap: anywhere; }
 .puces { display: flex; flex-wrap: wrap; gap: 6px; }
 .puce { font-size: .8rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: rgba(28,27,58,.08); }
-.puce.selection-accepte { background: #D6F4F6; color: #06505E; }
-.puce.selection-attente { background: #FBEFD2; color: #6B4A08; }
-.puce.selection-refuse { background: #FFE1DC; color: #8A2314; }
+.puce.selection-etudier { background: #E6E1F7; color: #3F2A7A; }
+.puce.selection-accepte { background: #D3F0DC; color: #17562F; }
+.puce.selection-attente { background: #FFEFC2; color: #6B4A08; }
+.puce.selection-refuse { background: #FFD9D6; color: #8A2314; }
+.puce.etat-ok { background: #D3F0DC; color: #17562F; }
+.puce.etat-attention { background: #FFEFC2; color: #6B4A08; }
 .liens { display: flex; gap: 8px; flex-wrap: wrap; }
 .liens a { text-decoration: none; font-weight: 700; font-size: .9rem; padding: 6px 14px; border-radius: 999px; border: 2px solid var(--turquoise); color: var(--navy); }
 .liens a:hover { background: rgba(31,168,195,.16); }
@@ -154,11 +157,19 @@ main { padding: 0 0 40px; min-width: 0; }
 .detail-entete h1 { font-family: var(--police-titres); font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.05; margin: 0 0 10px; overflow-wrap: anywhere; }
 .detail-entete .puces { margin-bottom: 8px; gap: 10px; }
 .detail-entete .puce { font-family: var(--police-titres); font-size: 1.35rem; font-weight: 600; padding: 6px 22px; }
-.champs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
-.champ { background: var(--creme); border: 1px solid var(--ligne); border-radius: 14px; padding: 12px 16px; }
+.champs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.champ { background: var(--creme); border-left: 5px solid var(--turquoise-vif); border-radius: 12px; padding: 14px 18px; }
 .champ.large { grid-column: 1 / -1; }
-.champ .q { font-size: .85rem; font-weight: 700; color: var(--violet); margin-bottom: 4px; }
-.champ .v { white-space: pre-wrap; overflow-wrap: anywhere; }
+.champ .q { font-size: .9rem; font-weight: 700; color: var(--violet); margin-bottom: 6px; line-height: 1.3; }
+.champ .v { font-size: 1.12rem; line-height: 1.55; color: var(--navy); white-space: pre-wrap; overflow-wrap: anywhere; }
+.grille-photos a { display: block; }
+.grille-photos .attente { aspect-ratio: 1; border-radius: 12px; background: linear-gradient(100deg, #EEE9F6 30%, #F8F5FC 50%, #EEE9F6 70%); background-size: 200% 100%; animation: brille 1.2s linear infinite; }
+@keyframes brille { to { background-position: -200% 0; } }
+.email-pret .champ-mail { width: 100%; padding: 10px 12px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte); font-family: var(--police-corps); font-size: 1rem; line-height: 1.5; }
+.email-pret textarea.champ-mail { min-height: 260px; resize: vertical; white-space: pre-wrap; }
+.email-pret .champ-mail:focus { border-color: var(--turquoise-vif); outline: none; }
+.email-pret label.etiq { display: block; font-weight: 700; font-size: .9rem; color: var(--violet); margin: 12px 0 4px; }
+.email-pret .astuce { color: var(--doux); font-size: .9rem; margin: 6px 0 0; }
 .mode { display: inline-block; font-weight: 700; font-size: .85rem; padding: 4px 12px; border-radius: 999px; margin: 8px 0 4px; }
 .mode.test { background: #FBEFD2; color: #6B4A08; }
 .mode.reel { background: #FFE1DC; color: var(--erreur); }
@@ -171,8 +182,17 @@ main { padding: 0 0 40px; min-width: 0; }
 .infos dd { margin: 0; overflow-wrap: anywhere; }
 .reponses { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; font-family: var(--police-corps); }
 .statuts-boutons { display: flex; flex-wrap: wrap; gap: 8px; }
-.statuts-boutons button { border: 2px solid var(--ligne); background: var(--carte); border-radius: 999px; padding: 8px 16px; cursor: pointer; font-weight: 700; }
-.statuts-boutons button[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
+.statuts-boutons button { border: 3px solid transparent; border-radius: 999px; padding: 9px 20px; cursor: pointer; font-weight: 700; font-size: 1rem; }
+.statuts-boutons button[data-statut="À étudier"] { background: #E6E1F7; color: #3F2A7A; }
+.statuts-boutons button[data-statut="Accepté"] { background: #D3F0DC; color: #17562F; }
+.statuts-boutons button[data-statut="Liste d'attente"] { background: #FFEFC2; color: #6B4A08; }
+.statuts-boutons button[data-statut="Refusé"] { background: #FFD9D6; color: #8A2314; }
+.statuts-boutons button:hover { filter: brightness(0.96); }
+.statuts-boutons button[aria-pressed="true"] { border-color: currentColor; box-shadow: 0 2px 8px rgba(11, 42, 71, 0.18); }
+.statuts-boutons button[aria-pressed="true"]::before { content: "\2713  "; }
+.autres-statuts select.etat-ok { background: #D3F0DC; color: #17562F; border-color: #8FD3A6; }
+.autres-statuts select.etat-attention { background: #FFEFC2; color: #6B4A08; border-color: #E8C766; }
+.autres-statuts select.etat-neutre { background: #F1EEF8; color: #3F2A7A; }
 .statuts-boutons button[disabled], .autres-statuts select[disabled] { opacity: .6; cursor: wait; }
 .autres-statuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-top: 16px; }
 .autres-statuts label { display: block; font-weight: 700; font-size: .9rem; color: var(--doux); margin-bottom: 4px; }
@@ -198,6 +218,7 @@ main { padding: 0 0 40px; min-width: 0; }
   .totaux { grid-template-columns: 1fr; margin: -44px 14px 0; }
   .bloc { margin: 20px 14px 0; }
   .ligne, .recent { grid-template-columns: 1fr; }
+  .champs { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -375,7 +396,15 @@ function habiller() {
   v.textContent = versionServeur ? 'Serveur ' + versionServeur : "Serveur pas à jour : Deploy > Manage deployments > New version";
   $('hero-titre').textContent = config.edition || 'Mantra Joie 2027';
   const image = imageSure(config.image);
-  $('hero').style.backgroundImage = image ? 'url("' + image.replace(/"/g, '%22') + '")' : '';
+  const hero = $('hero');
+  hero.style.backgroundImage = '';
+  if (image) {
+    // On charge l'image d'abord : si le fichier est introuvable, le dégradé reste en place.
+    const test = new Image();
+    test.onload = () => { hero.style.backgroundImage = 'url("' + image.replace(/"/g, '%22') + '")'; };
+    test.onerror = () => { hero.style.backgroundImage = ''; };
+    test.src = image;
+  }
   const drive = $('lien-drive');
   if (/^https:\/\/drive\.google\.com\//.test(config.drive || '')) { drive.href = config.drive; drive.hidden = false; } else { drive.hidden = true; }
 }
@@ -415,9 +444,15 @@ function naviguer(nom) {
 function normaliser(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
 function statutDe(item) { return item.selection || 'À étudier'; }
 function classeSelection(statut) {
+  if (statut === 'À étudier') return 'selection-etudier';
   if (statut === 'Accepté') return 'selection-accepte';
   if (statut === "Liste d'attente") return 'selection-attente';
   if (statut === 'Refusé') return 'selection-refuse';
+  return '';
+}
+function classeEtat(valeur) {
+  if (['Validé', 'Vérifié', 'Confirmé', 'Reçu'].indexOf(valeur) >= 0) return 'etat-ok';
+  if (['À vérifier', 'À compléter', 'En attente'].indexOf(valeur) >= 0) return 'etat-attention';
   return '';
 }
 function lienSur(url, texte) {
@@ -540,9 +575,9 @@ function dessinerCandidatures() {
     const c3 = document.createElement('div'); c3.className = 'puces';
     const statut = statutDe(i);
     c3.appendChild(puce(statut, classeSelection(statut)));
-    if (i.dossier_final) c3.appendChild(puce('Dossier final : ' + i.dossier_final));
-    if (i.paiement && i.paiement !== 'Non concerné') c3.appendChild(puce('Paiement : ' + i.paiement));
-    if (i.confirmation) c3.appendChild(puce(i.confirmation));
+    if (i.dossier_final) c3.appendChild(puce('Dossier final : ' + i.dossier_final, classeEtat(i.dossier_final)));
+    if (i.paiement && i.paiement !== 'Non concerné') c3.appendChild(puce('Paiement : ' + i.paiement, classeEtat(i.paiement)));
+    if (i.confirmation) c3.appendChild(puce(i.confirmation, classeEtat(i.confirmation)));
     const c4 = document.createElement('div'); c4.className = 'liens';
     c4.appendChild(boutonOuvrir(i.id));
     const fiche = lienSur(i.fiche, 'Fiche'); if (fiche) c4.appendChild(fiche);
@@ -555,10 +590,24 @@ function dessinerCandidatures() {
 
 /* ---------- Fiche d'une candidature ---------- */
 let detailId = '';
+const detailsPrets = {};   // id -> { quand, promesse } : ouverture instantanée après un survol
+const photosPrets = {};    // id -> [data URL] : les photos déjà reçues
+
+function demanderDetail(id) {
+  const prets = detailsPrets[id];
+  if (prets && Date.now() - prets.quand < 15000) return prets.promesse;
+  const promesse = appel({ op: 'detail', token: jeton, id: id });
+  detailsPrets[id] = { quand: Date.now(), promesse: promesse };
+  promesse.catch(() => { delete detailsPrets[id]; });
+  return promesse;
+}
 
 function boutonOuvrir(id) {
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'btn btn-ouvrir'; b.textContent = 'Ouvrir';
+  // Dès que la souris passe dessus, on commence à charger la fiche : elle s'ouvre plus vite.
+  b.addEventListener('mouseenter', () => { if (jeton) demanderDetail(id); });
+  b.addEventListener('focus', () => { if (jeton) demanderDetail(id); });
   b.addEventListener('click', () => ouvrirDetail(id));
   return b;
 }
@@ -588,17 +637,62 @@ async function ouvrirDetail(id) {
   zone.appendChild(el('p', 'compte', 'Chargement de la candidature et des photos...'));
   naviguer('detail');
   try {
-    const r = await appel({ op: 'detail', token: jeton, id: id });
+    const r = await demanderDetail(id);
     if (sessionExpiree(r)) return;
     if (!r.ok) throw new Error(r.error || 'Erreur');
     if (detailId !== id) return;
     dessinerDetail(r.detail, r.listes || {}, r.mode);
+    chargerPhotos(id);
   } catch (err) {
     zone.innerHTML = '';
     const retour = el('button', 'retour', 'Retour aux candidatures'); retour.type = 'button';
     retour.addEventListener('click', () => naviguer('candidatures'));
     zone.appendChild(retour);
     zone.appendChild(el('p', 'message ko', "Impossible d'ouvrir cette candidature. Réessaie dans un instant."));
+  }
+}
+
+const PHOTO_OK = /^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+\/=]+$/;
+
+function ajouterPhoto(grille, src, url, texte) {
+  if (!PHOTO_OK.test(src)) return;
+  const a = document.createElement('a');
+  if (/^https:\/\/drive\.google\.com\//.test(url || '')) { a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.title = 'Ouvrir en grand dans Drive'; }
+  const img = document.createElement('img'); img.src = src; img.alt = texte; a.appendChild(img);
+  grille.appendChild(a);
+}
+
+async function chargerPhotos(id) {
+  const grille = $('grille-photos'), info = $('info-photos');
+  if (!grille) return;
+  if (photosPrets[id]) {
+    photosPrets[id].forEach((p) => ajouterPhoto(grille, p.src, p.url, 'Photo'));
+    info.textContent = photosPrets[id].length ? '' : 'Aucune photo dans le dossier.';
+    return;
+  }
+  try {
+    const liste = await appel({ op: 'photos_list', token: jeton, id: id });
+    if (sessionExpiree(liste)) return;
+    if (detailId !== id || !$('grille-photos')) return;
+    if (!liste.ok || !(liste.photos || []).length) { info.textContent = 'Aucune photo dans le dossier.'; return; }
+    info.textContent = liste.photos.length + ' photo' + (liste.photos.length > 1 ? 's' : '') + ', chargement...';
+    const cases = liste.photos.map(() => { const c = el('div', 'attente'); grille.appendChild(c); return c; });
+    const recues = [];
+    await Promise.all(liste.photos.map(async (p, k) => {
+      try {
+        const r = await appel({ op: 'photo', token: jeton, id: id, fid: p.fid });
+        if (r.ok && PHOTO_OK.test(r.src)) recues[k] = { src: r.src, url: p.url };
+        if (detailId !== id || !cases[k].parentNode) return;
+        if (recues[k]) {
+          const tmp = el('div'); ajouterPhoto(tmp, r.src, p.url, 'Photo ' + (k + 1));
+          if (tmp.firstChild) grille.replaceChild(tmp.firstChild, cases[k]); else cases[k].remove();
+        } else cases[k].remove();
+      } catch (err) { if (cases[k].parentNode) cases[k].remove(); }
+    }));
+    photosPrets[id] = recues.filter(Boolean);
+    if ($('info-photos') && detailId === id) $('info-photos').textContent = photosPrets[id].length ? '' : 'Les photos ne se sont pas chargées. Utilise le lien Dossier Drive.';
+  } catch (err) {
+    if ($('info-photos')) $('info-photos').textContent = 'Les photos ne se sont pas chargées. Utilise le lien Dossier Drive.';
   }
 }
 
@@ -632,16 +726,13 @@ function dessinerDetail(d, listes, mode) {
   entete.appendChild(liens);
   zone.appendChild(entete);
 
-  // Photos
-  if ((d.photos || []).length) {
-    const c = carte('Photos');
-    const g = el('div', 'grille-photos');
-    d.photos.forEach((src, k) => {
-      if (!/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(src)) return;
-      const img = document.createElement('img'); img.src = src; img.alt = 'Photo ' + (k + 1) + ' de ' + d.projet; g.appendChild(img);
-    });
-    c.appendChild(g); zone.appendChild(c);
-  }
+  // Photos : la carte apparaît tout de suite, chaque photo s'affiche dès qu'elle arrive
+  const cartePhotos = carte('Photos');
+  cartePhotos.id = 'carte-photos';
+  const grillePhotos = el('div', 'grille-photos'); grillePhotos.id = 'grille-photos';
+  const infoPhotos = el('p', 'compte', 'Chargement des photos...'); infoPhotos.id = 'info-photos';
+  cartePhotos.appendChild(infoPhotos); cartePhotos.appendChild(grillePhotos);
+  zone.appendChild(cartePhotos);
 
   // Contact
   const cc = carte('Contact');
@@ -677,7 +768,7 @@ function dessinerDetail(d, listes, mode) {
   function redessinerStatuts() {
     boutons.innerHTML = '';
     (listes['Sélection'] || []).forEach((v) => {
-      const b = el('button', '', v); b.type = 'button'; b.setAttribute('aria-pressed', String(statuts['Sélection'] === v));
+      const b = el('button', '', v); b.type = 'button'; b.dataset.statut = v; b.setAttribute('aria-pressed', String(statuts['Sélection'] === v));
       b.addEventListener('click', () => changer('Sélection', v));
       boutons.appendChild(b);
     });
@@ -689,13 +780,15 @@ function dessinerDetail(d, listes, mode) {
       const vide = document.createElement('option'); vide.value = ''; vide.textContent = '-'; sel.appendChild(vide);
       (listes[piste] || []).forEach((v) => { const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o); });
       sel.value = statuts[piste] || '';
-      sel.addEventListener('change', () => { if (sel.value) changer(piste, sel.value); else sel.value = statuts[piste] || ''; });
+      sel.className = classeEtat(sel.value) || (sel.value ? 'etat-neutre' : '');
+      sel.addEventListener('change', () => { if (sel.value) changer(piste, sel.value); else sel.value = statuts[piste] || ''; sel.className = classeEtat(sel.value) || (sel.value ? 'etat-neutre' : ''); });
       w.appendChild(lab); w.appendChild(sel); autres.appendChild(w);
     });
   }
   async function changer(piste, valeur) {
     verrouiller(true); message.className = 'message'; message.textContent = 'Enregistrement...';
     try {
+      delete detailsPrets[d.id];
       const r = await appel({ op: 'status', token: jeton, id: d.id, piste: piste, valeur: valeur });
       if (sessionExpiree(r)) return;
       if (r.statuts) { statuts = r.statuts; majItem(d.id, statuts); }
@@ -718,25 +811,34 @@ function dessinerDetail(d, listes, mode) {
     if (!pret) { emailZone.appendChild(el('p', 'meta', "Aucun email prêt. Change un statut pour en préparer un.")); return; }
     emailZone.appendChild(el('p', 'ligne-mail', 'Prêt : ' + pret.libelle));
     if (pret.erreur) { emailZone.appendChild(el('p', 'message ko', pret.erreur)); return; }
-    emailZone.appendChild(el('p', 'ligne-mail', 'Objet : ' + pret.objet));
     emailZone.appendChild(el('p', 'ligne-mail', 'Destinataire : ' + pret.destinataire + (pret.reel ? ' (le candidat)' : ' (adresse de test)')));
+    const lo = el('label', 'etiq', 'Objet'); lo.htmlFor = 'mail-objet';
+    const objet = document.createElement('input'); objet.type = 'text'; objet.id = 'mail-objet'; objet.className = 'champ-mail'; objet.maxLength = 200; objet.value = pret.objet_modifiable;
+    const lc = el('label', 'etiq', 'Texte de l\u2019email'); lc.htmlFor = 'mail-corps';
+    const corps = document.createElement('textarea'); corps.id = 'mail-corps'; corps.className = 'champ-mail'; corps.maxLength = 20000; corps.value = pret.corps;
+    emailZone.appendChild(lo); emailZone.appendChild(objet); emailZone.appendChild(lc); emailZone.appendChild(corps);
+    emailZone.appendChild(el('p', 'astuce', "Tu peux ajouter ou changer des mots : ça ne modifie que cet email. Le modèle reste le même pour tout le monde. Si tu modifies le texte, le gras du modèle n'apparaît plus."));
     const actions = el('div', 'actions');
     const envoyer = el('button', 'btn', "Envoyer l'email"); envoyer.type = 'button';
     const resultat = el('p', 'message');
     envoyer.addEventListener('click', () => {
       actions.innerHTML = '';
-      const oui = el('button', 'btn', 'Confirmer : envoyer à ' + pret.destinataire); oui.type = 'button';
+      const modifie = objet.value.trim() !== pret.objet_modifiable || corps.value.trim() !== pret.corps.trim();
+      objet.disabled = true; corps.disabled = true;
+      const oui = el('button', 'btn', 'Confirmer : envoyer' + (modifie ? ' (texte modifié)' : '') + ' à ' + pret.destinataire); oui.type = 'button';
       const non = el('button', 'btn btn-doux', 'Annuler'); non.type = 'button';
-      non.addEventListener('click', () => redessinerEmail(pret));
+      non.addEventListener('click', () => { const o = objet.value, c = corps.value; redessinerEmail(pret); $('mail-objet').value = o; $('mail-corps').value = c; });
       oui.addEventListener('click', async () => {
         oui.disabled = true; non.disabled = true; resultat.className = 'message'; resultat.textContent = 'Envoi en cours...';
         try {
-          const r = await appel({ op: 'send_email', token: jeton, id: d.id });
+          const corpsEnvoi = { op: 'send_email', token: jeton, id: d.id };
+          if (modifie) corpsEnvoi.edit = { objet: objet.value, corps: corps.value, base: pret.corps };
+          delete detailsPrets[d.id];
+          const r = await appel(corpsEnvoi);
           if (sessionExpiree(r)) return;
           if (r.statuts) { statuts = r.statuts; majItem(d.id, statuts); redessinerStatuts(); redessinerAlerte(); }
           redessinerEmail('email_pret' in r ? r.email_pret : null);
-          const fin = emailZone.querySelector('.message.fin') || el('p', 'message fin');
-          fin.className = 'message fin ' + (r.ok ? 'ok' : 'ko');
+          const fin = el('p', 'message fin ' + (r.ok ? 'ok' : 'ko'));
           fin.textContent = r.ok ? 'Email envoyé.' + (r.detail ? ' (' + r.detail + ')' : '') : (r.error || 'Envoi non réussi : ' + (r.statut || '') + (r.detail ? ' (' + r.detail + ')' : ''));
           emailZone.appendChild(fin);
         } catch (err) {
