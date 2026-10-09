@@ -141,6 +141,38 @@ main { padding: 0 0 40px; min-width: 0; }
 .alerte { grid-column: 1 / -1; color: var(--erreur); font-weight: 700; font-size: .9rem; }
 .vide { text-align: center; color: var(--doux); padding: 40px 12px; }
 
+/* ---------- Fiche d'une candidature ---------- */
+.retour { border: 0; background: none; cursor: pointer; color: var(--violet); font-weight: 700; padding: 0; margin-bottom: 14px; }
+.retour:hover { text-decoration: underline; }
+.detail-entete h1 { font-family: var(--police-titres); font-size: 2.1rem; line-height: 1.05; margin: 0 0 8px; overflow-wrap: anywhere; }
+.detail-entete .puces { margin-bottom: 6px; }
+.mode { display: inline-block; font-weight: 700; font-size: .85rem; padding: 4px 12px; border-radius: 999px; margin: 8px 0 4px; }
+.mode.test { background: rgba(224,169,59,.28); }
+.mode.reel { background: rgba(196,61,43,.16); color: var(--erreur); }
+.carte { background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 18px 20px; margin-top: 16px; }
+.carte h2 { font-family: var(--police-titres); font-size: 1.25rem; margin: 0 0 10px; }
+.grille-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.grille-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; border: 1px solid var(--ligne); background: #f3eef2; }
+.infos { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0; }
+.infos dt { font-weight: 700; color: var(--doux); }
+.infos dd { margin: 0; overflow-wrap: anywhere; }
+.reponses { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; font-family: var(--police-corps); }
+.statuts-boutons { display: flex; flex-wrap: wrap; gap: 8px; }
+.statuts-boutons button { border: 2px solid var(--ligne); background: var(--carte); border-radius: 999px; padding: 8px 16px; cursor: pointer; font-weight: 700; }
+.statuts-boutons button[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
+.statuts-boutons button[disabled], .autres-statuts select[disabled] { opacity: .6; cursor: wait; }
+.autres-statuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-top: 16px; }
+.autres-statuts label { display: block; font-weight: 700; font-size: .9rem; color: var(--doux); margin-bottom: 4px; }
+.autres-statuts select { width: 100%; padding: 9px 12px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte); }
+.message { margin-top: 12px; font-weight: 700; min-height: 1.4em; }
+.message.ok { color: #1E7F6B; }
+.message.ko { color: var(--erreur); }
+.email-pret .ligne-mail { margin: 0 0 4px; overflow-wrap: anywhere; }
+.email-pret .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.btn-ouvrir { background: var(--violet); }
+.btn-ouvrir:hover { background: #742F88; }
+.liens .btn-ouvrir { border: 0; color: #fff; padding: 7px 16px; font-size: .9rem; }
+
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
   .menu { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 14px; border-right: 0; border-bottom: 1px solid var(--ligne); }
@@ -214,6 +246,10 @@ main { padding: 0 0 40px; min-width: 0; }
         <p class="compte" id="compte"></p>
         <div class="liste" id="liste"></div>
       </div>
+    </section>
+
+    <section id="vue-detail" hidden>
+      <div class="page" id="detail"></div>
     </section>
   </main>
 </div>
@@ -294,7 +330,7 @@ async function charger() {
     $('ecran-connexion').hidden = true;
     $('app').hidden = false;
     habiller();
-    naviguer(vue);
+    naviguer(vue === 'detail' ? 'candidatures' : vue);
   } catch (err) {
     montrerConnexion('Impossible de charger les données. Réessaie dans un instant.');
   }
@@ -344,13 +380,15 @@ document.querySelectorAll('[data-vue]').forEach((b) => b.addEventListener('click
 $('voir-toutes').addEventListener('click', () => { filtreCategorie = 'Toutes'; filtreStatut = 'Tous'; $('recherche').value = ''; naviguer('candidatures'); });
 
 function naviguer(nom) {
-  vue = nom === 'candidatures' ? 'candidatures' : 'accueil';
+  vue = nom === 'candidatures' || nom === 'detail' ? nom : 'accueil';
   $('vue-accueil').hidden = vue !== 'accueil';
   $('vue-candidatures').hidden = vue !== 'candidatures';
+  $('vue-detail').hidden = vue !== 'detail';
+  const actif = vue === 'detail' ? 'candidatures' : vue;
   document.querySelectorAll('[data-vue]').forEach((b) => {
-    if (b.dataset.vue === vue) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    if (b.dataset.vue === actif) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
-  if (vue === 'accueil') dessinerAccueil(); else dessinerCandidatures();
+  if (vue === 'accueil') dessinerAccueil(); else if (vue === 'candidatures') dessinerCandidatures();
   window.scrollTo(0, 0);
 }
 
@@ -425,7 +463,7 @@ function dessinerAccueil() {
     const cat = document.createElement('div'); cat.appendChild(puceCategorie(i.pole));
     const date = document.createElement('div'); date.className = 'meta'; date.textContent = i.date;
     const liens = document.createElement('div'); liens.className = 'liens';
-    const fiche = lienSur(i.fiche, 'Fiche'); if (fiche) liens.appendChild(fiche);
+    liens.appendChild(boutonOuvrir(i.id));
     ligne.appendChild(nom); ligne.appendChild(cat); ligne.appendChild(date); ligne.appendChild(liens);
     liste.appendChild(ligne);
   });
@@ -487,12 +525,204 @@ function dessinerCandidatures() {
     if (i.paiement && i.paiement !== 'Non concerné') c3.appendChild(puce('Paiement : ' + i.paiement));
     if (i.confirmation) c3.appendChild(puce(i.confirmation));
     const c4 = document.createElement('div'); c4.className = 'liens';
+    c4.appendChild(boutonOuvrir(i.id));
     const fiche = lienSur(i.fiche, 'Fiche'); if (fiche) c4.appendChild(fiche);
     const dossier = lienSur(i.dossier, 'Dossier'); if (dossier) c4.appendChild(dossier);
     ligne.appendChild(c1); ligne.appendChild(c2); ligne.appendChild(c3); ligne.appendChild(c4);
     if (i.alerte) { const a = document.createElement('div'); a.className = 'alerte'; a.textContent = i.alerte; ligne.appendChild(a); }
     liste.appendChild(ligne);
   });
+}
+
+/* ---------- Fiche d'une candidature ---------- */
+let detailId = '';
+
+function boutonOuvrir(id) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'btn btn-ouvrir'; b.textContent = 'Ouvrir';
+  b.addEventListener('click', () => ouvrirDetail(id));
+  return b;
+}
+
+function el(balise, classe, texte) {
+  const e = document.createElement(balise);
+  if (classe) e.className = classe;
+  if (texte != null) e.textContent = texte;
+  return e;
+}
+
+function carte(titre) {
+  const c = el('section', 'carte');
+  c.appendChild(el('h2', '', titre));
+  return c;
+}
+
+function sessionExpiree(r) {
+  if (r && r.auth === false) { oublierJeton(); montrerConnexion(r.error || 'Session expirée. Reconnecte-toi.'); return true; }
+  return false;
+}
+
+async function ouvrirDetail(id) {
+  detailId = id;
+  const zone = $('detail');
+  zone.innerHTML = '';
+  zone.appendChild(el('p', 'compte', 'Chargement de la candidature et des photos...'));
+  naviguer('detail');
+  try {
+    const r = await appel({ op: 'detail', token: jeton, id: id });
+    if (sessionExpiree(r)) return;
+    if (!r.ok) throw new Error(r.error || 'Erreur');
+    if (detailId !== id) return;
+    dessinerDetail(r.detail, r.listes || {}, r.mode);
+  } catch (err) {
+    zone.innerHTML = '';
+    const retour = el('button', 'retour', 'Retour aux candidatures'); retour.type = 'button';
+    retour.addEventListener('click', () => naviguer('candidatures'));
+    zone.appendChild(retour);
+    zone.appendChild(el('p', 'message ko', "Impossible d'ouvrir cette candidature. Réessaie dans un instant."));
+  }
+}
+
+function majItem(id, statuts) {
+  const i = items.find((x) => x.id === id);
+  if (!i || !statuts) return;
+  i.selection = statuts['Sélection'] === 'À étudier' ? '' : statuts['Sélection'];
+  i.dossier_final = statuts['Dossier final']; i.paiement = statuts['Paiement']; i.confirmation = statuts['Confirmation'];
+  i.alerte = statuts.alerte || '';
+}
+
+function dessinerDetail(d, listes, mode) {
+  const zone = $('detail');
+  zone.innerHTML = '';
+  const retour = el('button', 'retour', 'Retour aux candidatures'); retour.type = 'button';
+  retour.addEventListener('click', () => naviguer('candidatures'));
+  zone.appendChild(retour);
+
+  const entete = el('div', 'detail-entete');
+  entete.appendChild(el('h1', '', d.projet));
+  const puces = el('div', 'puces'); puces.appendChild(puceCategorie(d.pole));
+  if (d.formule === 'Duo') puces.appendChild(puce('Duo'));
+  entete.appendChild(puces);
+  entete.appendChild(el('div', 'meta', 'Reçue le ' + d.date));
+  const m = el('span', 'mode ' + (mode === 'REEL' ? 'reel' : 'test'),
+    mode === 'REEL' ? 'Mode REEL : les emails partent vers les candidats' : "Mode TEST : les emails partent vers l'adresse de test, pas vers les candidats");
+  entete.appendChild(m);
+  const liens = el('div', 'liens'); liens.style.marginTop = '10px';
+  const fiche = lienSur(d.fiche, 'Fiche Google Docs'); if (fiche) liens.appendChild(fiche);
+  const dossier = lienSur(d.dossier, 'Dossier Drive'); if (dossier) liens.appendChild(dossier);
+  entete.appendChild(liens);
+  zone.appendChild(entete);
+
+  // Photos
+  if ((d.photos || []).length) {
+    const c = carte('Photos');
+    const g = el('div', 'grille-photos');
+    d.photos.forEach((src, k) => {
+      if (!/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(src)) return;
+      const img = document.createElement('img'); img.src = src; img.alt = 'Photo ' + (k + 1) + ' de ' + d.projet; g.appendChild(img);
+    });
+    c.appendChild(g); zone.appendChild(c);
+  }
+
+  // Contact
+  const cc = carte('Contact');
+  const dl = el('dl', 'infos');
+  [['Nom', d.prenom + ' ' + d.nom], ['Email', d.email], ['Téléphone', d.telephone], ['Déjà participé', d.passe]].forEach((l) => {
+    if (!l[1]) return; dl.appendChild(el('dt', '', l[0])); dl.appendChild(el('dd', '', l[1]));
+  });
+  cc.appendChild(dl); zone.appendChild(cc);
+
+  // Réponses
+  if (d.reponses) { const cr = carte('Réponses au formulaire'); cr.appendChild(el('p', 'reponses', d.reponses)); zone.appendChild(cr); }
+
+  // Statuts
+  const cs = carte('Suivi');
+  const boutons = el('div', 'statuts-boutons'); boutons.setAttribute('role', 'group'); boutons.setAttribute('aria-label', 'Sélection');
+  const autres = el('div', 'autres-statuts');
+  const message = el('p', 'message'); message.setAttribute('role', 'status');
+  const emailZone = el('section', 'carte email-pret');
+  let statuts = d.statuts;
+
+  function verrouiller(oui) {
+    cs.querySelectorAll('button, select').forEach((x) => { x.disabled = oui; });
+  }
+  function redessinerStatuts() {
+    boutons.innerHTML = '';
+    (listes['Sélection'] || []).forEach((v) => {
+      const b = el('button', '', v); b.type = 'button'; b.setAttribute('aria-pressed', String(statuts['Sélection'] === v));
+      b.addEventListener('click', () => changer('Sélection', v));
+      boutons.appendChild(b);
+    });
+    autres.innerHTML = '';
+    ['Dossier final', 'Paiement', 'Confirmation'].forEach((piste) => {
+      const w = el('div'); const id = 'st-' + piste.replace(/\s/g, '-');
+      const lab = el('label', '', piste); lab.htmlFor = id;
+      const sel = document.createElement('select'); sel.id = id;
+      const vide = document.createElement('option'); vide.value = ''; vide.textContent = '-'; sel.appendChild(vide);
+      (listes[piste] || []).forEach((v) => { const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o); });
+      sel.value = statuts[piste] || '';
+      sel.addEventListener('change', () => { if (sel.value) changer(piste, sel.value); else sel.value = statuts[piste] || ''; });
+      w.appendChild(lab); w.appendChild(sel); autres.appendChild(w);
+    });
+  }
+  async function changer(piste, valeur) {
+    verrouiller(true); message.className = 'message'; message.textContent = 'Enregistrement...';
+    try {
+      const r = await appel({ op: 'status', token: jeton, id: d.id, piste: piste, valeur: valeur });
+      if (sessionExpiree(r)) return;
+      if (r.statuts) { statuts = r.statuts; majItem(d.id, statuts); }
+      if ('email_pret' in r) redessinerEmail(r.email_pret);
+      message.className = 'message ' + (r.ok ? 'ok' : 'ko');
+      message.textContent = r.ok ? 'Statut enregistré. ' + (r.message && /prêt/.test(r.message) ? 'Un email est prêt, vérifie-le plus bas.' : '') : (r.message || r.error || 'Changement refusé.');
+    } catch (err) {
+      message.className = 'message ko'; message.textContent = 'Le serveur ne répond pas. Réessaie.';
+    } finally { redessinerStatuts(); verrouiller(false); redessinerAlerte(); }
+  }
+  const alerte = el('p', 'alerte');
+  function redessinerAlerte() { alerte.textContent = statuts.alerte || ''; }
+  cs.appendChild(boutons); cs.appendChild(autres); cs.appendChild(message); cs.appendChild(alerte);
+  zone.appendChild(cs);
+
+  // Email prêt
+  function redessinerEmail(pret) {
+    emailZone.innerHTML = '';
+    emailZone.appendChild(el('h2', '', 'Email'));
+    if (!pret) { emailZone.appendChild(el('p', 'meta', "Aucun email prêt. Change un statut pour en préparer un.")); return; }
+    emailZone.appendChild(el('p', 'ligne-mail', 'Prêt : ' + pret.libelle));
+    if (pret.erreur) { emailZone.appendChild(el('p', 'message ko', pret.erreur)); return; }
+    emailZone.appendChild(el('p', 'ligne-mail', 'Objet : ' + pret.objet));
+    emailZone.appendChild(el('p', 'ligne-mail', 'Destinataire : ' + pret.destinataire + (pret.reel ? ' (le candidat)' : ' (adresse de test)')));
+    const actions = el('div', 'actions');
+    const envoyer = el('button', 'btn', "Envoyer l'email"); envoyer.type = 'button';
+    const resultat = el('p', 'message');
+    envoyer.addEventListener('click', () => {
+      actions.innerHTML = '';
+      const oui = el('button', 'btn', 'Confirmer : envoyer à ' + pret.destinataire); oui.type = 'button';
+      const non = el('button', 'btn btn-doux', 'Annuler'); non.type = 'button';
+      non.addEventListener('click', () => redessinerEmail(pret));
+      oui.addEventListener('click', async () => {
+        oui.disabled = true; non.disabled = true; resultat.className = 'message'; resultat.textContent = 'Envoi en cours...';
+        try {
+          const r = await appel({ op: 'send_email', token: jeton, id: d.id });
+          if (sessionExpiree(r)) return;
+          if (r.statuts) { statuts = r.statuts; majItem(d.id, statuts); redessinerStatuts(); redessinerAlerte(); }
+          redessinerEmail('email_pret' in r ? r.email_pret : null);
+          const fin = emailZone.querySelector('.message.fin') || el('p', 'message fin');
+          fin.className = 'message fin ' + (r.ok ? 'ok' : 'ko');
+          fin.textContent = r.ok ? 'Email envoyé.' + (r.detail ? ' (' + r.detail + ')' : '') : (r.error || 'Envoi non réussi : ' + (r.statut || '') + (r.detail ? ' (' + r.detail + ')' : ''));
+          emailZone.appendChild(fin);
+        } catch (err) {
+          resultat.className = 'message ko'; resultat.textContent = 'Le serveur ne répond pas. Vérifie le Sheet avant de réessayer.';
+          oui.disabled = false; non.disabled = false;
+        }
+      });
+      actions.appendChild(oui); actions.appendChild(non);
+    });
+    actions.appendChild(envoyer);
+    emailZone.appendChild(actions); emailZone.appendChild(resultat);
+  }
+  redessinerStatuts(); redessinerAlerte(); redessinerEmail(d.email_pret);
+  zone.appendChild(emailZone);
 }
 
 if (jeton) { charger(); } else { montrerConnexion(''); }
