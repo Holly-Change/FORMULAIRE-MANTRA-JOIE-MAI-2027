@@ -364,6 +364,12 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
 #ecran-cand-0 .puces, #ecran-cand-1 .champ .puces, #ecran-cand-2 .champ .puces { margin-top: 4px; }
 #cand-vignettes { margin-top: 10px; }
 .cand-etape { font-size: 13px; color: rgba(28,27,58,.6); margin-top: 6px; }
+/* Barre de progression de l'envoi : bien visible, texte foncé */
+.cand-progress { display: none; margin-top: 18px; padding: 16px 18px; border: 3px solid var(--magenta); border-radius: 16px; background: #FFF7FB; }
+.cand-progress .cp-titre { font-weight: 700; font-size: 17px; color: #1C1B3A; }
+.cand-progress .cp-barre { height: 16px; border-radius: 99px; background: #EBDDE8; overflow: hidden; margin: 12px 0 8px; }
+.cand-progress .cp-remplissage { height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, var(--magenta), var(--or)); transition: width .6s ease; }
+.cand-progress .cp-etape { font-size: 15px; color: #1C1B3A; }
 </style>
 </head>
 <body>
@@ -485,6 +491,11 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
           <div class="conditions" id="cand-donnees-texte" style="margin:0 0 12px"></div>
           <label class="consentement"><input type="checkbox" id="cand_data"><span>J’ai pris connaissance de cette information.</span></label>
         </div>
+      </div>
+      <div class="cand-progress" id="cand-progress" role="status" aria-live="polite">
+        <div class="cp-titre">⏳ Envoi en cours : ne ferme pas cette page</div>
+        <div class="cp-barre"><div class="cp-remplissage" id="cp-rempl"></div></div>
+        <div class="cp-etape" id="cp-etape"></div>
       </div>
       <div class="message-erreur" id="erreur-cand-2"></div>
       <div class="nav-etapes"><button class="btn btn-retour" type="button" onclick="aller('cand-1')">Retour</button><button class="btn btn-avant" type="button" id="btn-cand-envoyer" onclick="candEnvoyer()">Envoyer ma candidature 🕊️</button></div>
@@ -1868,13 +1879,28 @@ function candVignettes() {
   });
 }
 
+let candTimer = null;
+function candProgres(actif) {
+  const boite = $('cand-progress'), rempl = $('cp-rempl'), etape = $('cp-etape');
+  clearInterval(candTimer);
+  if (!actif) { boite.style.display = 'none'; return; }
+  boite.style.display = 'block'; rempl.style.width = '4%'; etape.textContent = 'Envoi de tes photos et de tes réponses…';
+  boite.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const debut = Date.now();
+  candTimer = setInterval(() => {
+    const t = (Date.now() - debut) / 1000;
+    const pct = Math.round(92 * (1 - Math.exp(-t / 14)));
+    rempl.style.width = pct + '%';
+    etape.textContent = pct < 25 ? 'Envoi de tes photos et de tes réponses…' : pct < 60 ? 'Enregistrement de ta candidature…' : 'Création de ta fiche et de ton email de confirmation… (cela peut prendre une vingtaine de secondes)';
+  }, 500);
+}
 async function candEnvoyer() {
   const champs = candChamps();
   const m = candValider(champs);
   if (m) return erreur('cand-2', m);
   if (!cand.photos.length) return erreur('cand-2', 'Ajoute au moins une photo.');
   if (!$('cand_data').checked) return erreur('cand-2', 'Coche la case pour confirmer que tu as pris connaissance de l’information sur tes données.');
-  const btn = $('btn-cand-envoyer'); btn.disabled = true; btn.textContent = 'Envoi en cours… Garde cette page ouverte.';
+  const btn = $('btn-cand-envoyer'); btn.disabled = true; btn.textContent = 'Envoi en cours…'; candProgres(true);
   const reponses = [];
   CAND_COMMUN.concat(champs).forEach(f => {
     if (!candVisible(f)) return;
@@ -1891,6 +1917,7 @@ async function candEnvoyer() {
         consent_terms: $('cand_terms').checked, consent_data: $('cand_data').checked, photos: cand.photos, answers: reponses }) });
     const rep = await res.json();
     if (!rep.ok) throw new Error(rep.error || 'Envoi refusé');
+    clearInterval(candTimer); $('cp-rempl').style.width = '100%'; $('cp-etape').textContent = 'Terminé ✔';
     $('titre-merci').textContent = 'Merci ' + v.first_name + ' ! 🎉';
     document.querySelector('#ecran-merci .intro').textContent = 'Ta candidature est bien reçue. Tu vas recevoir un email de confirmation.' +
       (cand.config.date_reponses ? ' Les réponses sont prévues à partir du ' + cand.config.date_reponses + '.' : '') +
@@ -1898,7 +1925,7 @@ async function candEnvoyer() {
     aller('merci'); confettis();
   } catch (e) {
     erreur('cand-2', 'Envoi impossible : ' + e.message + '\nRien n’est perdu, tu peux réessayer.');
-  } finally { btn.disabled = false; btn.textContent = 'Envoyer ma candidature 🕊️'; }
+  } finally { btn.disabled = false; btn.textContent = 'Envoyer ma candidature 🕊️'; candProgres(false); }
 }
 </script>
 
