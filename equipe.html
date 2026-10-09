@@ -11,17 +11,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --magenta: #D6248C;
-  --violet: #8E3DA6;
-  --turquoise: #2BB8C4;
-  --corail: #F0663C;
+  /* Palette tirée de l'image « Entre deux mondes » : nuit bleue, turquoise, rose et violet */
+  --magenta: #B5207F;
+  --violet: #6B2C91;
+  --turquoise: #0A7A8F;
+  --turquoise-vif: #1FA8C3;
+  --turquoise-clair: #7FE3E8;
+  --rose-clair: #FFD1EC;
   --or: #E0A93B;
-  --navy: #1C1B3A;
-  --creme: #FFFDF9;
+  --navy: #0B2A47;
+  --creme: #F6F3FB;
   --carte: #FFFFFF;
-  --ligne: rgba(28, 27, 58, 0.12);
-  --doux: rgba(28, 27, 58, 0.62);
-  --erreur: #C43D2B;
+  --ligne: rgba(11, 42, 71, 0.13);
+  --doux: rgba(11, 42, 71, 0.68);
+  --erreur: #B3321F;
   --police-titres: 'Baloo 2', system-ui, sans-serif;
   --police-corps: 'Nunito Sans', system-ui, sans-serif;
 }
@@ -32,45 +35,48 @@ body {
   font-family: var(--police-corps); font-size: 16px; line-height: 1.5;
 }
 button, input { font: inherit; color: inherit; }
-:focus-visible { outline: 3px solid var(--turquoise); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--turquoise-vif); outline-offset: 2px; }
 [hidden] { display: none !important; }
 
 /* ---------- Connexion ---------- */
 #ecran-connexion { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
 .connexion { width: 100%; max-width: 380px; }
-.connexion h1 { font-family: var(--police-titres); font-size: 2.1rem; line-height: 1.1; margin: 0 0 6px; color: var(--magenta); }
+.connexion h1 { font-family: var(--police-titres); font-size: 2.1rem; line-height: 1.1; margin: 0 0 6px; color: var(--violet); }
 .connexion p { margin: 0 0 22px; color: var(--doux); }
 .connexion label { display: block; font-weight: 700; margin-bottom: 6px; }
 .connexion input { width: 100%; padding: 12px 14px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte); }
-.connexion input:focus { border-color: var(--magenta); outline: none; }
+.connexion input:focus { border-color: var(--turquoise-vif); outline: none; }
 .connexion .btn { width: 100%; margin-top: 16px; }
 .message-erreur { color: var(--erreur); font-weight: 700; margin-top: 14px; min-height: 1.5em; }
-.btn { display: inline-block; border: 0; border-radius: 999px; cursor: pointer; font-weight: 700; padding: 12px 24px; background: var(--magenta); color: #fff; }
-.btn:hover { background: #B81D77; }
+.btn { display: inline-block; border: 0; border-radius: 999px; cursor: pointer; font-weight: 700; padding: 12px 24px; background: linear-gradient(100deg, var(--magenta), var(--violet)); color: #fff; }
+.btn:hover { filter: brightness(1.12); }
 .btn[disabled] { opacity: .6; cursor: wait; }
 .btn-doux { background: transparent; color: var(--navy); border: 2px solid var(--ligne); padding: 8px 16px; }
-.btn-doux:hover { background: rgba(28, 27, 58, 0.06); }
+.btn-doux:hover { background: rgba(11, 42, 71, 0.07); filter: none; }
 
 /* ---------- Structure : menu à gauche, contenu à droite ---------- */
 .app { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100vh; padding-top: env(safe-area-inset-top, 0px); }
 .menu {
   position: sticky; top: 0; align-self: start; height: 100vh; display: flex; flex-direction: column;
-  padding: 22px 14px 16px; border-right: 1px solid var(--ligne); background: #FFF8FB; overflow: hidden;
+  padding: 22px 14px 16px; background: linear-gradient(180deg, #0B2A47 0%, #153A68 55%, #3A2A73 100%); color: #fff; overflow: hidden;
 }
 .marque { text-align: center; padding: 0 6px 18px; }
 .marque img { max-width: 100%; max-height: 92px; object-fit: contain; }
-.marque .nom { font-family: var(--police-titres); font-weight: 700; font-size: 1.35rem; line-height: 1.05; color: var(--magenta); }
-.marque .edition { display: block; font-family: var(--police-titres); font-weight: 500; font-size: 1.05rem; color: var(--magenta); margin-top: 2px; }
+.marque .nom { font-family: var(--police-titres); font-weight: 700; font-size: 1.35rem; line-height: 1.05; color: var(--rose-clair); }
+.marque .edition { display: block; font-family: var(--police-titres); font-weight: 500; font-size: 1.05rem; color: var(--turquoise-clair); margin-top: 2px; }
 .menu nav { display: grid; gap: 4px; }
 .menu nav button, .menu nav a {
   display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; text-decoration: none; cursor: pointer;
-  border: 0; background: transparent; border-radius: 12px; padding: 10px 12px; font-weight: 600; color: var(--navy);
+  border: 0; background: transparent; border-radius: 12px; padding: 10px 12px; font-weight: 600; color: #fff;
 }
-.menu nav button:hover, .menu nav a:hover { background: rgba(214, 36, 140, 0.07); }
-.menu nav button[aria-current="page"] { background: rgba(214, 36, 140, 0.12); color: var(--magenta); }
+.menu nav button:hover, .menu nav a:hover { background: rgba(255, 255, 255, 0.12); }
+.menu nav button[aria-current="page"] { background: rgba(127, 227, 232, 0.2); color: var(--turquoise-clair); box-shadow: inset 3px 0 0 var(--turquoise-clair); }
 .menu svg { width: 20px; height: 20px; flex: none; }
 .menu .bas { margin-top: auto; display: grid; gap: 8px; }
-.menu .bas .btn-doux { width: 100%; }
+.menu .bas .btn-doux { width: 100%; color: #fff; border-color: rgba(255, 255, 255, 0.4); }
+.menu .bas .btn-doux:hover { background: rgba(255, 255, 255, 0.14); }
+.version { font-size: .78rem; text-align: center; color: rgba(255, 255, 255, 0.75); }
+.version.alerte-version { color: #FFC2B5; font-weight: 700; }
 
 main { padding: 0 0 40px; min-width: 0; }
 .page { padding: 26px 28px 0; max-width: 1080px; }
@@ -78,20 +84,21 @@ main { padding: 0 0 40px; min-width: 0; }
 /* ---------- Accueil ---------- */
 .hero {
   position: relative; min-height: 230px; display: grid; place-items: center; padding: 28px 20px 70px;
-  background: linear-gradient(110deg, #F7A8D4, #C79BE0 55%, #8FDDE4); background-size: cover; background-position: center;
+  background: linear-gradient(120deg, #0B2A47, #2D3F7C 50%, #6B2C91); background-size: cover; background-position: center;
 }
 .hero .titre {
-  background: rgba(255, 253, 249, 0.86); border-radius: 18px; padding: 14px 30px; text-align: center; max-width: 100%;
+  background: rgba(11, 42, 71, 0.62); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 18px; padding: 14px 32px; text-align: center; max-width: 100%;
 }
-.hero h1 { font-family: var(--police-titres); font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.05; margin: 0; color: var(--magenta); }
-.hero .sous { margin: 2px 0 0; color: var(--navy); font-weight: 600; }
+.hero h1 { font-family: var(--police-titres); font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.05; margin: 0; color: #fff; }
+.hero .sous { margin: 2px 0 0; color: var(--turquoise-clair); font-weight: 700; }
 .totaux { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: -50px 28px 0; position: relative; max-width: 1024px; }
 .total {
   background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 16px 18px;
   display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center; text-align: left; cursor: pointer;
   box-shadow: 0 6px 18px rgba(28, 27, 58, 0.08);
 }
-.total:hover { border-color: var(--magenta); }
+.total:hover { border-color: var(--turquoise-vif); }
 .total .pastille { grid-row: 1 / 3; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: #fff; }
 .total .pastille svg { width: 26px; height: 26px; }
 .total .libelle { font-weight: 700; }
@@ -108,18 +115,18 @@ main { padding: 0 0 40px; min-width: 0; }
 
 /* ---------- Candidatures ---------- */
 .titre-page { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-.titre-page .rond { width: 54px; height: 54px; border-radius: 50%; background: var(--magenta); color: #fff; display: grid; place-items: center; flex: none; }
+.titre-page .rond { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--magenta), var(--violet)); color: #fff; display: grid; place-items: center; flex: none; }
 .titre-page .rond svg { width: 28px; height: 28px; }
 .titre-page h1 { font-family: var(--police-titres); font-size: 2rem; line-height: 1.05; margin: 0; }
 .titre-page p { margin: 0; color: var(--doux); }
 .outils { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 14px; }
 .recherche { flex: 1 1 260px; padding: 11px 14px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte); }
-.recherche:focus { border-color: var(--magenta); outline: none; }
+.recherche:focus { border-color: var(--turquoise-vif); outline: none; }
 .groupe-filtres { margin-bottom: 12px; }
 .groupe-filtres .etiquette { display: block; font-weight: 700; font-size: .9rem; color: var(--doux); margin-bottom: 6px; }
 .filtres { display: flex; flex-wrap: wrap; gap: 8px; }
 .filtre { border: 2px solid var(--ligne); background: var(--carte); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600; }
-.filtre[aria-pressed="true"] { background: var(--magenta); border-color: var(--magenta); color: #fff; }
+.filtre[aria-pressed="true"] { background: linear-gradient(100deg, var(--magenta), var(--violet)); border-color: transparent; color: #fff; }
 .filtre.statut[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); }
 .filtre .n { opacity: .7; margin-left: 5px; font-weight: 400; }
 .compte { color: var(--doux); font-size: .92rem; margin: 6px 0 10px; }
@@ -132,23 +139,29 @@ main { padding: 0 0 40px; min-width: 0; }
 .meta { color: var(--doux); font-size: .92rem; overflow-wrap: anywhere; }
 .puces { display: flex; flex-wrap: wrap; gap: 6px; }
 .puce { font-size: .8rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: rgba(28,27,58,.08); }
-.puce.selection-accepte { background: rgba(43,184,196,.22); }
-.puce.selection-attente { background: rgba(224,169,59,.28); }
-.puce.selection-refuse { background: rgba(196,61,43,.16); }
+.puce.selection-accepte { background: #D6F4F6; color: #06505E; }
+.puce.selection-attente { background: #FBEFD2; color: #6B4A08; }
+.puce.selection-refuse { background: #FFE1DC; color: #8A2314; }
 .liens { display: flex; gap: 8px; flex-wrap: wrap; }
 .liens a { text-decoration: none; font-weight: 700; font-size: .9rem; padding: 6px 14px; border-radius: 999px; border: 2px solid var(--turquoise); color: var(--navy); }
-.liens a:hover { background: rgba(43,184,196,.16); }
+.liens a:hover { background: rgba(31,168,195,.16); }
 .alerte { grid-column: 1 / -1; color: var(--erreur); font-weight: 700; font-size: .9rem; }
 .vide { text-align: center; color: var(--doux); padding: 40px 12px; }
 
 /* ---------- Fiche d'une candidature ---------- */
 .retour { border: 0; background: none; cursor: pointer; color: var(--violet); font-weight: 700; padding: 0; margin-bottom: 14px; }
 .retour:hover { text-decoration: underline; }
-.detail-entete h1 { font-family: var(--police-titres); font-size: 2.1rem; line-height: 1.05; margin: 0 0 8px; overflow-wrap: anywhere; }
-.detail-entete .puces { margin-bottom: 6px; }
+.detail-entete h1 { font-family: var(--police-titres); font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.05; margin: 0 0 10px; overflow-wrap: anywhere; }
+.detail-entete .puces { margin-bottom: 8px; gap: 10px; }
+.detail-entete .puce { font-family: var(--police-titres); font-size: 1.35rem; font-weight: 600; padding: 6px 22px; }
+.champs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.champ { background: var(--creme); border: 1px solid var(--ligne); border-radius: 14px; padding: 12px 16px; }
+.champ.large { grid-column: 1 / -1; }
+.champ .q { font-size: .85rem; font-weight: 700; color: var(--violet); margin-bottom: 4px; }
+.champ .v { white-space: pre-wrap; overflow-wrap: anywhere; }
 .mode { display: inline-block; font-weight: 700; font-size: .85rem; padding: 4px 12px; border-radius: 999px; margin: 8px 0 4px; }
-.mode.test { background: rgba(224,169,59,.28); }
-.mode.reel { background: rgba(196,61,43,.16); color: var(--erreur); }
+.mode.test { background: #FBEFD2; color: #6B4A08; }
+.mode.reel { background: #FFE1DC; color: var(--erreur); }
 .carte { background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 18px 20px; margin-top: 16px; }
 .carte h2 { font-family: var(--police-titres); font-size: 1.25rem; margin: 0 0 10px; }
 .grille-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
@@ -165,12 +178,12 @@ main { padding: 0 0 40px; min-width: 0; }
 .autres-statuts label { display: block; font-weight: 700; font-size: .9rem; color: var(--doux); margin-bottom: 4px; }
 .autres-statuts select { width: 100%; padding: 9px 12px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte); }
 .message { margin-top: 12px; font-weight: 700; min-height: 1.4em; }
-.message.ok { color: #1E7F6B; }
+.message.ok { color: #0A6B5E; }
 .message.ko { color: var(--erreur); }
 .email-pret .ligne-mail { margin: 0 0 4px; overflow-wrap: anywhere; }
 .email-pret .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
-.btn-ouvrir { background: var(--violet); }
-.btn-ouvrir:hover { background: #742F88; }
+.btn-ouvrir { background: var(--turquoise); }
+.btn-ouvrir:hover { filter: brightness(1.15); }
 .liens .btn-ouvrir { border: 0; color: #fff; padding: 7px 16px; font-size: .9rem; }
 
 @media (max-width: 900px) {
@@ -217,6 +230,7 @@ main { padding: 0 0 40px; min-width: 0; }
       </a>
     </nav>
     <div class="bas">
+      <div class="version" id="version"></div>
       <button class="btn btn-doux" type="button" id="btn-actualiser">Actualiser</button>
       <button class="btn btn-doux" type="button" id="btn-deconnexion">Se déconnecter</button>
     </div>
@@ -259,14 +273,15 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpI
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 const ORDRE_POLES = ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'];
 const COULEURS_POLES = {
-  'Artiste': ['#FBE1F0', '#8A0F55'], 'Atelier': ['#D5F3F6', '#0E6B73'], 'Bien-être': ['#DDF2DC', '#2D6B2A'],
-  'Artisan': ['#FBEBC6', '#7A5410'], "L'Antre deux mondes": ['#E8D9F2', '#5B2273'], 'Stand / Miam Miam': ['#FCDDD2', '#9A3516']
+  'Artiste': ['#FFE3F2', '#7A0F52'], 'Atelier': ['#D6F4F6', '#06505E'], 'Bien-être': ['#DDF2E4', '#1F5E3A'],
+  'Artisan': ['#FBEFD2', '#6B4A08'], "L'Antre deux mondes": ['#E9DDF5', '#4B1E6B'], 'Stand / Miam Miam': ['#FFE1D6', '#8A3012']
 };
 const $ = (id) => document.getElementById(id);
 let jeton = '';
 let items = [];
 let config = {};
 let vue = 'accueil';
+let versionServeur = '';
 let filtreCategorie = 'Toutes';
 let filtreStatut = 'Tous';
 
@@ -327,6 +342,7 @@ async function charger() {
     if (!r.ok) throw new Error(r.error || 'Erreur');
     items = r.items || [];
     config = r.config || {};
+    versionServeur = r.version || '';
     $('ecran-connexion').hidden = true;
     $('app').hidden = false;
     habiller();
@@ -354,6 +370,9 @@ function habiller() {
   } else {
     marque.appendChild(texteMarque());
   }
+  const v = $('version');
+  v.className = 'version' + (versionServeur ? '' : ' alerte-version');
+  v.textContent = versionServeur ? 'Serveur ' + versionServeur : "Serveur pas à jour : Deploy > Manage deployments > New version";
   $('hero-titre').textContent = config.edition || 'Mantra Joie 2027';
   const image = imageSure(config.image);
   $('hero').style.backgroundImage = image ? 'url("' + image.replace(/"/g, '%22') + '")' : '';
@@ -633,7 +652,16 @@ function dessinerDetail(d, listes, mode) {
   cc.appendChild(dl); zone.appendChild(cc);
 
   // Réponses
-  if (d.reponses) { const cr = carte('Réponses au formulaire'); cr.appendChild(el('p', 'reponses', d.reponses)); zone.appendChild(cr); }
+  if ((d.champs || []).length) {
+    const cr = carte('Réponses au formulaire');
+    const grille = el('div', 'champs');
+    d.champs.forEach((c) => {
+      const b = el('div', 'champ' + (c.value.length > 90 || c.value.indexOf('\n') >= 0 ? ' large' : ''));
+      b.appendChild(el('div', 'q', c.label)); b.appendChild(el('div', 'v', c.value));
+      grille.appendChild(b);
+    });
+    cr.appendChild(grille); zone.appendChild(cr);
+  } else if (d.reponses) { const cr = carte('Réponses au formulaire'); cr.appendChild(el('p', 'reponses', d.reponses)); zone.appendChild(cr); }
 
   // Statuts
   const cs = carte('Suivi');
