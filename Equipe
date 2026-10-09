@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Espace équipe - Mantra Joie 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --magenta: #D6248C;
+  --violet: #8E3DA6;
+  --turquoise: #2BB8C4;
+  --corail: #F0663C;
+  --or: #E0A93B;
+  --navy: #1C1B3A;
+  --creme: #FFFDF9;
+  --carte: #FFFFFF;
+  --ligne: rgba(28, 27, 58, 0.12);
+  --doux: rgba(28, 27, 58, 0.62);
+  --erreur: #C43D2B;
+  --police-titres: 'Baloo 2', system-ui, sans-serif;
+  --police-corps: 'Nunito Sans', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--creme); color: var(--navy);
+  font-family: var(--police-corps); font-size: 16px; line-height: 1.5;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--turquoise); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+/* ---------- Connexion ---------- */
+#ecran-connexion { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.connexion { width: 100%; max-width: 380px; }
+.connexion h1 { font-family: var(--police-titres); font-size: 2.1rem; line-height: 1.1; margin: 0 0 6px; color: var(--magenta); }
+.connexion p { margin: 0 0 22px; color: var(--doux); }
+.connexion label { display: block; font-weight: 700; margin-bottom: 6px; }
+.connexion input {
+  width: 100%; padding: 12px 14px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte);
+}
+.connexion input:focus { border-color: var(--magenta); outline: none; }
+.btn {
+  display: inline-block; border: 0; border-radius: 999px; cursor: pointer; font-weight: 700;
+  padding: 12px 24px; background: var(--magenta); color: #fff;
+}
+.btn:hover { background: #B81D77; }
+.btn[disabled] { opacity: .6; cursor: wait; }
+.btn-doux { background: transparent; color: var(--navy); border: 2px solid var(--ligne); padding: 8px 16px; }
+.btn-doux:hover { background: rgba(28, 27, 58, 0.06); }
+.connexion .btn { width: 100%; margin-top: 16px; }
+.message-erreur { color: var(--erreur); font-weight: 700; margin-top: 14px; min-height: 1.5em; }
+
+/* ---------- En-tête ---------- */
+header.haut {
+  background: linear-gradient(100deg, var(--magenta), var(--violet));
+  color: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+header.haut h1 { font-family: var(--police-titres); font-size: 1.4rem; margin: 0; line-height: 1.1; }
+header.haut small { display: block; font-family: var(--police-corps); font-size: .85rem; opacity: .9; font-weight: 400; }
+header.haut .btn-doux { color: #fff; border-color: rgba(255,255,255,.55); }
+header.haut .btn-doux:hover { background: rgba(255,255,255,.16); }
+
+main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+/* ---------- Outils ---------- */
+.outils { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+.recherche {
+  flex: 1 1 260px; padding: 11px 14px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte);
+}
+.recherche:focus { border-color: var(--magenta); outline: none; }
+.filtres { display: flex; flex-wrap: wrap; gap: 8px; }
+.filtre {
+  border: 2px solid var(--ligne); background: var(--carte); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600;
+}
+.filtre[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
+.filtre .n { opacity: .65; margin-left: 4px; font-weight: 400; }
+
+/* ---------- Liste ---------- */
+.liste { display: grid; gap: 10px; }
+.ligne {
+  background: var(--carte); border: 1px solid var(--ligne); border-radius: 14px; padding: 14px 16px;
+  display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr) minmax(0, 1.6fr) auto; gap: 8px 16px; align-items: center;
+}
+.ligne .projet { font-family: var(--police-titres); font-weight: 600; font-size: 1.15rem; line-height: 1.2; overflow-wrap: anywhere; }
+.ligne .meta { color: var(--doux); font-size: .92rem; overflow-wrap: anywhere; }
+.puces { display: flex; flex-wrap: wrap; gap: 6px; }
+.puce { font-size: .8rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: rgba(28,27,58,.08); }
+.puce.selection-accepte { background: rgba(43,184,196,.22); }
+.puce.selection-attente { background: rgba(224,169,59,.28); }
+.puce.selection-refuse { background: rgba(196,61,43,.16); }
+.puce.pole { background: rgba(142,61,166,.14); }
+.liens { display: flex; gap: 8px; flex-wrap: wrap; }
+.liens a {
+  text-decoration: none; font-weight: 700; font-size: .9rem; padding: 6px 14px; border-radius: 999px;
+  border: 2px solid var(--turquoise); color: var(--navy);
+}
+.liens a:hover { background: rgba(43,184,196,.16); }
+.alerte { grid-column: 1 / -1; color: var(--erreur); font-weight: 700; font-size: .9rem; }
+.vide { text-align: center; color: var(--doux); padding: 40px 12px; }
+.compte { color: var(--doux); font-size: .92rem; margin: 0 0 10px; }
+
+@media (max-width: 760px) {
+  .ligne { grid-template-columns: 1fr; }
+  main { padding: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<section id="ecran-connexion">
+  <form class="connexion" id="form-connexion" autocomplete="off">
+    <h1>Espace équipe</h1>
+    <p>Mantra Joie 2027. Entre le mot de passe de l'équipe pour voir les candidatures.</p>
+    <label for="mot-de-passe">Mot de passe</label>
+    <input id="mot-de-passe" type="password" autocomplete="current-password" required>
+    <button class="btn" type="submit" id="btn-connexion">Se connecter</button>
+    <div class="message-erreur" id="erreur-connexion" role="alert"></div>
+  </form>
+</section>
+
+<section id="ecran-liste" hidden>
+  <header class="haut">
+    <h1>Espace équipe<small>Mantra Joie 2027</small></h1>
+    <button class="btn btn-doux" type="button" id="btn-deconnexion">Se déconnecter</button>
+  </header>
+  <main>
+    <div class="outils">
+      <input class="recherche" id="recherche" type="search" placeholder="Chercher un projet, un nom, un email" aria-label="Chercher">
+      <button class="btn btn-doux" type="button" id="btn-actualiser">Actualiser</button>
+    </div>
+    <div class="filtres" id="filtres" role="group" aria-label="Filtrer par sélection" style="margin-bottom:16px"></div>
+    <p class="compte" id="compte"></p>
+    <div class="liste" id="liste"></div>
+  </main>
+</section>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec';
+const FILTRES = ['Tous', 'À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
+const $ = (id) => document.getElementById(id);
+let jeton = '';
+let items = [];
+let filtreActif = 'Tous';
+
+try { jeton = sessionStorage.getItem('equipe_jeton') || ''; } catch (e) { jeton = ''; }
+
+async function appel(corps) {
+  const reponse = await fetch(SCRIPT_URL, {
+    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ kind: 'team' }, corps))
+  });
+  return reponse.json();
+}
+
+function montrer(ecran) {
+  $('ecran-connexion').hidden = ecran !== 'connexion';
+  $('ecran-liste').hidden = ecran !== 'liste';
+  if (ecran === 'connexion') $('mot-de-passe').focus();
+}
+
+function oublierJeton() {
+  jeton = '';
+  try { sessionStorage.removeItem('equipe_jeton'); } catch (e) { /* stockage indisponible */ }
+}
+
+$('form-connexion').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const bouton = $('btn-connexion');
+  const erreur = $('erreur-connexion');
+  erreur.textContent = '';
+  bouton.disabled = true;
+  bouton.textContent = 'Connexion en cours';
+  try {
+    const r = await appel({ op: 'login', password: $('mot-de-passe').value });
+    if (r.ok && r.token) {
+      jeton = r.token;
+      try { sessionStorage.setItem('equipe_jeton', jeton); } catch (err) { /* stockage indisponible */ }
+      $('mot-de-passe').value = '';
+      await charger();
+    } else {
+      erreur.textContent = r.error || 'Connexion impossible.';
+    }
+  } catch (err) {
+    erreur.textContent = 'Le serveur ne répond pas. Vérifie ta connexion et réessaie.';
+  } finally {
+    bouton.disabled = false;
+    bouton.textContent = 'Se connecter';
+  }
+});
+
+$('btn-deconnexion').addEventListener('click', () => { oublierJeton(); items = []; montrer('connexion'); });
+$('btn-actualiser').addEventListener('click', () => charger());
+$('recherche').addEventListener('input', dessiner);
+
+async function charger() {
+  try {
+    const r = await appel({ op: 'list', token: jeton });
+    if (r.auth === false) {
+      oublierJeton();
+      montrer('connexion');
+      $('erreur-connexion').textContent = r.error || 'Session expirée. Reconnecte-toi.';
+      return;
+    }
+    if (!r.ok) throw new Error(r.error || 'Erreur');
+    items = r.items || [];
+    montrer('liste');
+    dessiner();
+  } catch (err) {
+    montrer('connexion');
+    $('erreur-connexion').textContent = 'Impossible de charger la liste. Réessaie dans un instant.';
+  }
+}
+
+function normaliser(s) {
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function statutDe(item) { return item.selection || 'À étudier'; }
+
+function classeSelection(statut) {
+  if (statut === 'Accepté') return 'selection-accepte';
+  if (statut === "Liste d'attente") return 'selection-attente';
+  if (statut === 'Refusé') return 'selection-refuse';
+  return '';
+}
+
+function lienSur(url, texte) {
+  if (!/^https:\/\/(drive|docs)\.google\.com\//.test(String(url || ''))) return null;
+  const a = document.createElement('a');
+  a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = texte;
+  return a;
+}
+
+function puce(texte, classe) {
+  const s = document.createElement('span');
+  s.className = 'puce' + (classe ? ' ' + classe : '');
+  s.textContent = texte;
+  return s;
+}
+
+function dessinerFiltres() {
+  const zone = $('filtres');
+  zone.innerHTML = '';
+  FILTRES.forEach((nom) => {
+    const n = nom === 'Tous' ? items.length : items.filter((i) => statutDe(i) === nom).length;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'filtre'; b.setAttribute('aria-pressed', String(nom === filtreActif));
+    b.appendChild(document.createTextNode(nom));
+    const c = document.createElement('span'); c.className = 'n'; c.textContent = String(n); b.appendChild(c);
+    b.addEventListener('click', () => { filtreActif = nom; dessiner(); });
+    zone.appendChild(b);
+  });
+}
+
+function dessiner() {
+  dessinerFiltres();
+  const mot = normaliser($('recherche').value);
+  const visibles = items.filter((i) => {
+    if (filtreActif !== 'Tous' && statutDe(i) !== filtreActif) return false;
+    if (!mot) return true;
+    return normaliser([i.projet, i.prenom, i.nom, i.email, i.pole].join(' ')).indexOf(mot) >= 0;
+  });
+  $('compte').textContent = visibles.length + ' candidature' + (visibles.length > 1 ? 's' : '') + ' sur ' + items.length;
+  const liste = $('liste');
+  liste.innerHTML = '';
+  if (!visibles.length) {
+    const v = document.createElement('div');
+    v.className = 'vide';
+    v.textContent = items.length ? 'Aucune candidature ne correspond. Change le filtre ou la recherche.' : "Aucune candidature pour l'instant.";
+    liste.appendChild(v);
+    return;
+  }
+  visibles.forEach((i) => {
+    const ligne = document.createElement('article');
+    ligne.className = 'ligne';
+
+    const c1 = document.createElement('div');
+    const projet = document.createElement('div'); projet.className = 'projet'; projet.textContent = i.projet;
+    const qui = document.createElement('div'); qui.className = 'meta'; qui.textContent = i.prenom + ' ' + i.nom + ' - ' + i.email;
+    c1.appendChild(projet); c1.appendChild(qui);
+
+    const c2 = document.createElement('div');
+    const puces2 = document.createElement('div'); puces2.className = 'puces';
+    puces2.appendChild(puce(i.pole, 'pole'));
+    if (i.formule === 'Duo') puces2.appendChild(puce('Duo'));
+    c2.appendChild(puces2);
+    const date = document.createElement('div'); date.className = 'meta'; date.textContent = 'Reçue le ' + i.date;
+    c2.appendChild(date);
+
+    const c3 = document.createElement('div'); c3.className = 'puces';
+    const statut = statutDe(i);
+    c3.appendChild(puce(statut, classeSelection(statut)));
+    if (i.dossier_final) c3.appendChild(puce('Dossier final : ' + i.dossier_final));
+    if (i.paiement && i.paiement !== 'Non concerné') c3.appendChild(puce('Paiement : ' + i.paiement));
+    if (i.confirmation) c3.appendChild(puce(i.confirmation));
+
+    const c4 = document.createElement('div'); c4.className = 'liens';
+    const fiche = lienSur(i.fiche, 'Fiche'); if (fiche) c4.appendChild(fiche);
+    const dossier = lienSur(i.dossier, 'Dossier'); if (dossier) c4.appendChild(dossier);
+
+    ligne.appendChild(c1); ligne.appendChild(c2); ligne.appendChild(c3); ligne.appendChild(c4);
+    if (i.alerte) { const a = document.createElement('div'); a.className = 'alerte'; a.textContent = i.alerte; ligne.appendChild(a); }
+    liste.appendChild(ligne);
+  });
+}
+
+if (jeton) { charger(); } else { montrer('connexion'); }
+</script>
+</body>
+</html>
