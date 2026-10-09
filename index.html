@@ -813,7 +813,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.8-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.9-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
@@ -1673,8 +1673,8 @@ const CAND_POLE = {
     { k: 'sells', l: 'Que proposes-tu précisément à la vente sur ton stand ?', t: 'a', r: 1 },
     { k: 'origin', l: 'Ces produits sont…', t: 'chips', multi: 1, o: ['Conçus par moi', 'Fabriqués par moi', 'Fabriqués par des artisans ou ateliers partenaires', 'Issus en partie d’achat-revente'], r: 1, n: 'Plusieurs choix possibles.' },
     { k: 'process', l: 'Ta démarche de conception et de fabrication', t: 'a', n: 'Précise l’origine de ce qui est acheté pour la revente, si c’est le cas.' },
-    { k: 'stand', l: 'Stand individuel ou duo ?', t: 'chips', o: ['Individuel', 'Duo'], r: 1 },
-    { k: 'duo_names', l: 'Nom et activité des deux exposants', t: 't', r: 1, si: ['stand', 'Duo'] }
+    { k: 'stand', l: 'Combien de personnes seront sur le stand ?', t: 'chips', o: ['Individuel (1 personne)', 'Duo (2 personnes)'], r: 1 },
+    { k: 'duo_names', l: 'Nom et activité des deux exposants', t: 't', r: 1, si: ['stand', 'Duo (2 personnes)'] }
   ].concat(CAND_SURFACE, CAND_ELEC),
   'Bien-être': [
     { k: 'practices', l: 'Pratiques ou prestations proposées', t: 'a', r: 1 },
@@ -1912,7 +1912,7 @@ async function candEnvoyer() {
   try {
     const res = await fetch(CONFIG.scriptUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow',
       body: JSON.stringify({ kind: 'application', submission_id: cand.id, honeypot: $('honeypot').value, pole: cand.pole,
-        formule: v.stand === 'Duo' ? 'Duo' : 'Individuel', name: v.name, first_name: v.first_name, last_name: v.last_name,
+        formule: v.stand === 'Duo (2 personnes)' ? 'Duo' : 'Individuel', name: v.name, first_name: v.first_name, last_name: v.last_name,
         email: v.email, phone: v.phone, past: v.past, past_years: v.past_years || '',
         consent_terms: $('cand_terms').checked, consent_data: $('cand_data').checked, photos: cand.photos, answers: reponses }) });
     const rep = await res.json();
