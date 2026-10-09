@@ -442,6 +442,11 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
         <div class="nav-etapes"><button class="btn btn-retour" onclick="annulerPortrait()">Annuler</button><button class="btn btn-avant" onclick="garderPortrait()">Valider le portrait</button></div>
       </div>
       <div class="message-erreur" id="erreur-benevole"></div>
+      <div class="cand-progress" id="vol-progress" role="status" aria-live="polite">
+        <div class="cp-titre">⏳ Envoi en cours : ne ferme pas cette page</div>
+        <div class="cp-barre"><div class="cp-remplissage" id="vp-rempl"></div></div>
+        <div class="cp-etape" id="vp-etape"></div>
+      </div>
       <div class="nav-etapes"><button class="btn btn-retour" onclick="aller(0)">Retour</button><button class="btn btn-avant" id="btn-benevole" onclick="envoyerBenevole()">Envoyer ma candidature 💛</button></div>
     </section>
 
@@ -1566,6 +1571,21 @@ async function lireTechnique() {
   }
   return t;
 }
+let volTimer = null;
+function volProgres(actif) {
+  const boite = $('vol-progress'), rempl = $('vp-rempl'), etape = $('vp-etape');
+  clearInterval(volTimer);
+  if (!actif) { boite.style.display = 'none'; return; }
+  boite.style.display = 'block'; rempl.style.width = '4%'; etape.textContent = 'Envoi de ton portrait et de tes réponses…';
+  boite.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const debut = Date.now();
+  volTimer = setInterval(() => {
+    const t = (Date.now() - debut) / 1000;
+    const pct = Math.round(92 * (1 - Math.exp(-t / 14)));
+    rempl.style.width = pct + '%';
+    etape.textContent = pct < 25 ? 'Envoi de ton portrait et de tes réponses…' : pct < 60 ? 'Enregistrement de ta candidature…' : 'Création de ta fiche… (cela peut prendre une minute)';
+  }, 500);
+}
 async function envoyerBenevole() {
   const v = id => valeur(id), teams = Array.from(document.querySelectorAll('.vol-team:checked')).map(e => e.value);
   if ($('vol-portrait').files[0] && !volunteerPortrait.portraitData)
@@ -1573,7 +1593,7 @@ async function envoyerBenevole() {
   if (!/^\S+@\S+\.\S+$/.test(v('vol_email')) || !v('vol_last_name') || !v('vol_first_name') || !v('vol_phone') || !v('vol_motivation') || teams.length !== 2)
     return erreur('benevole', 'Remplis tous les champs et choisis exactement deux pôles.');
   if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur('benevole', 'Le nouveau script doit être déployé avant le premier envoi.');
-  const btn = $('btn-benevole'); btn.disabled = true; btn.textContent = 'Envoi en cours… Garde cette page ouverte.';
+  const btn = $('btn-benevole'); btn.disabled = true; btn.textContent = 'Envoi en cours… Garde cette page ouverte.'; volProgres(true);
   try {
     const res = await fetch(CONFIG.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({
       kind:'volunteer', submission_id:submissionIds.volunteer, access_code:CONFIG.code, honeypot:$('honeypot').value, email:v('vol_email'),
@@ -1583,11 +1603,12 @@ async function envoyerBenevole() {
     const rep = await res.json();
     if (!rep.ok) throw new Error(rep.error || 'Envoi refusé');
     if (rep.version !== CONFIG.version || !rep.folder_url || !rep.document_url) throw new Error('Ancienne version du script Google : mets à jour et redéploie Code.gs, puis réessaie.');
+    clearInterval(volTimer); $('vp-rempl').style.width = '100%'; $('vp-etape').textContent = 'Terminé ✔';
     $('titre-merci').textContent = `Merci ${v('vol_first_name')} ! 🎉`;
     document.querySelector('#ecran-merci .intro').textContent = 'Ta candidature bénévole a bien été reçue. Elle nous aidera à préparer l’équipe et le festival.';
     aller('merci'); confettis();
   } catch(e) { erreur('benevole', 'Envoi impossible : ' + e.message); }
-  finally { btn.disabled = false; btn.textContent = 'Envoyer ma candidature 💛'; }
+  finally { btn.disabled = false; btn.textContent = 'Envoyer ma candidature 💛'; volProgres(false); }
 }
 
 // ------------------ Confettis (vanilla, zero librairie) ------------------
