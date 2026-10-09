@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<title>Espace équipe - Mantra Joie 2027</title>
+<title>Portail Festival - Mantra Joie 2027</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -30,7 +30,6 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--creme); color: var(--navy);
   font-family: var(--police-corps); font-size: 16px; line-height: 1.5;
-  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 button, input { font: inherit; color: inherit; }
 :focus-visible { outline: 3px solid var(--turquoise); outline-offset: 2px; }
@@ -42,73 +41,118 @@ button, input { font: inherit; color: inherit; }
 .connexion h1 { font-family: var(--police-titres); font-size: 2.1rem; line-height: 1.1; margin: 0 0 6px; color: var(--magenta); }
 .connexion p { margin: 0 0 22px; color: var(--doux); }
 .connexion label { display: block; font-weight: 700; margin-bottom: 6px; }
-.connexion input {
-  width: 100%; padding: 12px 14px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte);
-}
+.connexion input { width: 100%; padding: 12px 14px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte); }
 .connexion input:focus { border-color: var(--magenta); outline: none; }
-.btn {
-  display: inline-block; border: 0; border-radius: 999px; cursor: pointer; font-weight: 700;
-  padding: 12px 24px; background: var(--magenta); color: #fff;
-}
+.connexion .btn { width: 100%; margin-top: 16px; }
+.message-erreur { color: var(--erreur); font-weight: 700; margin-top: 14px; min-height: 1.5em; }
+.btn { display: inline-block; border: 0; border-radius: 999px; cursor: pointer; font-weight: 700; padding: 12px 24px; background: var(--magenta); color: #fff; }
 .btn:hover { background: #B81D77; }
 .btn[disabled] { opacity: .6; cursor: wait; }
 .btn-doux { background: transparent; color: var(--navy); border: 2px solid var(--ligne); padding: 8px 16px; }
 .btn-doux:hover { background: rgba(28, 27, 58, 0.06); }
-.connexion .btn { width: 100%; margin-top: 16px; }
-.message-erreur { color: var(--erreur); font-weight: 700; margin-top: 14px; min-height: 1.5em; }
 
-/* ---------- En-tête ---------- */
-header.haut {
-  background: linear-gradient(100deg, var(--magenta), var(--violet));
-  color: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+/* ---------- Structure : menu à gauche, contenu à droite ---------- */
+.app { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100vh; padding-top: env(safe-area-inset-top, 0px); }
+.menu {
+  position: sticky; top: 0; align-self: start; height: 100vh; display: flex; flex-direction: column;
+  padding: 22px 14px 16px; border-right: 1px solid var(--ligne); background: #FFF8FB; overflow: hidden;
 }
-header.haut h1 { font-family: var(--police-titres); font-size: 1.4rem; margin: 0; line-height: 1.1; }
-header.haut small { display: block; font-family: var(--police-corps); font-size: .85rem; opacity: .9; font-weight: 400; }
-header.haut .btn-doux { color: #fff; border-color: rgba(255,255,255,.55); }
-header.haut .btn-doux:hover { background: rgba(255,255,255,.16); }
-
-main { max-width: 1100px; margin: 0 auto; padding: 20px; }
-
-/* ---------- Outils ---------- */
-.outils { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
-.recherche {
-  flex: 1 1 260px; padding: 11px 14px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte);
+.marque { text-align: center; padding: 0 6px 18px; }
+.marque img { max-width: 100%; max-height: 92px; object-fit: contain; }
+.marque .nom { font-family: var(--police-titres); font-weight: 700; font-size: 1.35rem; line-height: 1.05; color: var(--magenta); }
+.marque .edition { display: block; font-family: var(--police-titres); font-weight: 500; font-size: 1.05rem; color: var(--magenta); margin-top: 2px; }
+.menu nav { display: grid; gap: 4px; }
+.menu nav button, .menu nav a {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; text-decoration: none; cursor: pointer;
+  border: 0; background: transparent; border-radius: 12px; padding: 10px 12px; font-weight: 600; color: var(--navy);
 }
+.menu nav button:hover, .menu nav a:hover { background: rgba(214, 36, 140, 0.07); }
+.menu nav button[aria-current="page"] { background: rgba(214, 36, 140, 0.12); color: var(--magenta); }
+.menu svg { width: 20px; height: 20px; flex: none; }
+.menu .bas { margin-top: auto; display: grid; gap: 8px; }
+.menu .bas .btn-doux { width: 100%; }
+
+main { padding: 0 0 40px; min-width: 0; }
+.page { padding: 26px 28px 0; max-width: 1080px; }
+
+/* ---------- Accueil ---------- */
+.hero {
+  position: relative; min-height: 230px; display: grid; place-items: center; padding: 28px 20px 70px;
+  background: linear-gradient(110deg, #F7A8D4, #C79BE0 55%, #8FDDE4); background-size: cover; background-position: center;
+}
+.hero .titre {
+  background: rgba(255, 253, 249, 0.86); border-radius: 18px; padding: 14px 30px; text-align: center; max-width: 100%;
+}
+.hero h1 { font-family: var(--police-titres); font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.05; margin: 0; color: var(--magenta); }
+.hero .sous { margin: 2px 0 0; color: var(--navy); font-weight: 600; }
+.totaux { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: -50px 28px 0; position: relative; max-width: 1024px; }
+.total {
+  background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 16px 18px;
+  display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center; text-align: left; cursor: pointer;
+  box-shadow: 0 6px 18px rgba(28, 27, 58, 0.08);
+}
+.total:hover { border-color: var(--magenta); }
+.total .pastille { grid-row: 1 / 3; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: #fff; }
+.total .pastille svg { width: 26px; height: 26px; }
+.total .libelle { font-weight: 700; }
+.total .nombre { font-family: var(--police-titres); font-weight: 700; font-size: 2rem; line-height: 1; }
+.total .lien { grid-column: 1 / -1; color: var(--violet); font-weight: 700; font-size: .9rem; margin-top: 6px; }
+.bloc { margin: 26px 28px 0; max-width: 1024px; background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 18px 20px; }
+.bloc .entete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.bloc h2 { font-family: var(--police-titres); font-size: 1.3rem; margin: 0; }
+.lien-bouton { border: 0; background: none; cursor: pointer; color: var(--violet); font-weight: 700; padding: 4px 0; }
+.lien-bouton:hover { text-decoration: underline; }
+.recent { display: grid; grid-template-columns: minmax(0, 2fr) auto minmax(0, 1.3fr) auto; gap: 10px 16px; align-items: center; padding: 12px 0; border-top: 1px solid var(--ligne); }
+.recent:first-of-type { border-top: 0; }
+.recent .projet { font-weight: 700; overflow-wrap: anywhere; }
+
+/* ---------- Candidatures ---------- */
+.titre-page { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.titre-page .rond { width: 54px; height: 54px; border-radius: 50%; background: var(--magenta); color: #fff; display: grid; place-items: center; flex: none; }
+.titre-page .rond svg { width: 28px; height: 28px; }
+.titre-page h1 { font-family: var(--police-titres); font-size: 2rem; line-height: 1.05; margin: 0; }
+.titre-page p { margin: 0; color: var(--doux); }
+.outils { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 14px; }
+.recherche { flex: 1 1 260px; padding: 11px 14px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte); }
 .recherche:focus { border-color: var(--magenta); outline: none; }
+.groupe-filtres { margin-bottom: 12px; }
+.groupe-filtres .etiquette { display: block; font-weight: 700; font-size: .9rem; color: var(--doux); margin-bottom: 6px; }
 .filtres { display: flex; flex-wrap: wrap; gap: 8px; }
-.filtre {
-  border: 2px solid var(--ligne); background: var(--carte); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600;
-}
-.filtre[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
-.filtre .n { opacity: .65; margin-left: 4px; font-weight: 400; }
-
-/* ---------- Liste ---------- */
+.filtre { border: 2px solid var(--ligne); background: var(--carte); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600; }
+.filtre[aria-pressed="true"] { background: var(--magenta); border-color: var(--magenta); color: #fff; }
+.filtre.statut[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); }
+.filtre .n { opacity: .7; margin-left: 5px; font-weight: 400; }
+.compte { color: var(--doux); font-size: .92rem; margin: 6px 0 10px; }
 .liste { display: grid; gap: 10px; }
 .ligne {
   background: var(--carte); border: 1px solid var(--ligne); border-radius: 14px; padding: 14px 16px;
   display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr) minmax(0, 1.6fr) auto; gap: 8px 16px; align-items: center;
 }
 .ligne .projet { font-family: var(--police-titres); font-weight: 600; font-size: 1.15rem; line-height: 1.2; overflow-wrap: anywhere; }
-.ligne .meta { color: var(--doux); font-size: .92rem; overflow-wrap: anywhere; }
+.meta { color: var(--doux); font-size: .92rem; overflow-wrap: anywhere; }
 .puces { display: flex; flex-wrap: wrap; gap: 6px; }
 .puce { font-size: .8rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: rgba(28,27,58,.08); }
 .puce.selection-accepte { background: rgba(43,184,196,.22); }
 .puce.selection-attente { background: rgba(224,169,59,.28); }
 .puce.selection-refuse { background: rgba(196,61,43,.16); }
-.puce.pole { background: rgba(142,61,166,.14); }
 .liens { display: flex; gap: 8px; flex-wrap: wrap; }
-.liens a {
-  text-decoration: none; font-weight: 700; font-size: .9rem; padding: 6px 14px; border-radius: 999px;
-  border: 2px solid var(--turquoise); color: var(--navy);
-}
+.liens a { text-decoration: none; font-weight: 700; font-size: .9rem; padding: 6px 14px; border-radius: 999px; border: 2px solid var(--turquoise); color: var(--navy); }
 .liens a:hover { background: rgba(43,184,196,.16); }
 .alerte { grid-column: 1 / -1; color: var(--erreur); font-weight: 700; font-size: .9rem; }
 .vide { text-align: center; color: var(--doux); padding: 40px 12px; }
-.compte { color: var(--doux); font-size: .92rem; margin: 0 0 10px; }
 
-@media (max-width: 760px) {
-  .ligne { grid-template-columns: 1fr; }
-  main { padding: 14px; }
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .menu { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 14px; border-right: 0; border-bottom: 1px solid var(--ligne); }
+  .marque { padding: 0; text-align: left; }
+  .marque img { max-height: 44px; }
+  .menu nav { display: flex; flex-wrap: wrap; width: auto; }
+  .menu .bas { margin-top: 0; margin-left: auto; display: flex; }
+  .menu .bas .btn-doux { width: auto; }
+  .page { padding: 18px 14px 0; }
+  .totaux { grid-template-columns: 1fr; margin: -44px 14px 0; }
+  .bloc { margin: 20px 14px 0; }
+  .ligne, .recent { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -117,7 +161,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 20px; }
 
 <section id="ecran-connexion">
   <form class="connexion" id="form-connexion" autocomplete="off">
-    <h1>Espace équipe</h1>
+    <h1>Portail Festival</h1>
     <p>Mantra Joie 2027. Entre le mot de passe de l'équipe pour voir les candidatures.</p>
     <label for="mot-de-passe">Mot de passe</label>
     <input id="mot-de-passe" type="password" autocomplete="current-password" required>
@@ -126,29 +170,69 @@ main { max-width: 1100px; margin: 0 auto; padding: 20px; }
   </form>
 </section>
 
-<section id="ecran-liste" hidden>
-  <header class="haut">
-    <h1>Espace équipe<small>Mantra Joie 2027</small></h1>
-    <button class="btn btn-doux" type="button" id="btn-deconnexion">Se déconnecter</button>
-  </header>
-  <main>
-    <div class="outils">
-      <input class="recherche" id="recherche" type="search" placeholder="Chercher un projet, un nom, un email" aria-label="Chercher">
+<div class="app" id="app" hidden>
+  <aside class="menu">
+    <div class="marque" id="marque"></div>
+    <nav aria-label="Menu du Portail Festival">
+      <button type="button" data-vue="accueil">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Accueil
+      </button>
+      <button type="button" data-vue="candidatures">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>Candidatures
+      </button>
+      <a id="lien-drive" href="#" target="_blank" rel="noopener noreferrer" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Dossiers Drive
+      </a>
+    </nav>
+    <div class="bas">
       <button class="btn btn-doux" type="button" id="btn-actualiser">Actualiser</button>
+      <button class="btn btn-doux" type="button" id="btn-deconnexion">Se déconnecter</button>
     </div>
-    <div class="filtres" id="filtres" role="group" aria-label="Filtrer par sélection" style="margin-bottom:16px"></div>
-    <p class="compte" id="compte"></p>
-    <div class="liste" id="liste"></div>
+  </aside>
+
+  <main>
+    <section id="vue-accueil" hidden>
+      <div class="hero" id="hero">
+        <div class="titre"><h1 id="hero-titre">Mantra Joie 2027</h1><p class="sous">Portail Festival</p></div>
+      </div>
+      <div class="totaux" id="totaux"></div>
+      <div class="bloc">
+        <div class="entete"><h2>Dernières candidatures</h2><button class="lien-bouton" type="button" id="voir-toutes">Voir toutes les candidatures</button></div>
+        <div id="recentes"></div>
+      </div>
+    </section>
+
+    <section id="vue-candidatures" hidden>
+      <div class="page">
+        <div class="titre-page">
+          <div class="rond"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></div>
+          <div><h1>Candidatures</h1><p id="sous-titre">Toutes les candidatures reçues</p></div>
+        </div>
+        <div class="outils"><input class="recherche" id="recherche" type="search" placeholder="Chercher un projet, un nom, un email" aria-label="Chercher"></div>
+        <div class="groupe-filtres"><span class="etiquette">Catégorie</span><div class="filtres" id="filtres-categorie" role="group" aria-label="Filtrer par catégorie"></div></div>
+        <div class="groupe-filtres"><span class="etiquette">Sélection</span><div class="filtres" id="filtres-statut" role="group" aria-label="Filtrer par sélection"></div></div>
+        <p class="compte" id="compte"></p>
+        <div class="liste" id="liste"></div>
+      </div>
+    </section>
   </main>
-</section>
+</div>
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec';
-const FILTRES = ['Tous', 'À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
+const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
+const ORDRE_POLES = ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'];
+const COULEURS_POLES = {
+  'Artiste': ['#FBE1F0', '#8A0F55'], 'Atelier': ['#D5F3F6', '#0E6B73'], 'Bien-être': ['#DDF2DC', '#2D6B2A'],
+  'Artisan': ['#FBEBC6', '#7A5410'], "L'Antre deux mondes": ['#E8D9F2', '#5B2273'], 'Stand / Miam Miam': ['#FCDDD2', '#9A3516']
+};
 const $ = (id) => document.getElementById(id);
 let jeton = '';
 let items = [];
-let filtreActif = 'Tous';
+let config = {};
+let vue = 'accueil';
+let filtreCategorie = 'Toutes';
+let filtreStatut = 'Tous';
 
 try { jeton = sessionStorage.getItem('equipe_jeton') || ''; } catch (e) { jeton = ''; }
 
@@ -159,17 +243,19 @@ async function appel(corps) {
   return reponse.json();
 }
 
-function montrer(ecran) {
-  $('ecran-connexion').hidden = ecran !== 'connexion';
-  $('ecran-liste').hidden = ecran !== 'liste';
-  if (ecran === 'connexion') $('mot-de-passe').focus();
-}
-
 function oublierJeton() {
   jeton = '';
   try { sessionStorage.removeItem('equipe_jeton'); } catch (e) { /* stockage indisponible */ }
 }
 
+function montrerConnexion(message) {
+  $('app').hidden = true;
+  $('ecran-connexion').hidden = false;
+  $('erreur-connexion').textContent = message || '';
+  $('mot-de-passe').focus();
+}
+
+/* ---------- Connexion ---------- */
 $('form-connexion').addEventListener('submit', async (e) => {
   e.preventDefault();
   const bouton = $('btn-connexion');
@@ -195,123 +281,221 @@ $('form-connexion').addEventListener('submit', async (e) => {
   }
 });
 
-$('btn-deconnexion').addEventListener('click', () => { oublierJeton(); items = []; montrer('connexion'); });
+$('btn-deconnexion').addEventListener('click', () => { oublierJeton(); items = []; montrerConnexion(''); });
 $('btn-actualiser').addEventListener('click', () => charger());
-$('recherche').addEventListener('input', dessiner);
 
 async function charger() {
   try {
     const r = await appel({ op: 'list', token: jeton });
-    if (r.auth === false) {
-      oublierJeton();
-      montrer('connexion');
-      $('erreur-connexion').textContent = r.error || 'Session expirée. Reconnecte-toi.';
-      return;
-    }
+    if (r.auth === false) { oublierJeton(); montrerConnexion(r.error || 'Session expirée. Reconnecte-toi.'); return; }
     if (!r.ok) throw new Error(r.error || 'Erreur');
     items = r.items || [];
-    montrer('liste');
-    dessiner();
+    config = r.config || {};
+    $('ecran-connexion').hidden = true;
+    $('app').hidden = false;
+    habiller();
+    naviguer(vue);
   } catch (err) {
-    montrer('connexion');
-    $('erreur-connexion').textContent = 'Impossible de charger la liste. Réessaie dans un instant.';
+    montrerConnexion('Impossible de charger les données. Réessaie dans un instant.');
   }
 }
 
-function normaliser(s) {
-  return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+/* ---------- Habillage : logo, image, lien Drive ---------- */
+function imageSure(v) {
+  v = String(v || '').trim();
+  return /^https:\/\/[^\s"'<>()]+$/i.test(v) || /^[\w.\-\/]+\.(png|jpe?g|webp|svg|gif)$/i.test(v) ? v : '';
 }
 
-function statutDe(item) { return item.selection || 'À étudier'; }
+function habiller() {
+  const marque = $('marque');
+  marque.innerHTML = '';
+  const logo = imageSure(config.logo);
+  if (logo) {
+    const img = document.createElement('img');
+    img.src = logo; img.alt = config.edition || 'Mantra Joie 2027';
+    img.addEventListener('error', () => { marque.innerHTML = ''; marque.appendChild(texteMarque()); });
+    marque.appendChild(img);
+  } else {
+    marque.appendChild(texteMarque());
+  }
+  $('hero-titre').textContent = config.edition || 'Mantra Joie 2027';
+  const image = imageSure(config.image);
+  $('hero').style.backgroundImage = image ? 'url("' + image.replace(/"/g, '%22') + '")' : '';
+  const drive = $('lien-drive');
+  if (/^https:\/\/drive\.google\.com\//.test(config.drive || '')) { drive.href = config.drive; drive.hidden = false; } else { drive.hidden = true; }
+}
 
+function texteMarque() {
+  const d = document.createElement('div');
+  d.className = 'nom';
+  d.textContent = 'Portail Festival';
+  const s = document.createElement('span');
+  s.className = 'edition';
+  s.textContent = config.edition || 'Mantra Joie 2027';
+  d.appendChild(s);
+  return d;
+}
+
+/* ---------- Navigation ---------- */
+document.querySelectorAll('[data-vue]').forEach((b) => b.addEventListener('click', () => {
+  if (b.dataset.vue === 'candidatures') { filtreCategorie = 'Toutes'; filtreStatut = 'Tous'; $('recherche').value = ''; }
+  naviguer(b.dataset.vue);
+}));
+$('voir-toutes').addEventListener('click', () => { filtreCategorie = 'Toutes'; filtreStatut = 'Tous'; $('recherche').value = ''; naviguer('candidatures'); });
+
+function naviguer(nom) {
+  vue = nom === 'candidatures' ? 'candidatures' : 'accueil';
+  $('vue-accueil').hidden = vue !== 'accueil';
+  $('vue-candidatures').hidden = vue !== 'candidatures';
+  document.querySelectorAll('[data-vue]').forEach((b) => {
+    if (b.dataset.vue === vue) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
+  if (vue === 'accueil') dessinerAccueil(); else dessinerCandidatures();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- Outils communs ---------- */
+function normaliser(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+function statutDe(item) { return item.selection || 'À étudier'; }
 function classeSelection(statut) {
   if (statut === 'Accepté') return 'selection-accepte';
   if (statut === "Liste d'attente") return 'selection-attente';
   if (statut === 'Refusé') return 'selection-refuse';
   return '';
 }
-
 function lienSur(url, texte) {
   if (!/^https:\/\/(drive|docs)\.google\.com\//.test(String(url || ''))) return null;
   const a = document.createElement('a');
   a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = texte;
   return a;
 }
-
 function puce(texte, classe) {
   const s = document.createElement('span');
   s.className = 'puce' + (classe ? ' ' + classe : '');
   s.textContent = texte;
   return s;
 }
+function puceCategorie(pole) {
+  const s = puce(pole);
+  const c = COULEURS_POLES[pole];
+  if (c) { s.style.background = c[0]; s.style.color = c[1]; }
+  return s;
+}
+function categories() {
+  const presentes = Array.from(new Set(items.map((i) => i.pole).filter(Boolean)));
+  return ORDRE_POLES.filter((p) => presentes.indexOf(p) >= 0).concat(presentes.filter((p) => ORDRE_POLES.indexOf(p) < 0));
+}
+function icone(nom) {
+  const chemins = {
+    fichier: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/>',
+    loupe: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+    coche: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>'
+  };
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + chemins[nom] + '</svg>';
+}
 
-function dessinerFiltres() {
-  const zone = $('filtres');
+/* ---------- Accueil ---------- */
+function dessinerAccueil() {
+  const zone = $('totaux');
   zone.innerHTML = '';
-  FILTRES.forEach((nom) => {
-    const n = nom === 'Tous' ? items.length : items.filter((i) => statutDe(i) === nom).length;
+  const cartes = [
+    { libelle: 'Candidatures', nombre: items.length, couleur: 'var(--magenta)', icone: 'fichier', statut: 'Tous' },
+    { libelle: 'À étudier', nombre: items.filter((i) => statutDe(i) === 'À étudier').length, couleur: 'var(--violet)', icone: 'loupe', statut: 'À étudier' },
+    { libelle: 'Acceptées', nombre: items.filter((i) => statutDe(i) === 'Accepté').length, couleur: 'var(--turquoise)', icone: 'coche', statut: 'Accepté' }
+  ];
+  cartes.forEach((c) => {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'filtre'; b.setAttribute('aria-pressed', String(nom === filtreActif));
-    b.appendChild(document.createTextNode(nom));
-    const c = document.createElement('span'); c.className = 'n'; c.textContent = String(n); b.appendChild(c);
-    b.addEventListener('click', () => { filtreActif = nom; dessiner(); });
+    b.type = 'button'; b.className = 'total';
+    const p = document.createElement('span'); p.className = 'pastille'; p.style.background = c.couleur; p.innerHTML = icone(c.icone);
+    const l = document.createElement('span'); l.className = 'libelle'; l.textContent = c.libelle;
+    const n = document.createElement('span'); n.className = 'nombre'; n.textContent = String(c.nombre);
+    const k = document.createElement('span'); k.className = 'lien'; k.textContent = 'Voir la liste';
+    b.appendChild(p); b.appendChild(l); b.appendChild(n); b.appendChild(k);
+    b.addEventListener('click', () => { filtreCategorie = 'Toutes'; filtreStatut = c.statut; $('recherche').value = ''; naviguer('candidatures'); });
     zone.appendChild(b);
+  });
+  const liste = $('recentes');
+  liste.innerHTML = '';
+  if (!items.length) {
+    const v = document.createElement('div'); v.className = 'vide'; v.textContent = "Aucune candidature pour l'instant."; liste.appendChild(v); return;
+  }
+  items.slice(0, 5).forEach((i) => {
+    const ligne = document.createElement('div'); ligne.className = 'recent';
+    const nom = document.createElement('div'); nom.className = 'projet'; nom.textContent = i.projet;
+    const cat = document.createElement('div'); cat.appendChild(puceCategorie(i.pole));
+    const date = document.createElement('div'); date.className = 'meta'; date.textContent = i.date;
+    const liens = document.createElement('div'); liens.className = 'liens';
+    const fiche = lienSur(i.fiche, 'Fiche'); if (fiche) liens.appendChild(fiche);
+    ligne.appendChild(nom); ligne.appendChild(cat); ligne.appendChild(date); ligne.appendChild(liens);
+    liste.appendChild(ligne);
   });
 }
 
-function dessiner() {
-  dessinerFiltres();
+/* ---------- Candidatures ---------- */
+$('recherche').addEventListener('input', dessinerCandidatures);
+
+function boutonFiltre(zone, nom, nombre, actif, classe, action) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'filtre' + (classe ? ' ' + classe : ''); b.setAttribute('aria-pressed', String(actif));
+  b.appendChild(document.createTextNode(nom));
+  const c = document.createElement('span'); c.className = 'n'; c.textContent = String(nombre); b.appendChild(c);
+  b.addEventListener('click', action);
+  zone.appendChild(b);
+}
+
+function dessinerCandidatures() {
+  const zc = $('filtres-categorie'); zc.innerHTML = '';
+  boutonFiltre(zc, 'Toutes', items.length, filtreCategorie === 'Toutes', '', () => { filtreCategorie = 'Toutes'; dessinerCandidatures(); });
+  categories().forEach((p) => {
+    boutonFiltre(zc, p, items.filter((i) => i.pole === p).length, filtreCategorie === p, '', () => { filtreCategorie = p; dessinerCandidatures(); });
+  });
+  const parCat = items.filter((i) => filtreCategorie === 'Toutes' || i.pole === filtreCategorie);
+  const zs = $('filtres-statut'); zs.innerHTML = '';
+  boutonFiltre(zs, 'Tous', parCat.length, filtreStatut === 'Tous', 'statut', () => { filtreStatut = 'Tous'; dessinerCandidatures(); });
+  STATUTS.forEach((s) => {
+    boutonFiltre(zs, s, parCat.filter((i) => statutDe(i) === s).length, filtreStatut === s, 'statut', () => { filtreStatut = s; dessinerCandidatures(); });
+  });
   const mot = normaliser($('recherche').value);
-  const visibles = items.filter((i) => {
-    if (filtreActif !== 'Tous' && statutDe(i) !== filtreActif) return false;
+  const visibles = parCat.filter((i) => {
+    if (filtreStatut !== 'Tous' && statutDe(i) !== filtreStatut) return false;
     if (!mot) return true;
     return normaliser([i.projet, i.prenom, i.nom, i.email, i.pole].join(' ')).indexOf(mot) >= 0;
   });
   $('compte').textContent = visibles.length + ' candidature' + (visibles.length > 1 ? 's' : '') + ' sur ' + items.length;
-  const liste = $('liste');
-  liste.innerHTML = '';
+  const liste = $('liste'); liste.innerHTML = '';
   if (!visibles.length) {
-    const v = document.createElement('div');
-    v.className = 'vide';
-    v.textContent = items.length ? 'Aucune candidature ne correspond. Change le filtre ou la recherche.' : "Aucune candidature pour l'instant.";
-    liste.appendChild(v);
-    return;
+    const v = document.createElement('div'); v.className = 'vide';
+    v.textContent = items.length ? 'Aucune candidature ne correspond. Change les filtres ou la recherche.' : "Aucune candidature pour l'instant.";
+    liste.appendChild(v); return;
   }
   visibles.forEach((i) => {
-    const ligne = document.createElement('article');
-    ligne.className = 'ligne';
-
+    const ligne = document.createElement('article'); ligne.className = 'ligne';
     const c1 = document.createElement('div');
     const projet = document.createElement('div'); projet.className = 'projet'; projet.textContent = i.projet;
     const qui = document.createElement('div'); qui.className = 'meta'; qui.textContent = i.prenom + ' ' + i.nom + ' - ' + i.email;
     c1.appendChild(projet); c1.appendChild(qui);
-
     const c2 = document.createElement('div');
-    const puces2 = document.createElement('div'); puces2.className = 'puces';
-    puces2.appendChild(puce(i.pole, 'pole'));
-    if (i.formule === 'Duo') puces2.appendChild(puce('Duo'));
-    c2.appendChild(puces2);
-    const date = document.createElement('div'); date.className = 'meta'; date.textContent = 'Reçue le ' + i.date;
-    c2.appendChild(date);
-
+    const p2 = document.createElement('div'); p2.className = 'puces';
+    p2.appendChild(puceCategorie(i.pole));
+    if (i.formule === 'Duo') p2.appendChild(puce('Duo'));
+    c2.appendChild(p2);
+    const date = document.createElement('div'); date.className = 'meta'; date.textContent = 'Reçue le ' + i.date; c2.appendChild(date);
     const c3 = document.createElement('div'); c3.className = 'puces';
     const statut = statutDe(i);
     c3.appendChild(puce(statut, classeSelection(statut)));
     if (i.dossier_final) c3.appendChild(puce('Dossier final : ' + i.dossier_final));
     if (i.paiement && i.paiement !== 'Non concerné') c3.appendChild(puce('Paiement : ' + i.paiement));
     if (i.confirmation) c3.appendChild(puce(i.confirmation));
-
     const c4 = document.createElement('div'); c4.className = 'liens';
     const fiche = lienSur(i.fiche, 'Fiche'); if (fiche) c4.appendChild(fiche);
     const dossier = lienSur(i.dossier, 'Dossier'); if (dossier) c4.appendChild(dossier);
-
     ligne.appendChild(c1); ligne.appendChild(c2); ligne.appendChild(c3); ligne.appendChild(c4);
     if (i.alerte) { const a = document.createElement('div'); a.className = 'alerte'; a.textContent = i.alerte; ligne.appendChild(a); }
     liste.appendChild(ligne);
   });
 }
 
-if (jeton) { charger(); } else { montrer('connexion'); }
+if (jeton) { charger(); } else { montrerConnexion(''); }
 </script>
 </body>
 </html>
