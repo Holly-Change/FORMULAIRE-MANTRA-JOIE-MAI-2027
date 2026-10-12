@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title>Inscriptions - Festival Mantra Joie 2027</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⭐</text></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23B5207F%22/%3E%3Cstop offset=%221%22 stop-color=%22%236B2C91%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22url(%23g)%22/%3E%3Cpolygon points=%2232.0,8.0 34.3,26.5 42.6,21.4 37.5,29.7 56.0,32.0 37.5,34.3 42.6,42.6 34.3,37.5 32.0,56.0 29.7,37.5 21.4,42.6 26.5,34.3 8.0,32.0 26.5,29.7 21.4,21.4 29.7,26.5%22 fill=%22%23fff%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -319,8 +319,9 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 }
 
 /* Barre d'envoi */
-.envoi-progression { display: none; margin-top: 18px; }
-.envoi-progression .rail { height: 12px; border-radius: 6px; background: var(--ligne); overflow: hidden; }
+.envoi-progression { display: none; margin-top: 18px; padding: 16px 18px; border: 3px solid var(--magenta); border-radius: 16px; background: #FFF7FB; }
+.envoi-progression .ep-titre { font-weight: 700; font-size: 17px; color: #1C1B3A; margin-bottom: 10px; }
+.envoi-progression .rail { height: 16px; border-radius: 99px; background: #EBDDE8; overflow: hidden; }
 .envoi-progression .remplissage {
   height: 100%; width: 0%;
   background: linear-gradient(90deg, var(--magenta), var(--violet), var(--turquoise));
@@ -341,6 +342,8 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 
 .hp { position: absolute; left: -6000px; top: -6000px; }
 .pied { text-align: center; font-size: 12.5px; color: rgba(28,27,58,.4); margin-top: 22px; }
+.pied .porte { font-size: 9px; color: rgba(28,27,58,.22); text-decoration: none; margin-left: 6px; }
+.pied .porte:hover, .pied .porte:focus { color: rgba(28,27,58,.7); text-decoration: underline; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -784,7 +787,8 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
 
       <div class="message-erreur" id="erreur-7"></div>
 
-      <div class="envoi-progression" id="envoi-progression">
+      <div class="envoi-progression" id="envoi-progression" role="status" aria-live="polite">
+        <div class="ep-titre">⏳ Envoi en cours : ne ferme pas cette page</div>
         <div class="rail"><div class="remplissage" id="remplissage"></div></div>
         <div class="texte-envoi" id="texte-envoi">Envoi en cours… Merci de garder cette page ouverte pendant le traitement de tes informations.</div>
       </div>
@@ -806,7 +810,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
   </main>
 
   <div class="pied">Festival Mantra Joie · Tes infos servent à préparer ta participation et à te contacter. · <span id="version-form"></span></div>
-  <div class="pied" style="margin-top:6px">Créé par <a href="https://holly-berridge.netlify.app" target="_blank" rel="noopener" style="color:inherit">Holly Berridge</a></div>
+  <div class="pied" style="margin-top:6px">Créé par <a href="https://holly-berridge.netlify.app" target="_blank" rel="noopener" style="color:inherit">Holly Berridge</a> <a class="porte" href="equipe.html" rel="nofollow">portail</a></div>
 </div>
 
 <script>document.addEventListener('DOMContentLoaded', () => { document.getElementById('version-form').textContent = CONFIG.version; });</script>
@@ -1407,6 +1411,7 @@ async function envoyer() {
 
   $('nav-7').style.display = 'none';
   $('envoi-progression').style.display = 'block';
+  try { $('envoi-progression').scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { /* facultatif */ }
 
   // Barre animee : fetch ne donne pas de progression d'envoi,
   // on avance doucement jusqu'a 90% puis 100% a la reponse
