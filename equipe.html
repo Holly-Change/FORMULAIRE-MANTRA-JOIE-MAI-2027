@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <title>Portail Festival - Mantra Joie 2027</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%231FA8C3%22/%3E%3Cstop offset=%221%22 stop-color=%22%230B2A47%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22url(%23g)%22/%3E%3Cpolygon points=%2232.0,8.0 34.3,26.5 42.6,21.4 37.5,29.7 56.0,32.0 37.5,34.3 42.6,42.6 34.3,37.5 32.0,56.0 29.7,37.5 21.4,42.6 26.5,34.3 8.0,32.0 26.5,29.7 21.4,21.4 29.7,26.5%22 fill=%22%23fff%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -143,8 +144,9 @@ main { padding: 0 0 40px; min-width: 0; }
 .puce.selection-accepte { background: #D3F0DC; color: #17562F; }
 .puce.selection-attente { background: #FFEFC2; color: #6B4A08; }
 .puce.selection-refuse { background: #FFD9D6; color: #8A2314; }
-.puce.etat-ok { background: #D3F0DC; color: #17562F; }
-.puce.etat-attention { background: #FFEFC2; color: #6B4A08; }
+.puce.etat-ok { background: #fff; border: 2px solid var(--turquoise-vif); color: #0B5568; }
+.puce.etat-attention { background: #fff; border: 2px dashed #E07A2F; color: #8A3A0A; }
+.puce.a-envoyer { background: #FFE5E2; border: 2px solid var(--erreur); color: var(--erreur); }
 .liens { display: flex; gap: 8px; flex-wrap: wrap; }
 .liens a { text-decoration: none; font-weight: 700; font-size: .9rem; padding: 6px 14px; border-radius: 999px; border: 2px solid var(--turquoise); color: var(--navy); }
 .liens a:hover { background: rgba(31,168,195,.16); }
@@ -190,9 +192,23 @@ main { padding: 0 0 40px; min-width: 0; }
 .statuts-boutons button:hover { filter: brightness(0.96); }
 .statuts-boutons button[aria-pressed="true"] { border-color: currentColor; box-shadow: 0 2px 8px rgba(11, 42, 71, 0.18); }
 .statuts-boutons button[aria-pressed="true"]::before { content: "\2713  "; }
-.autres-statuts select.etat-ok { background: #D3F0DC; color: #17562F; border-color: #8FD3A6; }
-.autres-statuts select.etat-attention { background: #FFEFC2; color: #6B4A08; border-color: #E8C766; }
-.autres-statuts select.etat-neutre { background: #F1EEF8; color: #3F2A7A; }
+.autres-statuts select.etat-ok { background: #fff; color: #0B5568; border: 2px solid var(--turquoise-vif); }
+.autres-statuts select.etat-attention { background: #fff; color: #8A3A0A; border: 2px dashed #E07A2F; }
+.autres-statuts select.etat-neutre { background: #fff; color: var(--navy); }
+.note-suivi { color: var(--doux); margin: 14px 0 0; }
+.avis-email { background: #FFE5E2; border: 2px solid var(--erreur); color: var(--erreur); font-weight: 700; border-radius: 12px; padding: 10px 14px; margin: 0 0 12px; }
+.historique { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.historique li { display: grid; grid-template-columns: minmax(0, 1.6fr) auto auto minmax(0, 2fr); gap: 6px 14px; align-items: center; padding: 8px 0; border-top: 1px solid var(--ligne); }
+.historique li:first-child { border-top: 0; }
+.historique .quand { color: var(--doux); font-size: .9rem; }
+.historique .qui { font-weight: 700; }
+.puce.mail-ok { background: #D3F0DC; color: #17562F; }
+.puce.mail-ko { background: #FFE5E2; color: var(--erreur); border: 2px solid var(--erreur); }
+.puce.mail-neutre { background: #EEE9F6; color: #3F2A7A; }
+/* Sous-menu des catégories */
+.sous-menu { display: grid; gap: 2px; margin: 2px 0 6px 18px; padding-left: 10px; border-left: 2px solid rgba(255, 255, 255, 0.25); }
+.menu nav .sous-menu button { padding: 6px 10px; font-size: .92rem; font-weight: 600; justify-content: space-between; }
+.menu nav .sous-menu button .n { opacity: .7; font-weight: 400; }
 .statuts-boutons button[disabled], .autres-statuts select[disabled] { opacity: .6; cursor: wait; }
 .autres-statuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-top: 16px; }
 .autres-statuts label { display: block; font-weight: 700; font-size: .9rem; color: var(--doux); margin-bottom: 4px; }
@@ -219,6 +235,8 @@ main { padding: 0 0 40px; min-width: 0; }
   .bloc { margin: 20px 14px 0; }
   .ligne, .recent { grid-template-columns: 1fr; }
   .champs { grid-template-columns: 1fr; }
+  .sous-menu { display: none; }
+  .historique li { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -246,6 +264,7 @@ main { padding: 0 0 40px; min-width: 0; }
       <button type="button" data-vue="candidatures">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>Candidatures
       </button>
+      <div class="sous-menu" id="sous-menu" aria-label="Candidatures par catégorie"></div>
       <a id="lien-drive" href="#" target="_blank" rel="noopener noreferrer" hidden>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Dossiers Drive
       </a>
@@ -437,7 +456,26 @@ function naviguer(nom) {
     if (b.dataset.vue === actif) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
   if (vue === 'accueil') dessinerAccueil(); else if (vue === 'candidatures') dessinerCandidatures();
+  dessinerSousMenu();
   window.scrollTo(0, 0);
+}
+
+/* ---------- Sous-menu : les catégories sous Candidatures ---------- */
+function dessinerSousMenu() {
+  const zone = $('sous-menu');
+  zone.innerHTML = '';
+  const dansCandidatures = vue === 'candidatures' || vue === 'detail';
+  const noms = ['Toutes'].concat(categories());
+  noms.forEach((nom) => {
+    const n = nom === 'Toutes' ? items.length : items.filter((i) => i.pole === nom).length;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.appendChild(document.createTextNode(nom));
+    const c = document.createElement('span'); c.className = 'n'; c.textContent = String(n); b.appendChild(c);
+    if (dansCandidatures && filtreCategorie === (nom === 'Toutes' ? 'Toutes' : nom)) b.setAttribute('aria-current', 'page');
+    b.addEventListener('click', () => { filtreCategorie = nom; filtreStatut = 'Tous'; $('recherche').value = ''; naviguer('candidatures'); });
+    zone.appendChild(b);
+  });
 }
 
 /* ---------- Outils communs ---------- */
@@ -516,6 +554,7 @@ function dessinerAccueil() {
     const nom = document.createElement('div'); nom.className = 'projet'; nom.textContent = i.projet;
     const cat = document.createElement('div'); cat.appendChild(puceCategorie(i.pole));
     const date = document.createElement('div'); date.className = 'meta'; date.textContent = i.date;
+    if (i.email_a_envoyer) { const pe = puce('Email à envoyer', 'a-envoyer'); pe.style.marginLeft = '8px'; cat.appendChild(pe); }
     const liens = document.createElement('div'); liens.className = 'liens';
     liens.appendChild(boutonOuvrir(i.id));
     ligne.appendChild(nom); ligne.appendChild(cat); ligne.appendChild(date); ligne.appendChild(liens);
@@ -537,9 +576,9 @@ function boutonFiltre(zone, nom, nombre, actif, classe, action) {
 
 function dessinerCandidatures() {
   const zc = $('filtres-categorie'); zc.innerHTML = '';
-  boutonFiltre(zc, 'Toutes', items.length, filtreCategorie === 'Toutes', '', () => { filtreCategorie = 'Toutes'; dessinerCandidatures(); });
+  boutonFiltre(zc, 'Toutes', items.length, filtreCategorie === 'Toutes', '', () => { filtreCategorie = 'Toutes'; dessinerCandidatures(); dessinerSousMenu(); });
   categories().forEach((p) => {
-    boutonFiltre(zc, p, items.filter((i) => i.pole === p).length, filtreCategorie === p, '', () => { filtreCategorie = p; dessinerCandidatures(); });
+    boutonFiltre(zc, p, items.filter((i) => i.pole === p).length, filtreCategorie === p, '', () => { filtreCategorie = p; dessinerCandidatures(); dessinerSousMenu(); });
   });
   const parCat = items.filter((i) => filtreCategorie === 'Toutes' || i.pole === filtreCategorie);
   const zs = $('filtres-statut'); zs.innerHTML = '';
@@ -575,9 +614,12 @@ function dessinerCandidatures() {
     const c3 = document.createElement('div'); c3.className = 'puces';
     const statut = statutDe(i);
     c3.appendChild(puce(statut, classeSelection(statut)));
-    if (i.dossier_final) c3.appendChild(puce('Dossier final : ' + i.dossier_final, classeEtat(i.dossier_final)));
-    if (i.paiement && i.paiement !== 'Non concerné') c3.appendChild(puce('Paiement : ' + i.paiement, classeEtat(i.paiement)));
-    if (i.confirmation) c3.appendChild(puce(i.confirmation, classeEtat(i.confirmation)));
+    if (statut === 'Accepté') {
+      if (i.dossier_final) c3.appendChild(puce('Dossier final : ' + i.dossier_final, classeEtat(i.dossier_final)));
+      if (i.paiement && i.paiement !== 'Non concerné') c3.appendChild(puce('Paiement : ' + i.paiement, classeEtat(i.paiement)));
+      if (i.confirmation) c3.appendChild(puce('Confirmation : ' + i.confirmation, classeEtat(i.confirmation)));
+    }
+    if (i.email_a_envoyer) c3.appendChild(puce('Email à envoyer', 'a-envoyer'));
     const c4 = document.createElement('div'); c4.className = 'liens';
     c4.appendChild(boutonOuvrir(i.id));
     const fiche = lienSur(i.fiche, 'Fiche'); if (fiche) c4.appendChild(fiche);
@@ -703,6 +745,10 @@ function majItem(id, statuts) {
   i.dossier_final = statuts['Dossier final']; i.paiement = statuts['Paiement']; i.confirmation = statuts['Confirmation'];
   i.alerte = statuts.alerte || '';
 }
+function majEmailAEnvoyer(id, pret) {
+  const i = items.find((x) => x.id === id);
+  if (i) i.email_a_envoyer = !!pret;
+}
 
 function dessinerDetail(d, listes, mode) {
   const zone = $('detail');
@@ -773,6 +819,12 @@ function dessinerDetail(d, listes, mode) {
       boutons.appendChild(b);
     });
     autres.innerHTML = '';
+    if (statuts['Sélection'] !== 'Accepté') {
+      autres.style.display = 'block';
+      autres.appendChild(el('p', 'note-suivi', 'Dossier final, paiement et confirmation apparaissent quand la candidature est acceptée.'));
+      return;
+    }
+    autres.style.display = '';
     ['Dossier final', 'Paiement', 'Confirmation'].forEach((piste) => {
       const w = el('div'); const id = 'st-' + piste.replace(/\s/g, '-');
       const lab = el('label', '', piste); lab.htmlFor = id;
@@ -792,9 +844,11 @@ function dessinerDetail(d, listes, mode) {
       const r = await appel({ op: 'status', token: jeton, id: d.id, piste: piste, valeur: valeur });
       if (sessionExpiree(r)) return;
       if (r.statuts) { statuts = r.statuts; majItem(d.id, statuts); }
-      if ('email_pret' in r) redessinerEmail(r.email_pret);
-      message.className = 'message ' + (r.ok ? 'ok' : 'ko');
-      message.textContent = r.ok ? 'Statut enregistré. ' + (r.message && /prêt/.test(r.message) ? 'Un email est prêt, vérifie-le plus bas.' : '') : (r.message || r.error || 'Changement refusé.');
+      if ('email_pret' in r) { redessinerEmail(r.email_pret); majEmailAEnvoyer(d.id, r.email_pret); }
+      if (r.emails) redessinerHistorique(r.emails);
+      const pretMaisPasParti = !!(r.email_pret && !r.email_pret.erreur);
+      message.className = 'message ' + (r.ok ? (pretMaisPasParti ? 'ko' : 'ok') : 'ko');
+      message.textContent = r.ok ? 'Statut enregistré.' + (pretMaisPasParti ? ' ⚠ Un email est prêt mais PAS encore envoyé : vérifie-le plus bas, puis clique sur Envoyer.' : '') : (r.message || r.error || 'Changement refusé.');
     } catch (err) {
       message.className = 'message ko'; message.textContent = 'Le serveur ne répond pas. Réessaie.';
     } finally { redessinerStatuts(); verrouiller(false); redessinerAlerte(); }
@@ -811,6 +865,7 @@ function dessinerDetail(d, listes, mode) {
     if (!pret) { emailZone.appendChild(el('p', 'meta', "Aucun email prêt. Change un statut pour en préparer un.")); return; }
     emailZone.appendChild(el('p', 'ligne-mail', 'Prêt : ' + pret.libelle));
     if (pret.erreur) { emailZone.appendChild(el('p', 'message ko', pret.erreur)); return; }
+    emailZone.appendChild(el('p', 'avis-email', '⚠ Cet email n\u2019est pas encore parti. Relis-le, puis clique sur Envoyer.'));
     emailZone.appendChild(el('p', 'ligne-mail', 'Destinataire : ' + pret.destinataire + (pret.reel ? ' (le candidat)' : ' (adresse de test)')));
     const lo = el('label', 'etiq', 'Objet'); lo.htmlFor = 'mail-objet';
     const objet = document.createElement('input'); objet.type = 'text'; objet.id = 'mail-objet'; objet.className = 'champ-mail'; objet.maxLength = 200; objet.value = pret.objet_modifiable;
@@ -837,6 +892,8 @@ function dessinerDetail(d, listes, mode) {
           const r = await appel(corpsEnvoi);
           if (sessionExpiree(r)) return;
           if (r.statuts) { statuts = r.statuts; majItem(d.id, statuts); redessinerStatuts(); redessinerAlerte(); }
+          majEmailAEnvoyer(d.id, 'email_pret' in r ? r.email_pret : null);
+          if (r.emails) redessinerHistorique(r.emails);
           redessinerEmail('email_pret' in r ? r.email_pret : null);
           const fin = el('p', 'message fin ' + (r.ok ? 'ok' : 'ko'));
           fin.textContent = r.ok ? 'Email envoyé.' + (r.detail ? ' (' + r.detail + ')' : '') : (r.error || 'Envoi non réussi : ' + (r.statut || '') + (r.detail ? ' (' + r.detail + ')' : ''));
@@ -851,8 +908,26 @@ function dessinerDetail(d, listes, mode) {
     actions.appendChild(envoyer);
     emailZone.appendChild(actions); emailZone.appendChild(resultat);
   }
+  const histZone = carte('Emails de cette candidature');
+  function redessinerHistorique(liste) {
+    while (histZone.childNodes.length > 1) histZone.removeChild(histZone.lastChild);
+    if (!liste.length) { histZone.appendChild(el('p', 'meta', "Aucun email pour l'instant.")); return; }
+    const ul = el('ul', 'historique');
+    liste.forEach((m) => {
+      const li = el('li');
+      li.appendChild(el('span', 'qui', m.libelle));
+      const classe = m.statut === 'Envoyé' ? 'mail-ok' : (m.statut === 'Erreur' ? 'mail-ko' : (m.statut === 'À envoyer' || m.statut === 'En attente' ? 'mail-ko' : 'mail-neutre'));
+      li.appendChild(puce(m.statut === 'À envoyer' ? 'Pas encore envoyé' : m.statut, classe));
+      li.appendChild(el('span', 'quand', m.date + (m.mode ? ' (' + m.mode + ')' : '')));
+      li.appendChild(el('span', 'quand', m.detail));
+      ul.appendChild(li);
+    });
+    histZone.appendChild(ul);
+  }
   redessinerStatuts(); redessinerAlerte(); redessinerEmail(d.email_pret);
   zone.appendChild(emailZone);
+  redessinerHistorique(d.emails || []);
+  zone.appendChild(histZone);
 }
 
 if (jeton) { charger(); } else { montrerConnexion(''); }
