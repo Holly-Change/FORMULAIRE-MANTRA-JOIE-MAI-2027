@@ -431,7 +431,7 @@ main { padding: 0 0 40px; min-width: 0; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.13-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.14-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 const ORDRE_POLES = ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'];
@@ -1428,12 +1428,17 @@ function dessinerDetail(d, listes, mode) {
   const alerte = el('p', 'alerte');
   function redessinerAlerte() { alerte.textContent = statuts.alerte || ''; }
   cs.appendChild(boutons); cs.appendChild(autres); cs.appendChild(message); cs.appendChild(alerte);
-  if (genre === 'participant' && (d.payant || d.preuve)) {
-    const preuve = el('div', 'preuve');
-    preuve.appendChild(el('strong', '', 'Preuve de paiement'));
-    const lienPreuve = d.preuve ? lienSur(d.preuve, 'Voir la preuve de paiement') : null;
-    if (lienPreuve) preuve.appendChild(lienPreuve); else preuve.appendChild(el('span', 'meta', 'Aucune preuve déposée.'));
-    cs.appendChild(preuve);
+  if (genre === 'participant') {
+    // Documents déposés dans le formulaire final : contrat signé (tout le monde) et preuve de paiement (pôles payants)
+    const docs = [['Contrat signé', d.contrat, true], ['Preuve de paiement', d.preuve, !!(d.payant || d.preuve)]];
+    docs.forEach((doc) => {
+      if (!doc[2]) return;
+      const ligneDoc = el('div', 'preuve');
+      ligneDoc.appendChild(el('strong', '', doc[0]));
+      const lienDoc = doc[1] ? lienSur(doc[1], 'Ouvrir le document') : null;
+      if (lienDoc) ligneDoc.appendChild(lienDoc); else ligneDoc.appendChild(el('span', 'meta', 'Aucun document déposé.'));
+      cs.appendChild(ligneDoc);
+    });
   }
   zone.appendChild(cs);
 
