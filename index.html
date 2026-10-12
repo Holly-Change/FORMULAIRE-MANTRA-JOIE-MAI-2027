@@ -361,6 +361,18 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 input[type="file"]:not([hidden]) { width:100%; padding:12px; border:2px solid var(--ligne); border-radius:12px; background:var(--creme); font:inherit; }
 input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--violet); border-radius:20px; background:white; color:var(--violet); padding:8px 12px; font:inherit; font-weight:700; margin-right:12px; cursor:pointer; }
 #questions-techniques .duo { margin:10px 0 4px; }
+/* ---------- Formulaire final : titre, catégorie choisie et étapes en onglets ---------- */
+.fil-inscription { margin: 0 0 18px; }
+.titre-inscription { font-size: clamp(22px, 5vw, 28px); margin: 0 0 8px; }
+.categorie-choisie { display: inline-block; margin: 0 0 12px; padding: 5px 14px; border-radius: 999px; background: #EFE7F8; color: #43296F; font-weight: 700; font-size: 15px; }
+.onglets-inscription { display: flex; gap: 3px; overflow-x: auto; border-bottom: 2px solid #D9CFE8; padding-bottom: 0; -webkit-overflow-scrolling: touch; }
+.onglets-inscription button { flex: none; display: flex; align-items: center; gap: 6px; font: inherit; font-size: 14px; font-weight: 600; color: #4B4660; background: #F3EEF7; border: 1px solid #D9CFE8; border-bottom: none; border-radius: 10px 10px 0 0; padding: 8px 12px; cursor: pointer; margin-bottom: -2px; }
+.onglets-inscription button .num { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #D9CFE8; color: #43296F; font-size: 12px; }
+.onglets-inscription button[aria-selected="true"] { background: #fff; color: #1C1B3A; border-color: #B9A5E3; border-top: 3px solid #8E3DA6; padding-top: 6px; border-bottom: 2px solid #fff; }
+.onglets-inscription button[aria-selected="true"] .num { background: #8E3DA6; color: #fff; }
+.onglets-inscription button:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 560px) { .onglets-inscription button .nom { display: none; } .onglets-inscription button[aria-selected="true"] .nom { display: inline; } }
+
 /* ---------- Candidature publique ---------- */
 .choix-accueil article.candidature { border: 3px solid #B5207F; background: #FFF0F8; }
 .choix-accueil article.benevole { border: 3px solid #1FA8C3; background: #E9F9FB; }
@@ -415,13 +427,19 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
       <div class="fleur" data-etape="3">🌺</div>
       <div class="fleur" data-etape="4">🌷</div>
       <div class="fleur" data-etape="5">🌻</div>
-      <div class="fleur" data-etape="6">🌻</div>
-      <div class="fleur" data-etape="7">✨</div>
+      <div class="fleur" data-etape="6">🌼</div>
+      <div class="fleur" data-etape="7">🌻</div>
+      <div class="fleur" data-etape="8">✨</div>
     </div>
     <img id="colibri" src="colibri-droit.png" alt="">
   </div>
 
   <main class="carte">
+    <div class="fil-inscription" id="fil-inscription" hidden>
+      <h1 class="titre-inscription">Je complète mon inscription</h1>
+      <div class="categorie-choisie" id="fil-categorie" hidden></div>
+      <div class="onglets-inscription" id="onglets-inscription" role="tablist" aria-label="Les étapes de ton inscription"></div>
+    </div>
 
     <!-- ============ ECRAN 0 : BIENVENUE ============ -->
     <section class="ecran actif" id="ecran-0">
@@ -532,7 +550,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
 
     <!-- ============ ETAPE 1 : QUI ES-TU ============ -->
     <section class="ecran" id="ecran-1">
-      <p class="surtitre">Étape 1 sur 7</p>
+      <p class="surtitre">Étape 1 sur 8</p>
       <h2>Qui es-tu ?</h2>
 
       <div class="champ">
@@ -595,7 +613,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
 
     <!-- ============ ETAPE 2 : TES MOTS ============ -->
     <section class="ecran" id="ecran-2">
-      <p class="surtitre">Étape 2 sur 7</p>
+      <p class="surtitre">Étape 2 sur 8</p>
       <h2>Tes mots</h2>
 
       <div class="champ">
@@ -642,7 +660,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
 
     <!-- ============ ETAPE 3 : PHOTOS ============ -->
     <section class="ecran" id="ecran-3">
-      <p class="surtitre">Étape 3 sur 7</p>
+      <p class="surtitre">Étape 3 sur 8</p>
       <h2>Tes photos</h2>
 
       <div class="champ">
@@ -704,7 +722,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
 
     <!-- ============ ETAPE 4 : RESEAUX ============ -->
     <section class="ecran" id="ecran-4">
-      <p class="surtitre">Étape 4 sur 7</p>
+      <p class="surtitre">Étape 4 sur 8</p>
       <h2>Tes réseaux</h2>
       <p>Tout est optionnel : mets ce que tu veux qu'on relie à ta page.</p>
 
@@ -739,7 +757,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
 
     <!-- ============ ETAPE 5 : VIDEO ============ -->
     <section class="ecran" id="ecran-5">
-      <p class="surtitre">Étape 5 sur 7</p>
+      <p class="surtitre">Étape 5 sur 8</p>
       <h2>Une vidéo sur ta page ?</h2>
 
       <div class="champ">
@@ -763,7 +781,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
     </section>
 
     <section class="ecran" id="ecran-tech">
-      <p class="surtitre">Étape 6 sur 7</p><h2>Besoins techniques</h2>
+      <p class="surtitre">Étape 6 sur 8</p><h2>Besoins techniques</h2>
       <div class="champ" id="questions-techniques">
         <div id="tech-artiste" style="display:none">
           <label class="etiquette" for="tech_duration">Durée de la prestation (en min)</label><input id="tech_duration" type="text" placeholder="Ex. 45 minutes">
@@ -776,13 +794,13 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
           <label class="etiquette" for="workshop_capacity">Nombre maximum de participant·es</label><input id="workshop_capacity" type="number" min="1">
           <label class="etiquette" for="workshop_audio">Besoin d’un micro ou d’une enceinte fournie par le festival ?</label><select id="workshop_audio"><option value="">Choisir</option><option>Non</option><option>Micro</option><option>Enceinte</option><option>Micro et enceinte</option></select>
           <label class="etiquette" for="workshop_electricity">Besoin d’électricité ? Si oui, pour quels appareils ?</label><textarea id="workshop_electricity" rows="2"></textarea>
-          <label class="etiquette" for="workshop_kw">Puissance électrique totale nécessaire (en kW) <span class="astuce">(additionne la puissance de tes appareils : 1 000 W = 1 kW. Laisse vide si tu n'as pas besoin d'électricité)</span></label><input id="workshop_kw" type="number" min="0" step="0.1" placeholder="Ex. : 1,5">
+          <label class="etiquette" for="workshop_kw">Puissance électrique totale nécessaire (en kW) <span class="astuce">(additionne la puissance de tous tes appareils, indiquée en W sur leur étiquette : 1 000 W = 1 kW. Exemple : une bouilloire de 2 000 W et une lampe de 20 W font environ 2 kW. Si l'étiquette indique des ampères (A), multiplie par 230 pour obtenir des W. Laisse vide si tu n'as pas besoin d'électricité)</span></label><input id="workshop_kw" type="number" min="0" step="0.1" placeholder="Ex. : 1,5">
         </div>
         <div id="tech-stand" style="display:none">
           <label class="etiquette">Surface nécessaire, tente personnelle comprise</label>
           <div class="duo"><input id="stand_width" type="number" min="0" step="0.1" placeholder="Largeur (m)" aria-label="Largeur en mètres"><input id="stand_depth" type="number" min="0" step="0.1" placeholder="Profondeur (m)" aria-label="Profondeur en mètres"></div>
           <label class="etiquette" for="stand_electricity">Besoin d’électricité ? Si oui, pour quels appareils ?</label><textarea id="stand_electricity" rows="2"></textarea>
-          <label class="etiquette" for="stand_kw">Puissance électrique totale nécessaire (en kW) <span class="astuce">(additionne la puissance de tes appareils : 1 000 W = 1 kW. Laisse vide si tu n'as pas besoin d'électricité)</span></label><input id="stand_kw" type="number" min="0" step="0.1" placeholder="Ex. : 1,5">
+          <label class="etiquette" for="stand_kw">Puissance électrique totale nécessaire (en kW) <span class="astuce">(additionne la puissance de tous tes appareils, indiquée en W sur leur étiquette : 1 000 W = 1 kW. Exemple : une bouilloire de 2 000 W et une lampe de 20 W font environ 2 kW. Si l'étiquette indique des ampères (A), multiplie par 230 pour obtenir des W. Laisse vide si tu n'as pas besoin d'électricité)</span></label><input id="stand_kw" type="number" min="0" step="0.1" placeholder="Ex. : 1,5">
         </div>
         <label class="etiquette" for="other_needs">Autres besoins ou contraintes à signaler ?</label><textarea id="other_needs" rows="2"></textarea>
       </div>
@@ -790,19 +808,34 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
       <div class="nav-etapes"><button class="btn btn-retour" onclick="aller(5)">Retour</button><button class="btn btn-avant" onclick="valider5()">Continuer</button></div>
     </section>
 
-    <!-- ============ ETAPE 6 : RECAP ============ -->
-    <section class="ecran" id="ecran-7">
-      <p class="surtitre">Étape 7 sur 7</p>
-      <h2>Ton récapitulatif 👀</h2>
-      <p>Vérifie tes informations pour préparer ta participation et nos supports de communication.</p>
-
-      <div id="recap"></div>
-
+    <!-- ============ ETAPE 7 : DOCUMENTS ============ -->
+    <section class="ecran" id="ecran-docs">
+      <p class="surtitre">Étape 7 sur 8</p>
+      <h2>Tes documents 📎</h2>
+      <p>Ajoute ton contrat signé<span id="docs-et-paiement"> et la preuve de ton paiement</span>. PDF ou image (JPG, PNG, WebP).</p>
+      <div class="champ" id="boite-contrat-modele" style="display:none">
+        <a class="btn btn-retour" id="lien-contrat" href="#" target="_blank" rel="noopener">📄 Télécharger le contrat à signer</a>
+      </div>
+      <div class="champ" id="boite-contrat">
+        <label class="etiquette obligatoire" for="contract_file">Ton contrat signé <span class="astuce">(PDF ou image, 10 Mo maximum)</span></label>
+        <input type="file" id="contract_file" accept="application/pdf,image/jpeg,image/png,image/webp">
+      </div>
       <div class="champ" id="boite-paiement" style="display:none">
         <label class="etiquette obligatoire" for="payment_proof">Preuve de ton paiement <span class="astuce">(capture d'écran ou PDF de ta confirmation HelloAsso ou de ton virement, 5 Mo maximum)</span></label>
         <input type="file" id="payment_proof" accept="application/pdf,image/jpeg,image/png,image/webp">
         <p class="aide" id="paiement-info"></p>
       </div>
+      <div class="message-erreur" id="erreur-docs"></div>
+      <div class="nav-etapes"><button class="btn btn-retour" onclick="aller('tech')">Retour</button><button class="btn btn-avant" onclick="validerDocs()">Continuer</button></div>
+    </section>
+
+    <!-- ============ ETAPE 6 : RECAP ============ -->
+    <section class="ecran" id="ecran-7">
+      <p class="surtitre">Étape 8 sur 8</p>
+      <h2>Ton récapitulatif 👀</h2>
+      <p>Vérifie tes informations pour préparer ta participation et nos supports de communication.</p>
+
+      <div id="recap"></div>
 
       <div class="consentement-boite" id="boite-consent">
         <div class="consentement-interieur">
@@ -823,7 +856,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
       </div>
 
       <div class="nav-etapes" id="nav-7">
-        <button class="btn btn-retour" onclick="aller('tech')">Retour</button>
+        <button class="btn btn-retour" onclick="aller('docs')">Retour</button>
         <button class="btn btn-avant" id="btn-envoyer" onclick="envoyer()">Envoyer ma page 🕊️</button>
       </div>
     </section>
@@ -851,7 +884,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.13-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.14-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
@@ -881,11 +914,51 @@ const $ = id => document.getElementById(id);
 const valeur = id => $(id).value.trim();
 
 // ------------------ Navigation + colibri ------------------
+// Les étapes du formulaire final, dans l'ordre. « docs » : contrat signé et preuve de paiement.
+const ETAPES = [1, 2, 3, 4, 5, 'tech', 'docs', 7];
+const NOMS_ETAPES = { 1: 'Qui es-tu', 2: 'Tes mots', 3: 'Photos', 4: 'Réseaux', 5: 'Vidéo', tech: 'Technique', docs: 'Documents', 7: 'Récap' };
+let etapeMax = -1;   // la plus lointaine étape déjà atteinte : on peut revenir sur toutes celles-là, pas sauter en avant
+
+function construireOnglets() {
+  const zone = $('onglets-inscription');
+  if (zone.childElementCount) return;
+  ETAPES.forEach((e, k) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.etape = String(e);
+    const num = document.createElement('span'); num.className = 'num'; num.textContent = String(k + 1);
+    const nom = document.createElement('span'); nom.className = 'nom'; nom.textContent = NOMS_ETAPES[e];
+    b.appendChild(num); b.appendChild(nom);
+    b.addEventListener('click', () => allerOnglet(e));
+    zone.appendChild(b);
+  });
+}
+function majFil(n) {
+  const k = ETAPES.indexOf(n);
+  $('fil-inscription').hidden = k < 0;
+  if (k < 0) return;
+  construireOnglets();
+  etapeMax = Math.max(etapeMax, k);
+  document.querySelectorAll('#onglets-inscription button').forEach((b, idx) => {
+    b.setAttribute('aria-selected', String(idx === k));
+    b.disabled = idx > etapeMax;
+  });
+  const cat = $('fil-categorie');
+  if (etat.category) { cat.textContent = 'Ma catégorie : ' + etat.category + (etat.artist_type ? ' · ' + etat.artist_type : ''); cat.hidden = false; }
+  else cat.hidden = true;
+}
+function allerOnglet(e) {
+  if (ETAPES.indexOf(e) > etapeMax) return;     // pas de saut en avant : chaque étape se valide avec « Continuer »
+  if (e === 7) construireRecap();
+  aller(e);
+}
+
 function aller(n) {
   document.querySelectorAll('.ecran').forEach(e => e.classList.remove('actif'));
   $(n === 'merci' ? 'ecran-merci' : 'ecran-' + n).classList.add('actif');
   etapeCourante = n;
   majColibri(n);
+  majFil(n);
+  if (n === 'docs') afficherDocuments();
   if (n === 7) setTimeout(() => $('boite-consent').scrollIntoView({ behavior: 'smooth', block: 'center' }), 700);
   else window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -894,9 +967,9 @@ function majColibri(n) {
   const sentier = $('sentier');
   if (n === 0 || n === 'benevole' || n === 'acces' || String(n).indexOf('cand') === 0) { sentier.hidden = true; return; }
   sentier.hidden = false;
-  const etape = (n === 'merci') ? 7 : n === 'tech' ? 6 : n;
+  const etape = n === 'merci' ? ETAPES.length : ETAPES.indexOf(n) + 1;
   const largeur = sentier.offsetWidth - 76;
-  $('colibri').style.left = (12 + largeur * (etape - 1) / 6) + 'px';
+  $('colibri').style.left = (12 + largeur * (etape - 1) / (ETAPES.length - 1)) + 'px';
   document.querySelectorAll('.fleur').forEach(f => {
     f.classList.toggle('eclose', Number(f.dataset.etape) < etape || n === 'merci');
   });
@@ -966,7 +1039,7 @@ function valider1() {
   if (!etat.category) return erreur(1, 'Choisis ta cat\u00e9gorie.');
   if (etat.category === 'Artiste' && !etat.artist_type)
     return erreur(1, 'Choisis ton type d\u2019artiste.');
-  if (!valeur('name')) return erreur(1, 'Ton nom de sc\u00e8ne, de marque ou de stand est indispensable, c\u2019est lui qu\u2019on affiche.');
+  if (!valeur('name')) return erreur(1, 'Le nom sous lequel on te pr\u00e9sentera au public est indispensable.');
   if (etat.category !== 'Artiste' && (!valeur('first_name') || !valeur('last_name')))
     return erreur(1, 'Ton pr\u00e9nom et ton nom de famille sont n\u00e9cessaires.');
   if (!valeur('phone')) return erreur(1, 'Ajoute ton numéro de téléphone.');
@@ -1335,20 +1408,44 @@ async function poleEstPayant() {
   const p = derniereConfig && (derniereConfig.poles || []).find(x => x.nom === etat.category);
   return p ? !!p.payant : null;   // null : on ne sait pas
 }
-async function afficherPreuvePaiement() {
+async function afficherDocuments() {
   const payant = await poleEstPayant();
-  const boite = $('boite-paiement');
-  boite.style.display = payant === false ? 'none' : 'block';
-  boite.querySelector('label').classList.toggle('obligatoire', payant === true);
+  const cfg = derniereConfig || {};
+  $('boite-paiement').style.display = payant === false ? 'none' : 'block';
+  $('boite-paiement').querySelector('label').classList.toggle('obligatoire', payant === true);
   $('paiement-info').textContent = payant === null ? 'Si ta participation est payante, ajoute ici ta preuve de paiement.' : '';
+  $('docs-et-paiement').style.display = payant === false ? 'none' : 'inline';
+  const modele = /^https:\/\//.test(cfg.lien_contrat || '');
+  $('boite-contrat-modele').style.display = modele ? 'block' : 'none';
+  if (modele) $('lien-contrat').href = cfg.lien_contrat;
+  $('boite-contrat').querySelector('label').classList.toggle('obligatoire', cfg.contrat_obligatoire !== false);
   return payant;
+}
+function verifierFichierDoc(file, maxMo, nom) {
+  if (!file) return '';
+  if (!/^(application\/pdf|image\/(jpeg|png|webp))$/.test(file.type)) return nom + ' doit être un PDF ou une image (JPG, PNG, WebP).';
+  if (file.size > maxMo * 1024 * 1024) return nom + ' doit faire moins de ' + maxMo + ' Mo.';
+  return '';
+}
+// Retourne le message à montrer, ou '' si les documents sont en ordre.
+function problemeDocuments(payant) {
+  const contrat = $('contract_file').files[0], preuve = $('payment_proof').files[0];
+  const contratObligatoire = !derniereConfig || derniereConfig.contrat_obligatoire !== false;
+  if (contratObligatoire && !contrat) return 'Ajoute ton contrat signé (PDF ou image).';
+  if (payant === true && !preuve) return 'Ajoute la preuve de ton paiement (capture d’écran ou PDF).';
+  return verifierFichierDoc(contrat, 10, 'Le contrat') || verifierFichierDoc(preuve, 5, 'La preuve de paiement');
+}
+async function validerDocs() {
+  const payant = await afficherDocuments();
+  const probleme = problemeDocuments(payant);
+  if (probleme) return erreur('docs', probleme);
+  construireRecap();
+  aller(7);
 }
 function valider5() {
   if (etat.category === 'Artiste' && $('tech_sheet').files[0] && $('tech_sheet').files[0].size > 5 * 1024 * 1024)
     return erreur('tech', 'La fiche technique doit faire moins de 5 Mo.');
-  construireRecap();
-  aller(7);
-  afficherPreuvePaiement();
+  aller('docs');
 }
 
 // ------------------ Etape 6 : recap facon page finale ------------------
@@ -1433,14 +1530,14 @@ async function envoyer() {
   }
 
   if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur(7, 'Le nouveau script doit être déployé avant le premier envoi.');
-  const payant = await afficherPreuvePaiement();
-  const preuve = $('payment_proof').files[0];
-  if (payant === true && !preuve) { $('boite-paiement').scrollIntoView({ behavior: 'smooth', block: 'center' }); return erreur(7, 'Ajoute la preuve de ton paiement (capture d’écran ou PDF).'); }
-  if (preuve && (preuve.size > 5 * 1024 * 1024 || !/^(application\/pdf|image\/(jpeg|png|webp))$/.test(preuve.type))) return erreur(7, 'La preuve de paiement doit être un PDF ou une image (JPG, PNG, WebP) de 5 Mo maximum.');
+  const payant = await afficherDocuments();
+  const preuve = $('payment_proof').files[0], contrat = $('contract_file').files[0];
+  const probleme = problemeDocuments(payant);
+  if (probleme) { aller('docs'); return erreur('docs', probleme); }
   envoiEnCours = true;
   let membres, technique;
-  let preuveData = '';
-  try { membres = await lireMembres(); technique = await lireTechnique(); if (preuve) preuveData = await lireFichier(preuve); }
+  let preuveData = '', contratData = '';
+  try { membres = await lireMembres(); technique = await lireTechnique(); if (preuve) preuveData = await lireFichier(preuve); if (contrat) contratData = await lireFichier(contrat); }
   catch(e) { envoiEnCours = false; return erreur(7, 'Pièce jointe : ' + (e && e.message ? e.message : String(e))); }
   // Cles identiques au schema partage, copiees telles quelles
   const donnees = {
@@ -1470,7 +1567,8 @@ async function envoyer() {
     featured_image: etat.featured_image,
     featured_original: etat.featured_original,
     gallery: etat.gallery,
-    payment_proof: preuveData
+    payment_proof: preuveData,
+    contract: contratData
   };
 
   $('nav-7').style.display = 'none';
@@ -1723,7 +1821,7 @@ const cand = { pole: '', vals: {}, photos: [], config: null,
 const CAND_ELEC = [
   { k: 'elec', l: 'As-tu besoin d’électricité ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
   { k: 'elec_devices', l: 'Quels appareils, et leur puissance en watts si tu la connais ?', t: 'a', r: 1, si: ['elec', 'Oui'] },
-  { k: 'elec_kw', l: 'Puissance électrique totale nécessaire (en kW)', t: 'n', n: 'Additionne la puissance de tes appareils : 1 000 W = 1 kW. Si tu ne la connais pas, laisse vide.', si: ['elec', 'Oui'] }
+  { k: 'elec_kw', l: 'Puissance électrique totale nécessaire (en kW)', t: 'n', n: 'Additionne la puissance de tes appareils, indiquée en W sur leur étiquette : 1 000 W = 1 kW. Si tu ne la connais pas, laisse vide.', si: ['elec', 'Oui'] }
 ];
 const CAND_SURFACE = [
   { k: 'width', l: 'Largeur nécessaire, tente comprise (en mètres)', t: 'n', r: 1 },
