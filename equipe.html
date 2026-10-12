@@ -80,7 +80,7 @@ button, input { font: inherit; color: inherit; }
 .version.alerte-version { color: #FFC2B5; font-weight: 700; }
 
 main { padding: 0 0 40px; min-width: 0; }
-.page { padding: 26px 28px 0; max-width: 1080px; }
+.page { padding: 26px 28px 0; max-width: 1080px; margin: 0 auto; }
 
 /* ---------- Accueil ---------- */
 .hero {
@@ -93,7 +93,7 @@ main { padding: 0 0 40px; min-width: 0; }
 }
 .hero h1 { font-family: var(--police-titres); font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.05; margin: 0; color: #fff; }
 .hero .sous { margin: 2px 0 0; color: var(--turquoise-clair); font-weight: 700; }
-.totaux { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: -50px 28px 0; position: relative; max-width: 1024px; }
+.totaux { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: -50px auto 0; position: relative; max-width: 1024px; width: calc(100% - 56px); }
 .total {
   background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 16px 18px;
   display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center; text-align: left; cursor: pointer;
@@ -105,7 +105,7 @@ main { padding: 0 0 40px; min-width: 0; }
 .total .libelle { font-weight: 700; }
 .total .nombre { font-family: var(--police-titres); font-weight: 700; font-size: 2rem; line-height: 1; }
 .total .lien { grid-column: 1 / -1; color: var(--violet); font-weight: 700; font-size: .9rem; margin-top: 6px; }
-.bloc { margin: 26px 28px 0; max-width: 1024px; background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 18px 20px; }
+.bloc { margin: 26px auto 0; width: calc(100% - 56px); max-width: 1024px; background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 18px 20px; }
 .bloc .entete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
 .bloc h2 { font-family: var(--police-titres); font-size: 1.3rem; margin: 0; }
 .lien-bouton { border: 0; background: none; cursor: pointer; color: var(--violet); font-weight: 700; padding: 4px 0; }
@@ -159,11 +159,29 @@ main { padding: 0 0 40px; min-width: 0; }
 .detail-entete h1 { font-family: var(--police-titres); font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.05; margin: 0 0 10px; overflow-wrap: anywhere; }
 .detail-entete .puces { margin-bottom: 8px; gap: 10px; }
 .detail-entete .puce { font-family: var(--police-titres); font-size: 1.35rem; font-weight: 600; padding: 6px 22px; }
-.champs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.champ { background: var(--creme); border-left: 5px solid var(--turquoise-vif); border-radius: 12px; padding: 14px 18px; }
-.champ.large { grid-column: 1 / -1; }
-.champ .q { font-size: .9rem; font-weight: 700; color: var(--violet); margin-bottom: 6px; line-height: 1.3; }
-.champ .v { font-size: 1.12rem; line-height: 1.55; color: var(--navy); white-space: pre-wrap; overflow-wrap: anywhere; }
+.champs { display: grid; grid-template-columns: 1fr; gap: 0; }
+.champ { padding: 12px 2px; border-top: 1px solid var(--ligne); }
+.champs .champ:first-child { border-top: 0; }
+.champ.large { }
+.champ .q { font-size: .88rem; font-weight: 700; color: var(--violet); margin-bottom: 3px; line-height: 1.3; }
+.champ .v { font-size: 1.08rem; line-height: 1.55; color: var(--navy); white-space: pre-wrap; overflow-wrap: anywhere; }
+/* Boîtes à copier : un clic et c'est dans le presse-papiers, prêt à coller dans la page du site */
+.copies { display: grid; gap: 10px; }
+.copie { background: var(--carte); border: 1.5px solid var(--ligne); border-radius: 12px; padding: 10px 14px; cursor: copy; }
+.copie:hover { border-color: var(--turquoise-vif); background: #F7FDFE; }
+.copie-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.copie-label { font-size: .85rem; font-weight: 700; color: var(--violet); }
+.copie-texte { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.55; color: var(--navy); }
+.copie-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+.btn-copier { border: 2px solid var(--turquoise); background: #fff; color: #0B5568; border-radius: 999px; padding: 3px 12px; font-weight: 700; font-size: .85rem; cursor: pointer; }
+.btn-copier:hover { background: #EAF8FA; }
+.btn-copier.fait { background: #D3F0DC; border-color: #2F9E5B; color: #17562F; }
+.copie-actions a { font-size: .85rem; font-weight: 700; color: var(--violet); }
+.copie.titre-web .copie-texte { font-family: var(--police-titres); font-weight: 700; font-size: 1.7rem; line-height: 1.15; }
+.copie.sous-titre-web .copie-texte { font-size: 1.1rem; font-weight: 600; color: var(--violet); }
+.copie.petit .copie-texte { font-size: .98rem; }
+.lignes-info .champ .v { font-size: 1.02rem; }
+.titre-pret { font-weight: 700; font-size: 1.15rem; margin: 0 0 8px; }
 .grille-photos a { display: block; }
 .grille-photos .attente { aspect-ratio: 1; border-radius: 12px; background: linear-gradient(100deg, #EEE9F6 30%, #F8F5FC 50%, #EEE9F6 70%); background-size: 200% 100%; animation: brille 1.2s linear infinite; }
 @keyframes brille { to { background-position: -200% 0; } }
@@ -803,11 +821,6 @@ function dessinerCandidatures() {
     const c3 = document.createElement('div'); c3.className = 'puces';
     const statut = statutDe(i);
     c3.appendChild(puce(statut, classeSelection(statut)));
-    if (statut === 'Accepté') {
-      if (i.dossier_final) c3.appendChild(puce('Dossier final : ' + i.dossier_final, classeEtat(i.dossier_final)));
-      if (i.paiement && i.paiement !== 'Non concerné') c3.appendChild(puce('Paiement : ' + i.paiement, classeEtat(i.paiement)));
-      if (i.confirmation) c3.appendChild(puce('Confirmation : ' + i.confirmation, classeEtat(i.confirmation)));
-    }
     if (i.email_a_envoyer) c3.appendChild(puce('Email à envoyer', 'a-envoyer'));
     const c4 = document.createElement('div'); c4.className = 'liens';
     c4.appendChild(boutonOuvrir(i.id));
@@ -843,14 +856,10 @@ function ouvrirLigne(genre, i) {
 }
 function pastillesSuivi(i, accepteSeulement) {
   const c3 = document.createElement('div'); c3.className = 'puces';
-  const statut = statutDe(i);
-  if (!i.suivi_id && i.suivi_id !== undefined) { c3.appendChild(puce('Sans candidature liée', 'sans-suivi')); return c3; }
-  c3.appendChild(puce(statut, classeSelection(statut)));
-  if (!accepteSeulement || statut === 'Accepté') {
-    if (i.dossier_final) c3.appendChild(puce('Dossier final : ' + i.dossier_final, classeEtat(i.dossier_final)));
-    if (i.paiement && i.paiement !== 'Non concerné') c3.appendChild(puce('Paiement : ' + i.paiement, classeEtat(i.paiement)));
-    if (i.confirmation) c3.appendChild(puce('Confirmation : ' + i.confirmation, classeEtat(i.confirmation)));
-  }
+  if (i.sans_suivi) { c3.appendChild(puce('Pas encore de suivi', 'sans-suivi')); return c3; }
+  if (i.dossier_final) c3.appendChild(puce('Dossier final : ' + i.dossier_final, classeEtat(i.dossier_final)));
+  if (i.paiement && i.paiement !== 'Non concerné') c3.appendChild(puce('Paiement : ' + i.paiement, classeEtat(i.paiement)));
+  if (i.confirmation) c3.appendChild(puce('Confirmation : ' + i.confirmation, classeEtat(i.confirmation)));
   return c3;
 }
 
@@ -871,10 +880,10 @@ function dessinerParticipants() {
   const zf = $('filtres-p-final'); zf.innerHTML = '';
   boutonFiltre(zf, 'Tous', parCat.length, pFinal === 'Tous', 'statut', () => { pFinal = 'Tous'; dessinerParticipants(); });
   etats.forEach((s) => boutonFiltre(zf, s, parCat.filter((i) => i.dossier_final === s).length, pFinal === s, 'statut', () => { pFinal = s; dessinerParticipants(); }));
-  boutonFiltre(zf, 'Sans candidature liée', parCat.filter((i) => !i.suivi_id).length, pFinal === 'Sans candidature liée', 'statut', () => { pFinal = 'Sans candidature liée'; dessinerParticipants(); });
+  if (participants.some((i) => i.sans_suivi)) boutonFiltre(zf, 'Pas encore de suivi', parCat.filter((i) => i.sans_suivi).length, pFinal === 'Pas encore de suivi', 'statut', () => { pFinal = 'Pas encore de suivi'; dessinerParticipants(); });
   const mot = normaliser($('recherche-p').value);
   const visibles = parCat.filter((i) => {
-    if (pFinal === 'Sans candidature liée') { if (i.suivi_id) return false; }
+    if (pFinal === 'Pas encore de suivi') { if (!i.sans_suivi) return false; }
     else if (pFinal !== 'Tous' && i.dossier_final !== pFinal) return false;
     return !mot || normaliser([i.nom, i.sous_titre, i.email, i.pole].join(' ')).indexOf(mot) >= 0;
   });
@@ -1018,20 +1027,76 @@ async function ouvrirFiche(genre, id, tab) {
   }
 }
 
-function carteGroupe(g) {
-  const c = carte(g.titre);
-  const grille = el('div', 'champs');
-  g.champs.forEach((champ) => {
-    const b = el('div', 'champ' + (champ.value.length > 90 || champ.value.indexOf('\n') >= 0 ? ' large' : ''));
-    b.appendChild(el('div', 'q', champ.label));
-    const v = el('div', 'v');
-    if (champ.lien && /^https?:\/\//i.test(champ.value)) {
-      const a = document.createElement('a'); a.href = champ.value; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = champ.value;
-      v.className = 'v liens-champ'; v.appendChild(a);
-    } else v.textContent = champ.value;
-    b.appendChild(v); grille.appendChild(b);
+function copierTexte(texte) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(texte);
+  } catch (e) { /* on essaie l'autre méthode */ }
+  return new Promise((ok, ko) => {
+    try {
+      const t = document.createElement('textarea'); t.value = texte; t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.appendChild(t); t.select();
+      const reussi = document.execCommand && document.execCommand('copy');
+      t.remove();
+      if (reussi) ok(); else ko(new Error('copie impossible'));
+    } catch (e) { ko(e); }
   });
-  c.appendChild(grille);
+}
+// Boîte à copier : tout le cadre est cliquable. opts : { classe, lien }
+function boiteCopie(label, valeur, opts) {
+  opts = opts || {};
+  const b = el('div', 'copie' + (opts.classe ? ' ' + opts.classe : ''));
+  b.title = 'Cliquer pour copier';
+  const tete = el('div', 'copie-tete');
+  tete.appendChild(el('span', 'copie-label', label));
+  const actions = el('div', 'copie-actions');
+  if (opts.lien && /^https?:\/\//i.test(valeur)) {
+    const a = document.createElement('a'); a.href = valeur; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = 'Ouvrir';
+    actions.appendChild(a);
+  }
+  const bouton = el('button', 'btn-copier', 'Copier'); bouton.type = 'button'; actions.appendChild(bouton);
+  tete.appendChild(actions); b.appendChild(tete);
+  b.appendChild(el('div', 'copie-texte', valeur));
+  const copier = () => {
+    copierTexte(valeur).then(() => {
+      bouton.textContent = 'Copié ✓'; bouton.classList.add('fait');
+      setTimeout(() => { bouton.textContent = 'Copier'; bouton.classList.remove('fait'); }, 1600);
+    }).catch(() => { bouton.textContent = 'Sélectionne et copie à la main'; setTimeout(() => { bouton.textContent = 'Copier'; }, 2500); });
+  };
+  b.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('a')) return; copier(); });
+  return b;
+}
+
+// Texte de la page du site : titre en gras, sous-titre plus petit, puis présentation et bio, chacun à copier.
+function carteTextePage(g) {
+  const c = carte('Texte pour la page du site');
+  const par = {}; g.champs.forEach((x) => { par[x.cle] = x; });
+  const liste = el('div', 'copies');
+  if (par.post_title) liste.appendChild(boiteCopie('Titre de la page', par.post_title.value, { classe: 'titre-web' }));
+  if (par.subtitle) liste.appendChild(boiteCopie('Sous-titre', par.subtitle.value, { classe: 'sous-titre-web' }));
+  const activite = par.title_pro || par.artist_type;
+  if (activite) liste.appendChild(boiteCopie(activite.label + ' (affiché sous le nom, par exemple « Herboriste »)', activite.value, { classe: 'petit' }));
+  if (par.post_content) liste.appendChild(boiteCopie('Présentation', par.post_content.value));
+  if (par.bio) liste.appendChild(boiteCopie('Bio du groupe / de la personne', par.bio.value));
+  g.champs.filter((x) => ['post_title', 'subtitle', 'title_pro', 'artist_type', 'post_content', 'bio'].indexOf(x.cle) < 0)
+    .forEach((x) => liste.appendChild(boiteCopie(x.label, x.value)));
+  c.appendChild(liste);
+  return c;
+}
+
+function carteGroupe(g) {
+  if (g.titre === 'Présentation') return carteTextePage(g);
+  const c = carte(g.titre);
+  if (g.titre === 'Technique') {
+    const rows = el('div', 'champs lignes-info');
+    g.champs.forEach((champ) => {
+      const b = el('div', 'champ'); b.appendChild(el('div', 'q', champ.label)); b.appendChild(el('div', 'v', champ.value)); rows.appendChild(b);
+    });
+    c.appendChild(rows);
+    return c;
+  }
+  const liste = el('div', 'copies');
+  g.champs.forEach((champ) => liste.appendChild(boiteCopie(champ.label, champ.value, { lien: !!champ.lien })));
+  c.appendChild(liste);
   return c;
 }
 function carteMotivation(texte) {
@@ -1196,7 +1261,7 @@ function dessinerDetail(d, listes, mode) {
   let carteReponses = null;
   if (champsAffiches.length) {
     carteReponses = carte('Réponses au formulaire');
-    const grille = el('div', 'champs');
+    const grille = el('div', 'champs lignes-info');
     champsAffiches.forEach((c) => {
       const b = el('div', 'champ' + (c.value.length > 90 || c.value.indexOf('\n') >= 0 ? ' large' : ''));
       b.appendChild(el('div', 'q', c.label)); b.appendChild(el('div', 'v', c.value));
@@ -1212,7 +1277,7 @@ function dessinerDetail(d, listes, mode) {
   if (genre === 'benevole' && d.motivation) cartesExtra.push(carteMotivation(d.motivation));
 
   // Statuts
-  const cs = carte('Suivi');
+  const cs = carte(genre === 'participant' ? 'Suivi du dossier' : 'Suivi');
   const boutons = el('div', 'statuts-boutons'); boutons.setAttribute('role', 'group'); boutons.setAttribute('aria-label', 'Sélection');
   const autres = el('div', 'autres-statuts');
   const message = el('p', 'message'); message.setAttribute('role', 'status');
@@ -1224,11 +1289,24 @@ function dessinerDetail(d, listes, mode) {
   }
   function redessinerStatuts() {
     boutons.innerHTML = '';
+    boutons.style.display = genre === 'participant' ? 'none' : '';
     if (!sid) {
       autres.innerHTML = ''; autres.style.display = 'block';
-      autres.appendChild(el('p', 'note-suivi', genre === 'benevole'
-        ? "Ce bénévole n'a pas encore de ligne dans Suivi. Dans le Sheet : menu Portail > Créer les lignes Suivi manquantes."
-        : "Aucune candidature n'est liée à ce dossier final (même email, même projet, même pôle). Le suivi n'est donc pas disponible ici."));
+      autres.appendChild(el('p', 'note-suivi', (genre === 'benevole' ? 'Ce bénévole' : 'Ce dossier') + " n'a pas encore de ligne de suivi (il est arrivé avant la mise à jour). Aucun email ne sera envoyé en la créant."));
+      const creer = el('button', 'btn', 'Créer le suivi maintenant'); creer.type = 'button';
+      creer.addEventListener('click', async () => {
+        creer.disabled = true; creer.textContent = 'Création...';
+        try {
+          const r = await appel({ op: 'creer_suivi', token: jeton, genre: genre, id: d.id, tab: d.tab || '' });
+          if (sessionExpiree(r)) return;
+          if (!r.ok) throw new Error(r.error || 'Erreur');
+          delete detailsPrets[cleDetail];
+          if (genre === 'participant') participants = null; else benevoles = null;
+          ouvrirFiche(genre, d.id, d.tab);
+          if (genre === 'participant') chargerParticipants(true); else chargerBenevoles(true);
+        } catch (err) { creer.disabled = false; creer.textContent = 'Créer le suivi maintenant'; message.className = 'message ko'; message.textContent = 'Impossible de créer le suivi. Réessaie.'; }
+      });
+      autres.appendChild(creer);
       return;
     }
     (listes['Sélection'] || []).forEach((v) => {
@@ -1237,12 +1315,7 @@ function dessinerDetail(d, listes, mode) {
       boutons.appendChild(b);
     });
     autres.innerHTML = '';
-    if (genre === 'benevole') { autres.style.display = 'none'; return; }
-    if (genre === 'candidature' && statuts['Sélection'] !== 'Accepté') {
-      autres.style.display = 'block';
-      autres.appendChild(el('p', 'note-suivi', 'Dossier final, paiement et confirmation apparaissent quand la candidature est acceptée.'));
-      return;
-    }
+    if (genre !== 'participant') { autres.style.display = 'none'; return; }   // paiement et confirmation : seulement pour un dossier final
     autres.style.display = '';
     ['Dossier final', 'Paiement', 'Confirmation'].forEach((piste) => {
       const w = el('div'); const id = 'st-' + piste.replace(/\s/g, '-');
@@ -1265,9 +1338,8 @@ function dessinerDetail(d, listes, mode) {
       if (r.statuts) { statuts = r.statuts; majListes(genre, d, statuts); }
       if ('email_pret' in r) { redessinerEmail(r.email_pret); majEmailAEnvoyer(genre, d, r.email_pret); }
       if (r.emails) redessinerHistorique(r.emails);
-      const pretMaisPasParti = !!(r.email_pret && !r.email_pret.erreur);
-      message.className = 'message ' + (r.ok ? (pretMaisPasParti ? 'ko' : 'ok') : 'ko');
-      message.textContent = r.ok ? 'Statut enregistré.' + (pretMaisPasParti ? ' ⚠ Un email est prêt mais PAS encore envoyé : vérifie-le plus bas, puis clique sur Envoyer.' : '') : (r.message || r.error || 'Changement refusé.');
+      message.className = 'message ' + (r.ok ? 'ok' : 'ko');
+      message.textContent = r.ok ? '✓ Statut enregistré : ' + (piste === 'Sélection' ? valeur : piste + ' : ' + valeur) : (r.message || r.error || 'Changement refusé.');
     } catch (err) {
       message.className = 'message ko'; message.textContent = 'Le serveur ne répond pas. Réessaie.';
     } finally { redessinerStatuts(); verrouiller(false); redessinerAlerte(); }
@@ -1282,7 +1354,7 @@ function dessinerDetail(d, listes, mode) {
     emailZone.innerHTML = '';
     emailZone.appendChild(el('h2', '', 'Email'));
     if (!pret) { emailZone.appendChild(el('p', 'meta', "Aucun email prêt. Change un statut pour en préparer un.")); return; }
-    emailZone.appendChild(el('p', 'ligne-mail', 'Prêt : ' + pret.libelle));
+    emailZone.appendChild(el('p', 'titre-pret', 'Prêt : ' + pret.libelle));
     if (pret.erreur) { emailZone.appendChild(el('p', 'message ko', pret.erreur)); return; }
     emailZone.appendChild(el('p', 'avis-email', '⚠ Cet email n\u2019est pas encore parti. Relis-le, puis clique sur Envoyer.'));
     emailZone.appendChild(el('p', 'ligne-mail', 'Destinataire : ' + pret.destinataire + (pret.reel ? (genre === 'candidature' ? ' (le candidat)' : ' (la personne concernée)') : ' (adresse de test)')));
