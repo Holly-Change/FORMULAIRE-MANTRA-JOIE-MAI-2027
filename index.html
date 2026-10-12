@@ -798,6 +798,12 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
 
       <div id="recap"></div>
 
+      <div class="champ" id="boite-paiement" style="display:none">
+        <label class="etiquette obligatoire" for="payment_proof">Preuve de ton paiement <span class="astuce">(capture d'écran ou PDF de ta confirmation HelloAsso ou de ton virement, 5 Mo maximum)</span></label>
+        <input type="file" id="payment_proof" accept="application/pdf,image/jpeg,image/png,image/webp">
+        <p class="aide" id="paiement-info"></p>
+      </div>
+
       <div class="consentement-boite" id="boite-consent">
         <div class="consentement-interieur">
           <div class="titre-consent">⚠️ Avant d'envoyer, une chose importante</div>
@@ -845,7 +851,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.12-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.13-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
@@ -1317,11 +1323,32 @@ function validerVideo() {
   if (etat.video === 'oui' && !valeur('video_url')) return erreur(5, 'Colle le lien de ta vidéo, ou choisis « Non merci ».');
   aller('tech');
 }
+// Pôle payant : une preuve de paiement est demandée. On regarde la configuration du serveur (onglet Pôles, colonne Payant).
+async function poleEstPayant() {
+  try {
+    if (!derniereConfig && CONFIG.scriptUrl.startsWith('https://script.google.com/')) {
+      const r = await fetch(CONFIG.scriptUrl + '?action=config');
+      const c = await r.json();
+      if (c && c.ok) derniereConfig = c;
+    }
+  } catch (e) { /* configuration indisponible : on traite le champ comme facultatif */ }
+  const p = derniereConfig && (derniereConfig.poles || []).find(x => x.nom === etat.category);
+  return p ? !!p.payant : null;   // null : on ne sait pas
+}
+async function afficherPreuvePaiement() {
+  const payant = await poleEstPayant();
+  const boite = $('boite-paiement');
+  boite.style.display = payant === false ? 'none' : 'block';
+  boite.querySelector('label').classList.toggle('obligatoire', payant === true);
+  $('paiement-info').textContent = payant === null ? 'Si ta participation est payante, ajoute ici ta preuve de paiement.' : '';
+  return payant;
+}
 function valider5() {
   if (etat.category === 'Artiste' && $('tech_sheet').files[0] && $('tech_sheet').files[0].size > 5 * 1024 * 1024)
     return erreur('tech', 'La fiche technique doit faire moins de 5 Mo.');
   construireRecap();
   aller(7);
+  afficherPreuvePaiement();
 }
 
 // ------------------ Etape 6 : recap facon page finale ------------------
@@ -1406,9 +1433,14 @@ async function envoyer() {
   }
 
   if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur(7, 'Le nouveau script doit être déployé avant le premier envoi.');
+  const payant = await afficherPreuvePaiement();
+  const preuve = $('payment_proof').files[0];
+  if (payant === true && !preuve) { $('boite-paiement').scrollIntoView({ behavior: 'smooth', block: 'center' }); return erreur(7, 'Ajoute la preuve de ton paiement (capture d’écran ou PDF).'); }
+  if (preuve && (preuve.size > 5 * 1024 * 1024 || !/^(application\/pdf|image\/(jpeg|png|webp))$/.test(preuve.type))) return erreur(7, 'La preuve de paiement doit être un PDF ou une image (JPG, PNG, WebP) de 5 Mo maximum.');
   envoiEnCours = true;
   let membres, technique;
-  try { membres = await lireMembres(); technique = await lireTechnique(); }
+  let preuveData = '';
+  try { membres = await lireMembres(); technique = await lireTechnique(); if (preuve) preuveData = await lireFichier(preuve); }
   catch(e) { envoiEnCours = false; return erreur(7, 'Pièce jointe : ' + (e && e.message ? e.message : String(e))); }
   // Cles identiques au schema partage, copiees telles quelles
   const donnees = {
@@ -1437,7 +1469,8 @@ async function envoyer() {
     consent: true,
     featured_image: etat.featured_image,
     featured_original: etat.featured_original,
-    gallery: etat.gallery
+    gallery: etat.gallery,
+    payment_proof: preuveData
   };
 
   $('nav-7').style.display = 'none';
@@ -1835,9 +1868,10 @@ function candMontant(m) { return /^[0-9][0-9\s.,]*$/.test(String(m).trim()) ? St
 // La configuration (pôles, conditions, ouvert ou fermé) se charge dès l'ouverture de la page :
 // quand la personne clique sur Candidater, elle est déjà là ou presque.
 let candPrefetch = null;
+let derniereConfig = null;   // dernière configuration reçue du serveur (pôles, payant ou gratuit)
 function candPreCharger() {
   if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return;
-  candPrefetch = fetch(CONFIG.scriptUrl + '?action=config').then(r => r.json()).catch(() => null);
+  candPrefetch = fetch(CONFIG.scriptUrl + '?action=config').then(r => r.json()).then(c => { derniereConfig = c; return c; }).catch(() => null);
 }
 const CAND_COULEURS = {
   'Artiste': ['#FFE3F2', '#E58BC4'], 'Atelier': ['#D6F4F6', '#6CC6D1'], 'Bien-être': ['#DDF2E4', '#7CC79A'],
@@ -1860,6 +1894,7 @@ async function ouvrirCandidature() {
   try {
     if (deja) cand.config = await deja;
     if (!cand.config) { const r = await fetch(CONFIG.scriptUrl + '?action=config'); cand.config = await r.json(); }
+    if (cand.config && cand.config.ok) derniereConfig = cand.config;
   } catch (e) { cand.config = null; }
   candEtatChargement(false);
   candAfficherPoles();
