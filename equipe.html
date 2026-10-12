@@ -22,8 +22,15 @@
   --or: #E0A93B;
   --navy: #0B2A47;
   --creme: #F6F3FB;
-  --carte: #FFFFFF;
-  --ligne: rgba(11, 42, 71, 0.13);
+  --carte: rgba(255, 255, 255, 0.74);
+  --ligne: rgba(11, 42, 71, 0.10);
+  /* Pastels : un fond doux et une encre foncée de la même famille */
+  --p-rose: #F7DCEA; --p-rose-t: #7A1F54;
+  --p-turq: #D3EEF1; --p-turq-t: #07505E;
+  --p-violet: #E6DEF6; --p-violet-t: #43296F;
+  --p-or: #FBEFCF; --p-or-t: #6B4A08;
+  --p-vert: #D8F1E0; --p-vert-t: #17562F;
+  --p-rouge: #FFE0DC; --p-rouge-t: #8A2314;
   --doux: rgba(11, 42, 71, 0.68);
   --erreur: #B3321F;
   --police-titres: 'Baloo 2', system-ui, sans-serif;
@@ -32,7 +39,7 @@
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
-  margin: 0; background: var(--creme); color: var(--navy);
+  margin: 0; background: linear-gradient(160deg, #F6F1FB 0%, #EAF4F8 55%, #FBF0F6 100%) fixed; color: var(--navy);
   font-family: var(--police-corps); font-size: 16px; line-height: 1.5;
 }
 button, input { font: inherit; color: inherit; }
@@ -49,8 +56,8 @@ button, input { font: inherit; color: inherit; }
 .connexion input:focus { border-color: var(--turquoise-vif); outline: none; }
 .connexion .btn { width: 100%; margin-top: 16px; }
 .message-erreur { color: var(--erreur); font-weight: 700; margin-top: 14px; min-height: 1.5em; }
-.btn { display: inline-block; border: 0; border-radius: 999px; cursor: pointer; font-weight: 700; padding: 12px 24px; background: linear-gradient(100deg, var(--magenta), var(--violet)); color: #fff; }
-.btn:hover { filter: brightness(1.12); }
+.btn { display: inline-block; border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 999px; cursor: pointer; font-weight: 700; padding: 12px 24px; background: linear-gradient(100deg, #F3C9E0, #D3C3F0); color: #4A1E5E; box-shadow: 0 2px 10px rgba(110, 80, 160, 0.14); }
+.btn:hover { filter: brightness(0.97); box-shadow: 0 3px 14px rgba(110, 80, 160, 0.22); }
 .btn[disabled] { opacity: .6; cursor: wait; }
 .btn-doux { background: transparent; color: var(--navy); border: 2px solid var(--ligne); padding: 8px 16px; }
 .btn-doux:hover { background: rgba(11, 42, 71, 0.07); filter: none; }
@@ -59,7 +66,7 @@ button, input { font: inherit; color: inherit; }
 .app { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100vh; padding-top: env(safe-area-inset-top, 0px); }
 .menu {
   position: sticky; top: 0; align-self: start; height: 100vh; display: flex; flex-direction: column;
-  padding: 22px 14px 16px; background: linear-gradient(180deg, #0B2A47 0%, #153A68 55%, #3A2A73 100%); color: #fff; overflow: hidden;
+  padding: 22px 14px 16px; background: linear-gradient(180deg, rgba(36, 62, 104, 0.94) 0%, rgba(58, 72, 126, 0.92) 55%, rgba(92, 78, 148, 0.9) 100%); color: #fff; overflow: hidden;
 }
 .marque { text-align: center; padding: 0 6px 18px; }
 .marque img { max-width: 100%; max-height: 92px; object-fit: contain; }
@@ -85,27 +92,27 @@ main { padding: 0 0 40px; min-width: 0; }
 /* ---------- Accueil ---------- */
 .hero {
   position: relative; min-height: 230px; display: grid; place-items: center; padding: 28px 20px 70px;
-  background: linear-gradient(120deg, #0B2A47, #2D3F7C 50%, #6B2C91); background-size: cover; background-position: center;
+  background: linear-gradient(120deg, #7F9FD0, #A98FD6 55%, #E7A5CB); background-size: cover; background-position: center;
 }
 .hero .titre {
-  background: rgba(11, 42, 71, 0.62); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(24, 36, 78, 0.42); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 18px; padding: 14px 32px; text-align: center; max-width: 100%;
 }
 .hero h1 { font-family: var(--police-titres); font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.05; margin: 0; color: #fff; }
 .hero .sous { margin: 2px 0 0; color: var(--turquoise-clair); font-weight: 700; }
 .totaux { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: -50px auto 0; position: relative; max-width: 1024px; width: calc(100% - 56px); }
 .total {
-  background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 16px 18px;
+  background: var(--carte); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.85); border-radius: 18px; padding: 16px 18px;
   display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center; text-align: left; cursor: pointer;
-  box-shadow: 0 6px 18px rgba(28, 27, 58, 0.08);
+  box-shadow: 0 6px 22px rgba(90, 70, 150, 0.10);
 }
 .total:hover { border-color: var(--turquoise-vif); }
-.total .pastille { grid-row: 1 / 3; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: #fff; }
+.total .pastille { grid-row: 1 / 3; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; }
 .total .pastille svg { width: 26px; height: 26px; }
 .total .libelle { font-weight: 700; }
 .total .nombre { font-family: var(--police-titres); font-weight: 700; font-size: 2rem; line-height: 1; }
 .total .lien { grid-column: 1 / -1; color: var(--violet); font-weight: 700; font-size: .9rem; margin-top: 6px; }
-.bloc { margin: 26px auto 0; width: calc(100% - 56px); max-width: 1024px; background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 18px 20px; }
+.bloc { margin: 26px auto 0; width: calc(100% - 56px); max-width: 1024px; background: var(--carte); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.85); box-shadow: 0 6px 22px rgba(90, 70, 150, 0.08); border-radius: 18px; padding: 18px 20px; }
 .bloc .entete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
 .bloc h2 { font-family: var(--police-titres); font-size: 1.3rem; margin: 0; }
 .lien-bouton { border: 0; background: none; cursor: pointer; color: var(--violet); font-weight: 700; padding: 4px 0; }
@@ -116,7 +123,7 @@ main { padding: 0 0 40px; min-width: 0; }
 
 /* ---------- Candidatures ---------- */
 .titre-page { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-.titre-page .rond { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--magenta), var(--violet)); color: #fff; display: grid; place-items: center; flex: none; }
+.titre-page .rond { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--p-rose), var(--p-violet)); color: var(--p-violet-t); display: grid; place-items: center; flex: none; }
 .titre-page .rond svg { width: 28px; height: 28px; }
 .titre-page h1 { font-family: var(--police-titres); font-size: 2rem; line-height: 1.05; margin: 0; }
 .titre-page p { margin: 0; color: var(--doux); }
@@ -126,24 +133,26 @@ main { padding: 0 0 40px; min-width: 0; }
 .groupe-filtres { margin-bottom: 12px; }
 .groupe-filtres .etiquette { display: block; font-weight: 700; font-size: .9rem; color: var(--doux); margin-bottom: 6px; }
 .filtres { display: flex; flex-wrap: wrap; gap: 8px; }
-.filtre { border: 2px solid var(--ligne); background: var(--carte); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600; }
-.filtre[aria-pressed="true"] { background: linear-gradient(100deg, var(--magenta), var(--violet)); border-color: transparent; color: #fff; }
-.filtre.statut[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); }
+.filtre { border: 1.5px solid rgba(11, 42, 71, 0.12); background: rgba(255, 255, 255, 0.6); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600; color: var(--navy); }
+.filtre:hover { background: rgba(255, 255, 255, 0.9); }
+.filtre[aria-pressed="true"] { background: var(--p-violet); border-color: #B9A5E3; color: var(--p-violet-t); }
+.filtre[aria-pressed="true"]::before { content: "\2713  "; }
+.filtre.statut[aria-pressed="true"] { background: var(--p-turq); border-color: #8CCBD3; color: var(--p-turq-t); }
 .filtre .n { opacity: .7; margin-left: 5px; font-weight: 400; }
 .compte { color: var(--doux); font-size: .92rem; margin: 6px 0 10px; }
 .liste { display: grid; gap: 10px; }
 .ligne {
-  background: var(--carte); border: 1px solid var(--ligne); border-radius: 14px; padding: 14px 16px;
+  background: var(--carte); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.85); box-shadow: 0 4px 16px rgba(90, 70, 150, 0.07); border-radius: 14px; padding: 14px 16px;
   display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr) minmax(0, 1.6fr) auto; gap: 8px 16px; align-items: center;
 }
 .ligne .projet { font-family: var(--police-titres); font-weight: 600; font-size: 1.15rem; line-height: 1.2; overflow-wrap: anywhere; }
 .meta { color: var(--doux); font-size: .92rem; overflow-wrap: anywhere; }
 .puces { display: flex; flex-wrap: wrap; gap: 6px; }
 .puce { font-size: .8rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: rgba(28,27,58,.08); }
-.puce.selection-etudier { background: #E6E1F7; color: #3F2A7A; }
-.puce.selection-accepte { background: #D3F0DC; color: #17562F; }
-.puce.selection-attente { background: #FFEFC2; color: #6B4A08; }
-.puce.selection-refuse { background: #FFD9D6; color: #8A2314; }
+.puce.selection-etudier { background: var(--p-violet); color: var(--p-violet-t); }
+.puce.selection-accepte { background: var(--p-vert); color: var(--p-vert-t); }
+.puce.selection-attente { background: var(--p-or); color: var(--p-or-t); }
+.puce.selection-refuse { background: var(--p-rouge); color: var(--p-rouge-t); }
 .puce.etat-ok { background: #fff; border: 2px solid var(--turquoise-vif); color: #0B5568; }
 .puce.etat-attention { background: #fff; border: 2px dashed #E07A2F; color: #8A3A0A; }
 .puce.a-envoyer { background: #FFE5E2; border: 2px solid var(--erreur); color: var(--erreur); }
@@ -167,21 +176,35 @@ main { padding: 0 0 40px; min-width: 0; }
 .champ .v { font-size: 1.08rem; line-height: 1.55; color: var(--navy); white-space: pre-wrap; overflow-wrap: anywhere; }
 /* Boîtes à copier : un clic et c'est dans le presse-papiers, prêt à coller dans la page du site */
 .copies { display: grid; gap: 10px; }
-.copie { background: var(--carte); border: 1.5px solid var(--ligne); border-radius: 12px; padding: 10px 14px; cursor: copy; }
+.copie { background: rgba(255, 255, 255, 0.7); border: 1.5px solid rgba(11, 42, 71, 0.10); border-radius: 12px; padding: 10px 14px; cursor: copy; }
 .copie:hover { border-color: var(--turquoise-vif); background: #F7FDFE; }
 .copie-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
 .copie-label { font-size: .85rem; font-weight: 700; color: var(--violet); }
 .copie-texte { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.55; color: var(--navy); }
 .copie-actions { display: flex; align-items: center; gap: 8px; flex: none; }
-.btn-copier { border: 2px solid var(--turquoise); background: #fff; color: #0B5568; border-radius: 999px; padding: 3px 12px; font-weight: 700; font-size: .85rem; cursor: pointer; }
+.btn-copier { border: 1.5px solid #8CCBD3; background: var(--p-turq); color: var(--p-turq-t); border-radius: 999px; padding: 3px 12px; font-weight: 700; font-size: .85rem; cursor: pointer; }
 .btn-copier:hover { background: #EAF8FA; }
-.btn-copier.fait { background: #D3F0DC; border-color: #2F9E5B; color: #17562F; }
+.btn-copier.fait { background: var(--p-vert); border-color: #8FD3A6; color: var(--p-vert-t); }
 .copie-actions a { font-size: .85rem; font-weight: 700; color: var(--violet); }
 .copie.titre-web .copie-texte { font-family: var(--police-titres); font-weight: 700; font-size: 1.7rem; line-height: 1.15; }
 .copie.sous-titre-web .copie-texte { font-size: 1.1rem; font-weight: 600; color: var(--violet); }
 .copie.petit .copie-texte { font-size: .98rem; }
 .lignes-info .champ .v { font-size: 1.02rem; }
+
 .titre-pret { font-weight: 700; font-size: 1.15rem; margin: 0 0 8px; }
+.roue { display: inline-block; width: 16px; height: 16px; border-radius: 50%; border: 3px solid rgba(11, 42, 71, 0.18); border-top-color: var(--turquoise); animation: tourne .8s linear infinite; vertical-align: -3px; margin-right: 8px; }
+.copiable { cursor: copy; border-radius: 8px; padding: 2px 6px; margin-left: -6px; }
+.copiable:hover { background: rgba(255, 255, 255, 0.8); }
+.copiable .fait { color: var(--p-vert-t); font-weight: 700; font-size: .85rem; margin-left: 8px; }
+.onglets { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; }
+.onglets button { border: 1.5px solid rgba(11, 42, 71, 0.12); background: rgba(255, 255, 255, 0.6); color: var(--navy); border-radius: 999px; padding: 9px 20px; font-weight: 700; font-size: 1rem; cursor: pointer; }
+.onglets button:hover { background: rgba(255, 255, 255, 0.95); }
+.onglets button[aria-selected="true"] { background: var(--p-violet); border-color: #B9A5E3; color: var(--p-violet-t); }
+.onglet-contenu[hidden] { display: none; }
+.preuve { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--ligne); }
+.preuve a { text-decoration: none; font-weight: 700; padding: 7px 16px; border-radius: 999px; background: var(--p-turq); color: var(--p-turq-t); border: 1px solid rgba(255, 255, 255, 0.9); }
+.aide-statut { color: var(--doux); font-size: .88rem; margin: 4px 0 0; }
+.copie-texte a { color: var(--violet); font-weight: 700; }
 .grille-photos a { display: block; }
 .grille-photos .attente { aspect-ratio: 1; border-radius: 12px; background: linear-gradient(100deg, #EEE9F6 30%, #F8F5FC 50%, #EEE9F6 70%); background-size: 200% 100%; animation: brille 1.2s linear infinite; }
 @keyframes brille { to { background-position: -200% 0; } }
@@ -193,7 +216,7 @@ main { padding: 0 0 40px; min-width: 0; }
 .mode { display: inline-block; font-weight: 700; font-size: .85rem; padding: 4px 12px; border-radius: 999px; margin: 8px 0 4px; }
 .mode.test { background: #FBEFD2; color: #6B4A08; }
 .mode.reel { background: #FFE1DC; color: var(--erreur); }
-.carte { background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 18px 20px; margin-top: 16px; }
+.carte { background: var(--carte); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.85); box-shadow: 0 6px 22px rgba(90, 70, 150, 0.08); border-radius: 18px; padding: 18px 20px; margin-top: 16px; }
 .carte h2 { font-family: var(--police-titres); font-size: 1.25rem; margin: 0 0 10px; }
 .grille-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
 .grille-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; border: 1px solid var(--ligne); background: #f3eef2; }
@@ -203,10 +226,10 @@ main { padding: 0 0 40px; min-width: 0; }
 .reponses { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; font-family: var(--police-corps); }
 .statuts-boutons { display: flex; flex-wrap: wrap; gap: 8px; }
 .statuts-boutons button { border: 3px solid transparent; border-radius: 999px; padding: 9px 20px; cursor: pointer; font-weight: 700; font-size: 1rem; }
-.statuts-boutons button[data-statut="À étudier"] { background: #E6E1F7; color: #3F2A7A; }
-.statuts-boutons button[data-statut="Accepté"] { background: #D3F0DC; color: #17562F; }
-.statuts-boutons button[data-statut="Liste d'attente"] { background: #FFEFC2; color: #6B4A08; }
-.statuts-boutons button[data-statut="Refusé"] { background: #FFD9D6; color: #8A2314; }
+.statuts-boutons button[data-statut="À étudier"] { background: var(--p-violet); color: var(--p-violet-t); }
+.statuts-boutons button[data-statut="Accepté"] { background: var(--p-vert); color: var(--p-vert-t); }
+.statuts-boutons button[data-statut="Liste d'attente"] { background: var(--p-or); color: var(--p-or-t); }
+.statuts-boutons button[data-statut="Refusé"] { background: var(--p-rouge); color: var(--p-rouge-t); }
 .statuts-boutons button:hover { filter: brightness(0.96); }
 .statuts-boutons button[aria-pressed="true"] { border-color: currentColor; box-shadow: 0 2px 8px rgba(11, 42, 71, 0.18); }
 .statuts-boutons button[aria-pressed="true"]::before { content: "\2713  "; }
@@ -243,12 +266,12 @@ main { padding: 0 0 40px; min-width: 0; }
 .message.ko { color: var(--erreur); }
 .email-pret .ligne-mail { margin: 0 0 4px; overflow-wrap: anywhere; }
 .email-pret .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
-.btn-ouvrir { background: var(--turquoise); }
-.btn-ouvrir:hover { filter: brightness(1.15); }
-.liens .btn-ouvrir { border: 0; color: #fff; padding: 7px 16px; font-size: .9rem; }
+.btn-ouvrir { background: var(--p-turq); color: var(--p-turq-t); border-color: rgba(255, 255, 255, 0.9); }
+.btn-ouvrir:hover { filter: brightness(0.96); }
+.liens .btn-ouvrir { color: var(--p-turq-t); padding: 7px 16px; font-size: .9rem; }
 
 /* ---------- Fiche : grande image, infos avec icônes, gros boutons ---------- */
-.fiche-hero { display: grid; grid-template-columns: minmax(280px, 44%) minmax(0, 1fr); gap: 26px; align-items: stretch; background: var(--carte); border: 1px solid var(--ligne); border-radius: 22px; padding: 18px; box-shadow: 0 8px 24px rgba(11, 42, 71, 0.08); }
+.fiche-hero { display: grid; grid-template-columns: minmax(280px, 44%) minmax(0, 1fr); gap: 26px; align-items: stretch; background: var(--carte); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.85); border-radius: 22px; padding: 18px; box-shadow: 0 8px 28px rgba(90, 70, 150, 0.10); }
 .fiche-image { position: relative; min-height: 340px; border-radius: 16px; overflow: hidden; background: linear-gradient(135deg, #1FA8C3, #6B2C91 60%, #B5207F); display: grid; place-items: center; }
 .fiche-image img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .fiche-image a { position: absolute; inset: 0; }
@@ -260,31 +283,39 @@ main { padding: 0 0 40px; min-width: 0; }
 .fiche-infos li { display: flex; align-items: center; gap: 12px; overflow-wrap: anywhere; font-size: 1.05rem; }
 .fiche-infos svg { width: 22px; height: 22px; flex: none; color: var(--turquoise); }
 .actions-grandes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
-.btn-grand { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 66px; padding: 16px 20px; border: 0; border-radius: 18px; color: #fff; font-family: inherit; font-weight: 700; font-size: 1.2rem; text-decoration: none; cursor: pointer; box-shadow: 0 6px 16px rgba(11, 42, 71, 0.16); }
+.btn-grand { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 66px; padding: 16px 20px; border: 1px solid rgba(255, 255, 255, 0.85); border-radius: 18px; font-family: inherit; font-weight: 700; font-size: 1.2rem; text-decoration: none; cursor: pointer; box-shadow: 0 6px 18px rgba(90, 70, 150, 0.12); }
 .btn-grand svg { width: 28px; height: 28px; flex: none; }
-.btn-grand.teal { background: linear-gradient(100deg, #0A7A8F, #148FA8); }
-.btn-grand.rose { background: linear-gradient(100deg, #B5207F, #C9308F); }
-.btn-grand.violet { background: linear-gradient(100deg, #6B2C91, #8636A6); }
-.btn-grand:hover { filter: brightness(1.1); }
+.btn-grand.teal { background: linear-gradient(100deg, #C4E8EC, #DDF2F4); color: var(--p-turq-t); }
+.btn-grand.rose { background: linear-gradient(100deg, #F6CFE3, #FADFEC); color: var(--p-rose-t); }
+.btn-grand.violet { background: linear-gradient(100deg, #DDD2F3, #ECE5F9); color: var(--p-violet-t); }
+.btn-grand:hover { filter: brightness(0.97); }
 .btn-grand.inactif { background: #D9D5E3; color: #4B4660; box-shadow: none; cursor: default; }
 
+/* Barre du haut avec le bouton menu (téléphone) */
+.barre-mobile { display: none; }
+@media (max-width: 900px) {
+  .barre-mobile { display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 20; padding: 10px 14px; background: rgba(36, 62, 104, 0.96); color: #fff; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  .barre-mobile .titre-mobile { font-family: var(--police-titres); font-weight: 700; font-size: 1.2rem; color: var(--rose-clair); }
+  .burger { width: 46px; height: 46px; border: 1.5px solid rgba(255, 255, 255, 0.5); border-radius: 12px; background: rgba(255, 255, 255, 0.12); color: #fff; cursor: pointer; display: grid; place-items: center; }
+  .burger svg { width: 26px; height: 26px; }
+  .menu { display: none; position: static; height: auto; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 6px; padding: 12px 14px 16px; }
+  .menu.ouvert { display: flex; }
+  .marque { display: none; }
+  .menu nav { display: grid; width: 100%; }
+  .menu .bas { margin-top: 8px; margin-left: 0; display: grid; }
+  .sous-menu { display: grid; }
+}
 @media (max-width: 900px) {
   .fiche-hero { grid-template-columns: 1fr; }
   .fiche-image { min-height: 240px; }
   .actions-grandes { grid-template-columns: 1fr; }
   .app { grid-template-columns: 1fr; }
-  .menu { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 14px; border-right: 0; border-bottom: 1px solid var(--ligne); }
-  .marque { padding: 0; text-align: left; }
-  .marque img { max-height: 44px; }
-  .menu nav { display: flex; flex-wrap: wrap; width: auto; }
-  .menu .bas { margin-top: 0; margin-left: auto; display: flex; }
-  .menu .bas .btn-doux { width: auto; }
+
   .page { padding: 18px 14px 0; }
   .totaux { grid-template-columns: 1fr; margin: -44px 14px 0; }
   .bloc { margin: 20px 14px 0; }
   .ligne, .recent { grid-template-columns: 1fr; }
   .champs { grid-template-columns: 1fr; }
-  .sous-menu { display: none; }
   .historique li { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
@@ -304,7 +335,13 @@ main { padding: 0 0 40px; min-width: 0; }
 </section>
 
 <div class="app" id="app" hidden>
-  <aside class="menu">
+  <div class="barre-mobile" id="barre-mobile">
+    <span class="titre-mobile">Portail Festival</span>
+    <button type="button" class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="menu-principal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+  <aside class="menu" id="menu-principal">
     <div class="marque" id="marque"></div>
     <nav aria-label="Menu du Portail Festival">
       <button type="button" data-vue="accueil">
@@ -394,6 +431,7 @@ main { padding: 0 0 40px; min-width: 0; }
 </div>
 
 <script>
+const VERSION_PAGE = 'v3.13-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 const ORDRE_POLES = ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'];
@@ -437,6 +475,20 @@ function montrerConnexion(message) {
   $('erreur-connexion').textContent = message || '';
   $('mot-de-passe').focus();
 }
+
+/* ---------- Menu burger (téléphone) ---------- */
+function fermerMenu() {
+  $('menu-principal').classList.remove('ouvert');
+  $('burger').setAttribute('aria-expanded', 'false');
+  $('burger').setAttribute('aria-label', 'Ouvrir le menu');
+}
+$('burger').addEventListener('click', () => {
+  const ouvert = $('menu-principal').classList.toggle('ouvert');
+  $('burger').setAttribute('aria-expanded', String(ouvert));
+  $('burger').setAttribute('aria-label', ouvert ? 'Fermer le menu' : 'Ouvrir le menu');
+});
+$('menu-principal').addEventListener('click', (e) => { if (e.target.closest('button:not(.btn-doux), a')) fermerMenu(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fermerMenu(); });
 
 /* ---------- Connexion ---------- */
 $('form-connexion').addEventListener('submit', async (e) => {
@@ -542,8 +594,10 @@ function habiller() {
     marque.appendChild(texteMarque());
   }
   const v = $('version');
-  v.className = 'version' + (versionServeur ? '' : ' alerte-version');
-  v.textContent = versionServeur ? 'Serveur ' + versionServeur : "Serveur pas à jour : Deploy > Manage deployments > New version";
+  const memeVersion = versionServeur && versionServeur === VERSION_PAGE;
+  v.className = 'version' + (memeVersion ? '' : ' alerte-version');
+  v.textContent = !versionServeur ? "Serveur pas à jour : Deploy > Manage deployments > New version"
+    : (memeVersion ? 'Serveur ' + versionServeur : 'Page ' + VERSION_PAGE + ' / serveur ' + versionServeur + ' : recharge la page avec Ctrl+Shift+R, ou redéploie le serveur');
   $('hero-titre').textContent = config.edition || 'Mantra Joie 2027';
   const image = imageSure(config.image);
   const hero = $('hero');
@@ -651,6 +705,8 @@ function classeSelection(statut) {
   if (statut === 'Refusé') return 'selection-refuse';
   return '';
 }
+const NOM_PISTE = { 'Confirmation': 'Participation' };
+function nomPiste(p) { return NOM_PISTE[p] || p; }
 function classeEtat(valeur) {
   if (['Validé', 'Vérifié', 'Confirmé', 'Reçu'].indexOf(valeur) >= 0) return 'etat-ok';
   if (['À vérifier', 'À compléter', 'En attente'].indexOf(valeur) >= 0) return 'etat-attention';
@@ -682,10 +738,19 @@ function grosBouton(couleur, nom, texte, url, action) {
   const t = document.createElement('span'); t.textContent = texte; b.appendChild(t);
   return b;
 }
-function ligneInfo(nomIcone, texte) {
+function ligneInfo(nomIcone, texte, copiable) {
   const li = document.createElement('li');
   li.innerHTML = svgIcone(nomIcone);
   const t = document.createElement('span'); t.textContent = texte; li.appendChild(t);
+  if (copiable) {
+    li.className = 'copiable'; li.title = 'Cliquer pour copier'; li.setAttribute('role', 'button'); li.tabIndex = 0;
+    const copier = () => copierTexte(texte).then(() => {
+      const ok = document.createElement('span'); ok.className = 'fait'; ok.textContent = 'Copié ✓'; li.appendChild(ok);
+      setTimeout(() => ok.remove(), 1600);
+    }).catch(() => { /* rien à faire : la ligne reste sélectionnable à la main */ });
+    li.addEventListener('click', copier);
+    li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copier(); } });
+  }
   return li;
 }
 function lienSur(url, texte) {
@@ -727,17 +792,17 @@ function dessinerAccueil() {
   const zone = $('totaux');
   zone.innerHTML = '';
   const cartes = [
-    { libelle: 'Candidatures', nombre: items.length, couleur: 'var(--magenta)', icone: 'fichier', statut: 'Tous' },
-    { libelle: 'À étudier', nombre: items.filter((i) => statutDe(i) === 'À étudier').length, couleur: 'var(--violet)', icone: 'loupe', statut: 'À étudier' },
-    { libelle: 'Acceptées', nombre: items.filter((i) => statutDe(i) === 'Accepté').length, couleur: 'var(--turquoise)', icone: 'coche', statut: 'Accepté' },
-    { libelle: 'Participants', nombre: participants ? participants.length : (statsServeur ? statsServeur.participants : '…'), couleur: '#B5207F', icone: 'groupe', vers: 'participants' },
-    { libelle: 'Bénévoles', nombre: benevoles ? benevoles.length : (statsServeur ? statsServeur.benevoles : '…'), couleur: '#148FA8', icone: 'coeur', vers: 'benevoles' },
-    { libelle: 'Emails à envoyer', nombre: statsServeur ? statsServeur.emails_a_envoyer : items.filter((i) => i.email_a_envoyer).length, couleur: '#C43D2B', icone: 'courrier', statut: 'Email à envoyer' }
+    { libelle: 'Candidatures', nombre: items.length, pastel: ['#F7DCEA', '#7A1F54'], icone: 'fichier', statut: 'Tous' },
+    { libelle: 'À étudier', nombre: items.filter((i) => statutDe(i) === 'À étudier').length, pastel: ['#E6DEF6', '#43296F'], icone: 'loupe', statut: 'À étudier' },
+    { libelle: 'Acceptées', nombre: items.filter((i) => statutDe(i) === 'Accepté').length, pastel: ['#D8F1E0', '#17562F'], icone: 'coche', statut: 'Accepté' },
+    { libelle: 'Participants', nombre: participants ? participants.length : (statsServeur ? statsServeur.participants : '…'), pastel: ['#FBEFCF', '#6B4A08'], icone: 'groupe', vers: 'participants' },
+    { libelle: 'Bénévoles', nombre: benevoles ? benevoles.length : (statsServeur ? statsServeur.benevoles : '…'), pastel: ['#D3EEF1', '#07505E'], icone: 'coeur', vers: 'benevoles' },
+    { libelle: 'Emails à envoyer', nombre: statsServeur ? statsServeur.emails_a_envoyer : items.filter((i) => i.email_a_envoyer).length, pastel: ['#FFE0DC', '#8A2314'], icone: 'courrier', statut: 'Email à envoyer' }
   ];
   cartes.forEach((c) => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'total';
-    const p = document.createElement('span'); p.className = 'pastille'; p.style.background = c.couleur; p.innerHTML = icone(c.icone);
+    const p = document.createElement('span'); p.className = 'pastille'; p.style.background = c.pastel[0]; p.style.color = c.pastel[1]; p.innerHTML = icone(c.icone);
     const l = document.createElement('span'); l.className = 'libelle'; l.textContent = c.libelle;
     const n = document.createElement('span'); n.className = 'nombre'; n.textContent = String(c.nombre);
     const k = document.createElement('span'); k.className = 'lien'; k.textContent = 'Voir la liste';
@@ -859,7 +924,7 @@ function pastillesSuivi(i, accepteSeulement) {
   if (i.sans_suivi) { c3.appendChild(puce('Pas encore de suivi', 'sans-suivi')); return c3; }
   if (i.dossier_final) c3.appendChild(puce('Dossier final : ' + i.dossier_final, classeEtat(i.dossier_final)));
   if (i.paiement && i.paiement !== 'Non concerné') c3.appendChild(puce('Paiement : ' + i.paiement, classeEtat(i.paiement)));
-  if (i.confirmation) c3.appendChild(puce('Confirmation : ' + i.confirmation, classeEtat(i.confirmation)));
+  if (i.confirmation) c3.appendChild(puce('Participation : ' + i.confirmation, classeEtat(i.confirmation)));
   return c3;
 }
 
@@ -992,6 +1057,13 @@ function el(balise, classe, texte) {
   return e;
 }
 
+function roue(texte) {
+  const s = document.createElement('span');
+  const r = document.createElement('span'); r.className = 'roue'; r.setAttribute('aria-hidden', 'true');
+  s.appendChild(r); s.appendChild(document.createTextNode(texte));
+  return s;
+}
+
 function carte(titre) {
   const c = el('section', 'carte');
   c.appendChild(el('h2', '', titre));
@@ -1008,7 +1080,7 @@ async function ouvrirFiche(genre, id, tab) {
   detailId = id; detailGenre = genre; detailTab = tab || '';
   const zone = $('detail');
   zone.innerHTML = '';
-  zone.appendChild(el('p', 'compte', 'Chargement de la fiche et des photos...'));
+  { const p = el('p', 'compte'); p.appendChild(roue('Chargement de la fiche et des photos...')); zone.appendChild(p); }
   naviguer('detail');
   const retourVers = ({ candidature: 'candidatures', participant: 'participants', benevole: 'benevoles' })[genre];
   try {
@@ -1055,7 +1127,12 @@ function boiteCopie(label, valeur, opts) {
   }
   const bouton = el('button', 'btn-copier', 'Copier'); bouton.type = 'button'; actions.appendChild(bouton);
   tete.appendChild(actions); b.appendChild(tete);
-  b.appendChild(el('div', 'copie-texte', valeur));
+  const texteBoite = el('div', 'copie-texte');
+  if (opts.lien && /^https?:\/\//i.test(valeur)) {
+    const lien = document.createElement('a'); lien.href = valeur; lien.target = '_blank'; lien.rel = 'noopener noreferrer'; lien.textContent = valeur;
+    texteBoite.appendChild(lien);
+  } else texteBoite.textContent = valeur;
+  b.appendChild(texteBoite);
   const copier = () => {
     copierTexte(valeur).then(() => {
       bouton.textContent = 'Copié ✓'; bouton.classList.add('fait');
@@ -1086,7 +1163,7 @@ function carteTextePage(g) {
 function carteGroupe(g) {
   if (g.titre === 'Présentation') return carteTextePage(g);
   const c = carte(g.titre);
-  if (g.titre === 'Technique') {
+  if (g.titre === 'Infos techniques') {
     const rows = el('div', 'champs lignes-info');
     g.champs.forEach((champ) => {
       const b = el('div', 'champ'); b.appendChild(el('div', 'q', champ.label)); b.appendChild(el('div', 'v', champ.value)); rows.appendChild(b);
@@ -1233,8 +1310,8 @@ function dessinerDetail(d, listes, mode) {
   if (sousTexte) entete.appendChild(el('p', 'fiche-soustitre', sousTexte));
   const infos = el('ul', 'fiche-infos');
   infos.appendChild(ligneInfo('user', d.prenom + ' ' + d.nom));
-  if (d.email) infos.appendChild(ligneInfo('mail', d.email));
-  if (d.telephone) infos.appendChild(ligneInfo('tel', d.telephone));
+  if (d.email) infos.appendChild(ligneInfo('mail', d.email, true));
+  if (d.telephone) infos.appendChild(ligneInfo('tel', d.telephone, true));
   infos.appendChild(ligneInfo('cal', ({ candidature: 'Reçue le ', participant: 'Dossier reçu le ', benevole: 'Candidature reçue le ' })[genre] + d.date + (d.passe ? ' - Déjà participé : ' + d.passe : '')));
   entete.appendChild(infos);
   const m = el('span', 'mode ' + (mode === 'REEL' ? 'reel' : 'test'),
@@ -1246,7 +1323,8 @@ function dessinerDetail(d, listes, mode) {
   // Trois gros boutons avec icône
   const grands = el('div', 'actions-grandes');
   grands.appendChild(grosBouton('teal', 'doc', 'Fiche Google Docs', d.fiche || '', null));
-  grands.appendChild(grosBouton('rose', 'image', genre === 'benevole' ? 'Portrait' : 'Photos', null, () => { const c = $('carte-photos'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
+  let activerOnglet = null;
+  grands.appendChild(grosBouton('rose', 'image', genre === 'benevole' ? 'Portrait' : 'Photos', null, () => { if (activerOnglet) activerOnglet('presentation'); const c = $('carte-photos'); if (c && typeof c.scrollIntoView === 'function') c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
   grands.appendChild(grosBouton('violet', 'dossier', 'Dossier Drive', d.dossier || '', null));
   zone.appendChild(grands);
 
@@ -1295,7 +1373,7 @@ function dessinerDetail(d, listes, mode) {
       autres.appendChild(el('p', 'note-suivi', (genre === 'benevole' ? 'Ce bénévole' : 'Ce dossier') + " n'a pas encore de ligne de suivi (il est arrivé avant la mise à jour). Aucun email ne sera envoyé en la créant."));
       const creer = el('button', 'btn', 'Créer le suivi maintenant'); creer.type = 'button';
       creer.addEventListener('click', async () => {
-        creer.disabled = true; creer.textContent = 'Création...';
+        creer.disabled = true; creer.textContent = 'Création...'; creer.prepend(roue(''));
         try {
           const r = await appel({ op: 'creer_suivi', token: jeton, genre: genre, id: d.id, tab: d.tab || '' });
           if (sessionExpiree(r)) return;
@@ -1319,18 +1397,21 @@ function dessinerDetail(d, listes, mode) {
     autres.style.display = '';
     ['Dossier final', 'Paiement', 'Confirmation'].forEach((piste) => {
       const w = el('div'); const id = 'st-' + piste.replace(/\s/g, '-');
-      const lab = el('label', '', piste); lab.htmlFor = id;
+      const lab = el('label', '', piste === 'Confirmation' ? 'Participation confirmée ?' : piste); lab.htmlFor = id;
       const sel = document.createElement('select'); sel.id = id;
       const vide = document.createElement('option'); vide.value = ''; vide.textContent = '-'; sel.appendChild(vide);
       (listes[piste] || []).forEach((v) => { const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o); });
       sel.value = statuts[piste] || '';
       sel.className = classeEtat(sel.value) || (sel.value ? 'etat-neutre' : '');
       sel.addEventListener('change', () => { if (sel.value) changer(piste, sel.value); else sel.value = statuts[piste] || ''; sel.className = classeEtat(sel.value) || (sel.value ? 'etat-neutre' : ''); });
-      w.appendChild(lab); w.appendChild(sel); autres.appendChild(w);
+      w.appendChild(lab); w.appendChild(sel);
+      if (piste === 'Confirmation') w.appendChild(el('p', 'aide-statut', 'Choisis « Confirmé » quand tout est validé : l’email de confirmation de participation sera prêt à envoyer.'));
+      if (piste === 'Paiement') w.appendChild(el('p', 'aide-statut', 'Vérifie la preuve de paiement (onglet Suivi du dossier) avant de choisir « Vérifié ».'));
+      autres.appendChild(w);
     });
   }
   async function changer(piste, valeur) {
-    verrouiller(true); message.className = 'message'; message.textContent = 'Enregistrement...';
+    verrouiller(true); message.className = 'message'; message.textContent = ''; message.appendChild(roue('Enregistrement...'));
     try {
       delete detailsPrets[cleDetail];
       const r = await appel({ op: 'status', token: jeton, id: sid, piste: piste, valeur: valeur });
@@ -1339,7 +1420,7 @@ function dessinerDetail(d, listes, mode) {
       if ('email_pret' in r) { redessinerEmail(r.email_pret); majEmailAEnvoyer(genre, d, r.email_pret); }
       if (r.emails) redessinerHistorique(r.emails);
       message.className = 'message ' + (r.ok ? 'ok' : 'ko');
-      message.textContent = r.ok ? '✓ Statut enregistré : ' + (piste === 'Sélection' ? valeur : piste + ' : ' + valeur) : (r.message || r.error || 'Changement refusé.');
+      message.textContent = r.ok ? '✓ Statut enregistré : ' + (piste === 'Sélection' ? valeur : nomPiste(piste) + ' : ' + valeur) : (r.message || r.error || 'Changement refusé.');
     } catch (err) {
       message.className = 'message ko'; message.textContent = 'Le serveur ne répond pas. Réessaie.';
     } finally { redessinerStatuts(); verrouiller(false); redessinerAlerte(); }
@@ -1347,6 +1428,13 @@ function dessinerDetail(d, listes, mode) {
   const alerte = el('p', 'alerte');
   function redessinerAlerte() { alerte.textContent = statuts.alerte || ''; }
   cs.appendChild(boutons); cs.appendChild(autres); cs.appendChild(message); cs.appendChild(alerte);
+  if (genre === 'participant' && (d.payant || d.preuve)) {
+    const preuve = el('div', 'preuve');
+    preuve.appendChild(el('strong', '', 'Preuve de paiement'));
+    const lienPreuve = d.preuve ? lienSur(d.preuve, 'Voir la preuve de paiement') : null;
+    if (lienPreuve) preuve.appendChild(lienPreuve); else preuve.appendChild(el('span', 'meta', 'Aucune preuve déposée.'));
+    cs.appendChild(preuve);
+  }
   zone.appendChild(cs);
 
   // Email prêt
@@ -1375,7 +1463,7 @@ function dessinerDetail(d, listes, mode) {
       const non = el('button', 'btn btn-doux', 'Annuler'); non.type = 'button';
       non.addEventListener('click', () => { const o = objet.value, c = corps.value; redessinerEmail(pret); $('mail-objet').value = o; $('mail-corps').value = c; });
       oui.addEventListener('click', async () => {
-        oui.disabled = true; non.disabled = true; resultat.className = 'message'; resultat.textContent = 'Envoi en cours...';
+        oui.disabled = true; non.disabled = true; resultat.className = 'message'; resultat.textContent = ''; resultat.appendChild(roue('Envoi en cours...'));
         try {
           const corpsEnvoi = { op: 'send_email', token: jeton, id: sid };
           if (modifie) corpsEnvoi.edit = { objet: objet.value, corps: corps.value, base: pret.corps };
@@ -1420,7 +1508,29 @@ function dessinerDetail(d, listes, mode) {
   zone.appendChild(emailZone);
   redessinerHistorique(d.emails || []);
   zone.appendChild(histZone);
-  [cs, emailZone, carteReponses].concat(cartesExtra).concat([cartePhotos, histZone]).forEach((bloc) => { if (bloc) zone.appendChild(bloc); });
+  if (genre === 'participant') {
+    // Trois onglets : le suivi, ce qui sert à la page du site, et les infos techniques.
+    const panneaux = { suivi: el('div', 'onglet-contenu'), presentation: el('div', 'onglet-contenu'), technique: el('div', 'onglet-contenu') };
+    [cs, emailZone, histZone].forEach((b) => panneaux.suivi.appendChild(b));
+    cartesExtra.forEach((c) => { (c.querySelector('h2').textContent === 'Infos techniques' ? panneaux.technique : panneaux.presentation).appendChild(c); });
+    panneaux.presentation.appendChild(cartePhotos);
+    if (!panneaux.technique.childNodes.length) { const vide = carte('Infos techniques'); vide.appendChild(el('p', 'meta', "Aucune information technique n'a été donnée.")); panneaux.technique.appendChild(vide); }
+    const barre = el('div', 'onglets'); barre.setAttribute('role', 'tablist');
+    const boutonsOnglets = {};
+    [['suivi', 'Suivi du dossier'], ['presentation', 'Présentation et SEO'], ['technique', 'Infos techniques']].forEach((o) => {
+      const b = el('button', '', o[1]); b.type = 'button'; b.setAttribute('role', 'tab'); b.id = 'onglet-' + o[0];
+      b.addEventListener('click', () => activerOnglet(o[0]));
+      boutonsOnglets[o[0]] = b; barre.appendChild(b);
+    });
+    activerOnglet = (nom) => {
+      Object.keys(panneaux).forEach((k) => { panneaux[k].hidden = k !== nom; boutonsOnglets[k].setAttribute('aria-selected', String(k === nom)); });
+    };
+    zone.appendChild(barre);
+    ['suivi', 'presentation', 'technique'].forEach((k) => { panneaux[k].setAttribute('role', 'tabpanel'); zone.appendChild(panneaux[k]); });
+    activerOnglet('suivi');
+  } else {
+    [cs, emailZone, carteReponses].concat(cartesExtra).concat([cartePhotos, histZone]).forEach((bloc) => { if (bloc) zone.appendChild(bloc); });
+  }
 }
 
 if (jeton) { charger(); } else { montrerConnexion(''); }
