@@ -348,7 +348,7 @@ textarea { resize: none; overflow: hidden; min-height: 90px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
-.choix-accueil { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:25px 0; }
+.choix-accueil { display:grid; grid-template-columns:1fr; gap:16px; margin:25px 0; }
 .choix-accueil article { background:var(--creme); border:2px solid var(--ligne); border-radius:16px; padding:18px; display:flex; flex-direction:column; gap:12px; }
 .choix-accueil h2 { font-size:21px; margin:0; }
 .choix-accueil p { margin:0; flex:1; }
@@ -362,7 +362,15 @@ input[type="file"]:not([hidden]) { width:100%; padding:12px; border:2px solid va
 input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--violet); border-radius:20px; background:white; color:var(--violet); padding:8px 12px; font:inherit; font-weight:700; margin-right:12px; cursor:pointer; }
 #questions-techniques .duo { margin:10px 0 4px; }
 /* ---------- Candidature publique ---------- */
-.choix-accueil article.candidature { grid-column: 1 / -1; border-color: var(--magenta); background: #FFF7FB; }
+.choix-accueil article.candidature { border: 3px solid #B5207F; background: #FFF0F8; }
+.choix-accueil article.benevole { border: 3px solid #1FA8C3; background: #E9F9FB; }
+.choix-accueil article.participants { border: 3px solid #6B2C91; background: #F3ECFA; }
+.choix-accueil article.candidature h2 { color: #B5207F; }
+.choix-accueil article.benevole h2 { color: #0A7A8F; }
+.choix-accueil article.participants h2 { color: #6B2C91; }
+.choix-accueil article.candidature .btn-avant { background: linear-gradient(100deg, #B5207F, #C9308F); }
+.choix-accueil article.benevole .btn-avant { background: linear-gradient(100deg, #0A7A8F, #148FA8); }
+.choix-accueil article.participants .btn-avant { background: linear-gradient(100deg, #6B2C91, #8636A6); }
 .conditions { background: #FFF7E8; border: 2px solid var(--or); border-radius: 14px; padding: 16px 18px; font-size: 15px; line-height: 1.6; white-space: pre-line; margin-top: 10px; }
 #ecran-cand-0 .puces, #ecran-cand-1 .champ .puces, #ecran-cand-2 .champ .puces { margin-top: 4px; }
 /* Choix du pôle : grands boutons colorés, bien lisibles */
@@ -422,8 +430,8 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
       <p class="intro">Quel bonheur de t'accueillir dans l'aventure Mantra Joie ! 🌈</p>
       <div class="choix-accueil">
         <article class="candidature"><h2>Candidater ✨</h2><p>Tu souhaites participer au festival comme artiste, atelier, artisan, bien-être ou stand ? Dépose ta candidature ici.</p><button class="btn btn-avant" type="button" onclick="ouvrirCandidature()">Candidater</button></article>
-        <article><h2>Devenir bénévole 💛</h2><p>Tu souhaites rejoindre l'équipe du festival ? Présente-toi ici.</p><button class="btn btn-avant" type="button" onclick="aller('benevole')">Devenir bénévole</button></article>
-        <article><h2>Participants ✨</h2><p>Tu es déjà inscrit·e et validé·e ? Complète tes informations pour ta participation et nos supports de communication.</p><button class="btn btn-avant" type="button" onclick="aller('acces')">Compléter mon inscription</button></article>
+        <article class="benevole"><h2>Devenir bénévole 💛</h2><p>Tu souhaites rejoindre l'équipe du festival ? Présente-toi ici.</p><button class="btn btn-avant" type="button" onclick="aller('benevole')">Devenir bénévole</button></article>
+        <article class="participants"><h2>Participants ✨</h2><p>Tu es déjà inscrit·e et validé·e ? Complète tes informations pour ta participation et nos supports de communication.</p><button class="btn btn-avant" type="button" onclick="aller('acces')">Compléter mon inscription</button></article>
       </div>
 
       <div class="hp" aria-hidden="true">
@@ -544,7 +552,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
       </div>
 
       <div class="champ">
-        <label class="etiquette obligatoire" for="name">Ton nom de scène, de marque ou de stand <span class="astuce">(celui qu'on affichera sur ta page ; si tu n'as pas de nom de marque, mets simplement ton prénom et ton nom)</span></label>
+        <label class="etiquette obligatoire" for="name">Le nom sous lequel on te présentera au public <span class="astuce">(il apparaîtra sur le site du festival et dans le programme : ton nom de scène, de marque, de stand, de ta pratique de bien-être ou de ton atelier. Si tu n'as pas de nom d'activité, écris ton prénom et ton nom)</span></label>
         <input type="text" id="name">
       </div>
 
@@ -591,8 +599,8 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
       <h2>Tes mots</h2>
 
       <div class="champ">
-        <label class="etiquette" for="subtitle">Ton sous-titre ou ton inspiration <span class="astuce">(la petite phrase qui t'accompagne, affichée sous ton titre)</span></label>
-        <input type="text" id="subtitle">
+        <label class="etiquette" for="subtitle">Ton sous-titre ou ton inspiration <span class="astuce">(une petite phrase poétique qui apparaîtra sous ton nom sur le site du festival. Par exemple : « Des chants qui ouvrent le coeur » ou « Le souffle comme un voyage intérieur »)</span></label>
+        <input type="text" id="subtitle" placeholder="Ex. : Des chants qui ouvrent le coeur">
       </div>
 
       <div class="champ">
@@ -768,11 +776,13 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
           <label class="etiquette" for="workshop_capacity">Nombre maximum de participant·es</label><input id="workshop_capacity" type="number" min="1">
           <label class="etiquette" for="workshop_audio">Besoin d’un micro ou d’une enceinte fournie par le festival ?</label><select id="workshop_audio"><option value="">Choisir</option><option>Non</option><option>Micro</option><option>Enceinte</option><option>Micro et enceinte</option></select>
           <label class="etiquette" for="workshop_electricity">Besoin d’électricité ? Si oui, pour quels appareils ?</label><textarea id="workshop_electricity" rows="2"></textarea>
+          <label class="etiquette" for="workshop_kw">Puissance électrique totale nécessaire (en kW) <span class="astuce">(additionne la puissance de tes appareils : 1 000 W = 1 kW. Laisse vide si tu n'as pas besoin d'électricité)</span></label><input id="workshop_kw" type="number" min="0" step="0.1" placeholder="Ex. : 1,5">
         </div>
         <div id="tech-stand" style="display:none">
           <label class="etiquette">Surface nécessaire, tente personnelle comprise</label>
           <div class="duo"><input id="stand_width" type="number" min="0" step="0.1" placeholder="Largeur (m)" aria-label="Largeur en mètres"><input id="stand_depth" type="number" min="0" step="0.1" placeholder="Profondeur (m)" aria-label="Profondeur en mètres"></div>
           <label class="etiquette" for="stand_electricity">Besoin d’électricité ? Si oui, pour quels appareils ?</label><textarea id="stand_electricity" rows="2"></textarea>
+          <label class="etiquette" for="stand_kw">Puissance électrique totale nécessaire (en kW) <span class="astuce">(additionne la puissance de tes appareils : 1 000 W = 1 kW. Laisse vide si tu n'as pas besoin d'électricité)</span></label><input id="stand_kw" type="number" min="0" step="0.1" placeholder="Ex. : 1,5">
         </div>
         <label class="etiquette" for="other_needs">Autres besoins ou contraintes à signaler ?</label><textarea id="other_needs" rows="2"></textarea>
       </div>
@@ -835,7 +845,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.11-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.12-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
@@ -1591,9 +1601,9 @@ async function lireTechnique() {
     if (file && (file.size > 5 * 1024 * 1024 || !/\.pdf$/i.test(file.name))) throw new Error('PDF de 5 Mo maximum.');
     t.sheet = file ? await lireFichier(file) : '';
   } else if (etat.category === 'Atelier') {
-    ['workshop_duration','workshop_capacity','workshop_audio','workshop_electricity'].forEach(key => t[key] = valeur(key));
+    ['workshop_duration','workshop_capacity','workshop_audio','workshop_electricity','workshop_kw'].forEach(key => t[key] = valeur(key));
   } else if (['Bien-être','Artisan'].includes(etat.category)) {
-    ['stand_width','stand_depth','stand_electricity'].forEach(key => t[key] = valeur(key));
+    ['stand_width','stand_depth','stand_electricity','stand_kw'].forEach(key => t[key] = valeur(key));
   }
   return t;
 }
@@ -1679,17 +1689,18 @@ const cand = { pole: '', vals: {}, photos: [], config: null,
 
 const CAND_ELEC = [
   { k: 'elec', l: 'As-tu besoin d’électricité ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
-  { k: 'elec_devices', l: 'Quels appareils, et leur puissance en watts si tu la connais ?', t: 'a', r: 1, si: ['elec', 'Oui'] }
+  { k: 'elec_devices', l: 'Quels appareils, et leur puissance en watts si tu la connais ?', t: 'a', r: 1, si: ['elec', 'Oui'] },
+  { k: 'elec_kw', l: 'Puissance électrique totale nécessaire (en kW)', t: 'n', n: 'Additionne la puissance de tes appareils : 1 000 W = 1 kW. Si tu ne la connais pas, laisse vide.', si: ['elec', 'Oui'] }
 ];
 const CAND_SURFACE = [
   { k: 'width', l: 'Largeur nécessaire, tente comprise (en mètres)', t: 'n', r: 1 },
   { k: 'depth', l: 'Profondeur nécessaire, tente comprise (en mètres)', t: 'n', r: 1 }
 ];
 const CAND_COMMUN = [
-  { k: 'name', l: 'Nom du projet, du groupe, de l’activité ou du stand', t: 't', r: 1, n: 'C’est le nom qu’on affichera. Tu le retrouveras à l’inscription finale.' },
+  { k: 'name', l: 'Nom du projet, du groupe, de l’activité ou du stand', t: 't', r: 1, n: 'Le nom sous lequel le festival te présentera au public : ton nom de scène, de marque, de stand ou de ta pratique.' },
   { k: 'first_name', l: 'Ton prénom', t: 't', r: 1 },
   { k: 'last_name', l: 'Ton nom de famille', t: 't', r: 1 },
-  { k: 'email', l: 'Ton email', t: 't', type: 'email', r: 1, n: 'Jamais publié. Tu auras besoin de la même adresse pour finaliser ton inscription.' },
+  { k: 'email', l: 'Ton email', t: 't', type: 'email', r: 1, n: 'Jamais publié. C’est à cette adresse que nous te répondrons.' },
   { k: 'phone', l: 'Ton téléphone', t: 't', type: 'tel', r: 1, n: 'Jamais publié.' },
   { k: 'past', l: 'As-tu déjà participé au Festival Mantra Joie / Ecstatic Fest ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
   { k: 'past_years', l: 'Quelle(s) année(s) ?', t: 't', r: 1, si: ['past', 'Oui'] },
