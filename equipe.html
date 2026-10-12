@@ -1,531 +1,1357 @@
-/**
- * PORTAIL FESTIVAL : connexion par mot de passe partagé + liste des candidatures.
- *
- * - Le mot de passe est la ligne « mot_de_passe_equipe » de l'onglet Réglages.
- * - Vide = l'espace équipe est fermé. Le changer déconnecte tout le monde.
- * - 5 essais ratés = connexion bloquée 15 minutes pour tout le monde
- *   (impossible de savoir qui essaie, donc le blocage est global).
- * - Le mode TEST/REEL n'est jamais modifiable depuis l'espace équipe.
- */
-const EQ_SESSION_SECONDES = 21600; // 6 h, maximum de CacheService
-const EQ_MAX_ECHECS = 5;
-const EQ_BLOCAGE_SECONDES = 900;   // 15 min
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Portail Festival - Mantra Joie 2027</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%231FA8C3%22/%3E%3Cstop offset=%221%22 stop-color=%22%230B2A47%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22url(%23g)%22/%3E%3Cpolygon points=%2232.0,8.0 34.3,26.5 42.6,21.4 37.5,29.7 56.0,32.0 37.5,34.3 42.6,42.6 34.3,37.5 32.0,56.0 29.7,37.5 21.4,42.6 26.5,34.3 8.0,32.0 26.5,29.7 21.4,21.4 29.7,26.5%22 fill=%22%23fff%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Palette tirée de l'image « Entre deux mondes » : nuit bleue, turquoise, rose et violet */
+  --magenta: #B5207F;
+  --violet: #6B2C91;
+  --turquoise: #0A7A8F;
+  --turquoise-vif: #1FA8C3;
+  --turquoise-clair: #7FE3E8;
+  --rose-clair: #FFD1EC;
+  --or: #E0A93B;
+  --navy: #0B2A47;
+  --creme: #F6F3FB;
+  --carte: #FFFFFF;
+  --ligne: rgba(11, 42, 71, 0.13);
+  --doux: rgba(11, 42, 71, 0.68);
+  --erreur: #B3321F;
+  --police-titres: 'Baloo 2', system-ui, sans-serif;
+  --police-corps: 'Nunito Sans', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--creme); color: var(--navy);
+  font-family: var(--police-corps); font-size: 16px; line-height: 1.5;
+}
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--turquoise-vif); outline-offset: 2px; }
+[hidden] { display: none !important; }
 
-function eqHash_(texte) {
-  return Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 'mantra-equipe|' + String(texte)));
+/* ---------- Connexion ---------- */
+#ecran-connexion { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.connexion { width: 100%; max-width: 380px; }
+.connexion h1 { font-family: var(--police-titres); font-size: 2.1rem; line-height: 1.1; margin: 0 0 6px; color: var(--violet); }
+.connexion p { margin: 0 0 22px; color: var(--doux); }
+.connexion label { display: block; font-weight: 700; margin-bottom: 6px; }
+.connexion input { width: 100%; padding: 12px 14px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte); }
+.connexion input:focus { border-color: var(--turquoise-vif); outline: none; }
+.connexion .btn { width: 100%; margin-top: 16px; }
+.message-erreur { color: var(--erreur); font-weight: 700; margin-top: 14px; min-height: 1.5em; }
+.btn { display: inline-block; border: 0; border-radius: 999px; cursor: pointer; font-weight: 700; padding: 12px 24px; background: linear-gradient(100deg, var(--magenta), var(--violet)); color: #fff; }
+.btn:hover { filter: brightness(1.12); }
+.btn[disabled] { opacity: .6; cursor: wait; }
+.btn-doux { background: transparent; color: var(--navy); border: 2px solid var(--ligne); padding: 8px 16px; }
+.btn-doux:hover { background: rgba(11, 42, 71, 0.07); filter: none; }
+
+/* ---------- Structure : menu à gauche, contenu à droite ---------- */
+.app { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100vh; padding-top: env(safe-area-inset-top, 0px); }
+.menu {
+  position: sticky; top: 0; align-self: start; height: 100vh; display: flex; flex-direction: column;
+  padding: 22px 14px 16px; background: linear-gradient(180deg, #0B2A47 0%, #153A68 55%, #3A2A73 100%); color: #fff; overflow: hidden;
+}
+.marque { text-align: center; padding: 0 6px 18px; }
+.marque img { max-width: 100%; max-height: 92px; object-fit: contain; }
+.marque .nom { font-family: var(--police-titres); font-weight: 700; font-size: 1.35rem; line-height: 1.05; color: var(--rose-clair); }
+.marque .edition { display: block; font-family: var(--police-titres); font-weight: 500; font-size: 1.05rem; color: var(--turquoise-clair); margin-top: 2px; }
+.menu nav { display: grid; gap: 4px; }
+.menu nav button, .menu nav a {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; text-decoration: none; cursor: pointer;
+  border: 0; background: transparent; border-radius: 12px; padding: 10px 12px; font-weight: 600; color: #fff;
+}
+.menu nav button:hover, .menu nav a:hover { background: rgba(255, 255, 255, 0.12); }
+.menu nav button[aria-current="page"] { background: rgba(127, 227, 232, 0.2); color: var(--turquoise-clair); box-shadow: inset 3px 0 0 var(--turquoise-clair); }
+.menu svg { width: 20px; height: 20px; flex: none; }
+.menu .bas { margin-top: auto; display: grid; gap: 8px; }
+.menu .bas .btn-doux { width: 100%; color: #fff; border-color: rgba(255, 255, 255, 0.4); }
+.menu .bas .btn-doux:hover { background: rgba(255, 255, 255, 0.14); }
+.version { font-size: .78rem; text-align: center; color: rgba(255, 255, 255, 0.75); }
+.version.alerte-version { color: #FFC2B5; font-weight: 700; }
+
+main { padding: 0 0 40px; min-width: 0; }
+.page { padding: 26px 28px 0; max-width: 1080px; }
+
+/* ---------- Accueil ---------- */
+.hero {
+  position: relative; min-height: 230px; display: grid; place-items: center; padding: 28px 20px 70px;
+  background: linear-gradient(120deg, #0B2A47, #2D3F7C 50%, #6B2C91); background-size: cover; background-position: center;
+}
+.hero .titre {
+  background: rgba(11, 42, 71, 0.62); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 18px; padding: 14px 32px; text-align: center; max-width: 100%;
+}
+.hero h1 { font-family: var(--police-titres); font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.05; margin: 0; color: #fff; }
+.hero .sous { margin: 2px 0 0; color: var(--turquoise-clair); font-weight: 700; }
+.totaux { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: -50px 28px 0; position: relative; max-width: 1024px; }
+.total {
+  background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 16px 18px;
+  display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center; text-align: left; cursor: pointer;
+  box-shadow: 0 6px 18px rgba(28, 27, 58, 0.08);
+}
+.total:hover { border-color: var(--turquoise-vif); }
+.total .pastille { grid-row: 1 / 3; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: #fff; }
+.total .pastille svg { width: 26px; height: 26px; }
+.total .libelle { font-weight: 700; }
+.total .nombre { font-family: var(--police-titres); font-weight: 700; font-size: 2rem; line-height: 1; }
+.total .lien { grid-column: 1 / -1; color: var(--violet); font-weight: 700; font-size: .9rem; margin-top: 6px; }
+.bloc { margin: 26px 28px 0; max-width: 1024px; background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 18px 20px; }
+.bloc .entete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.bloc h2 { font-family: var(--police-titres); font-size: 1.3rem; margin: 0; }
+.lien-bouton { border: 0; background: none; cursor: pointer; color: var(--violet); font-weight: 700; padding: 4px 0; }
+.lien-bouton:hover { text-decoration: underline; }
+.recent { display: grid; grid-template-columns: minmax(0, 2fr) auto minmax(0, 1.3fr) auto; gap: 10px 16px; align-items: center; padding: 12px 0; border-top: 1px solid var(--ligne); }
+.recent:first-of-type { border-top: 0; }
+.recent .projet { font-weight: 700; overflow-wrap: anywhere; }
+
+/* ---------- Candidatures ---------- */
+.titre-page { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.titre-page .rond { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--magenta), var(--violet)); color: #fff; display: grid; place-items: center; flex: none; }
+.titre-page .rond svg { width: 28px; height: 28px; }
+.titre-page h1 { font-family: var(--police-titres); font-size: 2rem; line-height: 1.05; margin: 0; }
+.titre-page p { margin: 0; color: var(--doux); }
+.outils { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 14px; }
+.recherche { flex: 1 1 260px; padding: 11px 14px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte); }
+.recherche:focus { border-color: var(--turquoise-vif); outline: none; }
+.groupe-filtres { margin-bottom: 12px; }
+.groupe-filtres .etiquette { display: block; font-weight: 700; font-size: .9rem; color: var(--doux); margin-bottom: 6px; }
+.filtres { display: flex; flex-wrap: wrap; gap: 8px; }
+.filtre { border: 2px solid var(--ligne); background: var(--carte); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600; }
+.filtre[aria-pressed="true"] { background: linear-gradient(100deg, var(--magenta), var(--violet)); border-color: transparent; color: #fff; }
+.filtre.statut[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); }
+.filtre .n { opacity: .7; margin-left: 5px; font-weight: 400; }
+.compte { color: var(--doux); font-size: .92rem; margin: 6px 0 10px; }
+.liste { display: grid; gap: 10px; }
+.ligne {
+  background: var(--carte); border: 1px solid var(--ligne); border-radius: 14px; padding: 14px 16px;
+  display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr) minmax(0, 1.6fr) auto; gap: 8px 16px; align-items: center;
+}
+.ligne .projet { font-family: var(--police-titres); font-weight: 600; font-size: 1.15rem; line-height: 1.2; overflow-wrap: anywhere; }
+.meta { color: var(--doux); font-size: .92rem; overflow-wrap: anywhere; }
+.puces { display: flex; flex-wrap: wrap; gap: 6px; }
+.puce { font-size: .8rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: rgba(28,27,58,.08); }
+.puce.selection-etudier { background: #E6E1F7; color: #3F2A7A; }
+.puce.selection-accepte { background: #D3F0DC; color: #17562F; }
+.puce.selection-attente { background: #FFEFC2; color: #6B4A08; }
+.puce.selection-refuse { background: #FFD9D6; color: #8A2314; }
+.puce.etat-ok { background: #fff; border: 2px solid var(--turquoise-vif); color: #0B5568; }
+.puce.etat-attention { background: #fff; border: 2px dashed #E07A2F; color: #8A3A0A; }
+.puce.a-envoyer { background: #FFE5E2; border: 2px solid var(--erreur); color: var(--erreur); }
+.liens { display: flex; gap: 8px; flex-wrap: wrap; }
+.liens a { text-decoration: none; font-weight: 700; font-size: .9rem; padding: 6px 14px; border-radius: 999px; border: 2px solid var(--turquoise); color: var(--navy); }
+.liens a:hover { background: rgba(31,168,195,.16); }
+.alerte { grid-column: 1 / -1; color: var(--erreur); font-weight: 700; font-size: .9rem; }
+.vide { text-align: center; color: var(--doux); padding: 40px 12px; }
+
+/* ---------- Fiche d'une candidature ---------- */
+.retour { border: 0; background: none; cursor: pointer; color: var(--violet); font-weight: 700; padding: 0; margin-bottom: 14px; }
+.retour:hover { text-decoration: underline; }
+.detail-entete h1 { font-family: var(--police-titres); font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.05; margin: 0 0 10px; overflow-wrap: anywhere; }
+.detail-entete .puces { margin-bottom: 8px; gap: 10px; }
+.detail-entete .puce { font-family: var(--police-titres); font-size: 1.35rem; font-weight: 600; padding: 6px 22px; }
+.champs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.champ { background: var(--creme); border-left: 5px solid var(--turquoise-vif); border-radius: 12px; padding: 14px 18px; }
+.champ.large { grid-column: 1 / -1; }
+.champ .q { font-size: .9rem; font-weight: 700; color: var(--violet); margin-bottom: 6px; line-height: 1.3; }
+.champ .v { font-size: 1.12rem; line-height: 1.55; color: var(--navy); white-space: pre-wrap; overflow-wrap: anywhere; }
+.grille-photos a { display: block; }
+.grille-photos .attente { aspect-ratio: 1; border-radius: 12px; background: linear-gradient(100deg, #EEE9F6 30%, #F8F5FC 50%, #EEE9F6 70%); background-size: 200% 100%; animation: brille 1.2s linear infinite; }
+@keyframes brille { to { background-position: -200% 0; } }
+.email-pret .champ-mail { width: 100%; padding: 10px 12px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte); font-family: var(--police-corps); font-size: 1rem; line-height: 1.5; }
+.email-pret textarea.champ-mail { min-height: 260px; resize: vertical; white-space: pre-wrap; }
+.email-pret .champ-mail:focus { border-color: var(--turquoise-vif); outline: none; }
+.email-pret label.etiq { display: block; font-weight: 700; font-size: .9rem; color: var(--violet); margin: 12px 0 4px; }
+.email-pret .astuce { color: var(--doux); font-size: .9rem; margin: 6px 0 0; }
+.mode { display: inline-block; font-weight: 700; font-size: .85rem; padding: 4px 12px; border-radius: 999px; margin: 8px 0 4px; }
+.mode.test { background: #FBEFD2; color: #6B4A08; }
+.mode.reel { background: #FFE1DC; color: var(--erreur); }
+.carte { background: var(--carte); border: 1px solid var(--ligne); border-radius: 18px; padding: 18px 20px; margin-top: 16px; }
+.carte h2 { font-family: var(--police-titres); font-size: 1.25rem; margin: 0 0 10px; }
+.grille-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.grille-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; border: 1px solid var(--ligne); background: #f3eef2; }
+.infos { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0; }
+.infos dt { font-weight: 700; color: var(--doux); }
+.infos dd { margin: 0; overflow-wrap: anywhere; }
+.reponses { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; font-family: var(--police-corps); }
+.statuts-boutons { display: flex; flex-wrap: wrap; gap: 8px; }
+.statuts-boutons button { border: 3px solid transparent; border-radius: 999px; padding: 9px 20px; cursor: pointer; font-weight: 700; font-size: 1rem; }
+.statuts-boutons button[data-statut="À étudier"] { background: #E6E1F7; color: #3F2A7A; }
+.statuts-boutons button[data-statut="Accepté"] { background: #D3F0DC; color: #17562F; }
+.statuts-boutons button[data-statut="Liste d'attente"] { background: #FFEFC2; color: #6B4A08; }
+.statuts-boutons button[data-statut="Refusé"] { background: #FFD9D6; color: #8A2314; }
+.statuts-boutons button:hover { filter: brightness(0.96); }
+.statuts-boutons button[aria-pressed="true"] { border-color: currentColor; box-shadow: 0 2px 8px rgba(11, 42, 71, 0.18); }
+.statuts-boutons button[aria-pressed="true"]::before { content: "\2713  "; }
+.autres-statuts select.etat-ok { background: #fff; color: #0B5568; border: 2px solid var(--turquoise-vif); }
+.autres-statuts select.etat-attention { background: #fff; color: #8A3A0A; border: 2px dashed #E07A2F; }
+.autres-statuts select.etat-neutre { background: #fff; color: var(--navy); }
+.note-suivi { color: var(--doux); margin: 14px 0 0; }
+.avis-email { background: #FFE5E2; border: 2px solid var(--erreur); color: var(--erreur); font-weight: 700; border-radius: 12px; padding: 10px 14px; margin: 0 0 12px; }
+.historique { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.historique li { display: grid; grid-template-columns: minmax(0, 1.6fr) auto auto minmax(0, 2fr); gap: 6px 14px; align-items: center; padding: 8px 0; border-top: 1px solid var(--ligne); }
+.historique li:first-child { border-top: 0; }
+.historique .quand { color: var(--doux); font-size: .9rem; }
+.historique .qui { font-weight: 700; }
+/* Équipes de bénévoles et lignes sans suivi */
+.puce.equipe { background: #D6F4F6; color: #06505E; }
+.puce.sans-suivi { background: #fff; border: 2px dashed #8A7FA3; color: #4B4660; }
+.chargement-liste { display: flex; align-items: center; gap: 12px; padding: 16px; border: 3px solid var(--turquoise); border-radius: 16px; background: #F1FBFC; font-weight: 700; margin: 12px 0; }
+.chargement-liste .tourne { width: 22px; height: 22px; border-radius: 50%; border: 4px solid #BFE6EA; border-top-color: var(--turquoise); animation: tourne .8s linear infinite; flex: none; }
+@keyframes tourne { to { transform: rotate(360deg); } }
+.liens-champ a { color: var(--violet); font-weight: 700; overflow-wrap: anywhere; }
+.puce.mail-ok { background: #D3F0DC; color: #17562F; }
+.puce.mail-ko { background: #FFE5E2; color: var(--erreur); border: 2px solid var(--erreur); }
+.puce.mail-neutre { background: #EEE9F6; color: #3F2A7A; }
+/* Sous-menu des catégories */
+.sous-menu { display: grid; gap: 2px; margin: 2px 0 6px 18px; padding-left: 10px; border-left: 2px solid rgba(255, 255, 255, 0.25); }
+.menu nav .sous-menu button { padding: 6px 10px; font-size: .92rem; font-weight: 600; justify-content: space-between; }
+.menu nav .sous-menu button .n { opacity: .7; font-weight: 400; }
+.statuts-boutons button[disabled], .autres-statuts select[disabled] { opacity: .6; cursor: wait; }
+.autres-statuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-top: 16px; }
+.autres-statuts label { display: block; font-weight: 700; font-size: .9rem; color: var(--doux); margin-bottom: 4px; }
+.autres-statuts select { width: 100%; padding: 9px 12px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte); }
+.message { margin-top: 12px; font-weight: 700; min-height: 1.4em; }
+.message.ok { color: #0A6B5E; }
+.message.ko { color: var(--erreur); }
+.email-pret .ligne-mail { margin: 0 0 4px; overflow-wrap: anywhere; }
+.email-pret .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.btn-ouvrir { background: var(--turquoise); }
+.btn-ouvrir:hover { filter: brightness(1.15); }
+.liens .btn-ouvrir { border: 0; color: #fff; padding: 7px 16px; font-size: .9rem; }
+
+/* ---------- Fiche : grande image, infos avec icônes, gros boutons ---------- */
+.fiche-hero { display: grid; grid-template-columns: minmax(280px, 44%) minmax(0, 1fr); gap: 26px; align-items: stretch; background: var(--carte); border: 1px solid var(--ligne); border-radius: 22px; padding: 18px; box-shadow: 0 8px 24px rgba(11, 42, 71, 0.08); }
+.fiche-image { position: relative; min-height: 340px; border-radius: 16px; overflow: hidden; background: linear-gradient(135deg, #1FA8C3, #6B2C91 60%, #B5207F); display: grid; place-items: center; }
+.fiche-image img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.fiche-image a { position: absolute; inset: 0; }
+.fiche-image .initiale { font-family: var(--police-titres); font-weight: 700; font-size: 6rem; color: rgba(255, 255, 255, 0.85); }
+.fiche-image.attente-image::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.28) 50%, transparent 70%); background-size: 200% 100%; animation: brille 1.4s linear infinite; }
+.fiche-texte { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.fiche-soustitre { font-size: 1.3rem; font-weight: 600; color: var(--violet); margin: 2px 0 14px; line-height: 1.35; overflow-wrap: anywhere; }
+.fiche-infos { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 9px; }
+.fiche-infos li { display: flex; align-items: center; gap: 12px; overflow-wrap: anywhere; font-size: 1.05rem; }
+.fiche-infos svg { width: 22px; height: 22px; flex: none; color: var(--turquoise); }
+.actions-grandes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
+.btn-grand { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 66px; padding: 16px 20px; border: 0; border-radius: 18px; color: #fff; font-family: inherit; font-weight: 700; font-size: 1.2rem; text-decoration: none; cursor: pointer; box-shadow: 0 6px 16px rgba(11, 42, 71, 0.16); }
+.btn-grand svg { width: 28px; height: 28px; flex: none; }
+.btn-grand.teal { background: linear-gradient(100deg, #0A7A8F, #148FA8); }
+.btn-grand.rose { background: linear-gradient(100deg, #B5207F, #C9308F); }
+.btn-grand.violet { background: linear-gradient(100deg, #6B2C91, #8636A6); }
+.btn-grand:hover { filter: brightness(1.1); }
+.btn-grand.inactif { background: #D9D5E3; color: #4B4660; box-shadow: none; cursor: default; }
+
+@media (max-width: 900px) {
+  .fiche-hero { grid-template-columns: 1fr; }
+  .fiche-image { min-height: 240px; }
+  .actions-grandes { grid-template-columns: 1fr; }
+  .app { grid-template-columns: 1fr; }
+  .menu { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 14px; border-right: 0; border-bottom: 1px solid var(--ligne); }
+  .marque { padding: 0; text-align: left; }
+  .marque img { max-height: 44px; }
+  .menu nav { display: flex; flex-wrap: wrap; width: auto; }
+  .menu .bas { margin-top: 0; margin-left: auto; display: flex; }
+  .menu .bas .btn-doux { width: auto; }
+  .page { padding: 18px 14px 0; }
+  .totaux { grid-template-columns: 1fr; margin: -44px 14px 0; }
+  .bloc { margin: 20px 14px 0; }
+  .ligne, .recent { grid-template-columns: 1fr; }
+  .champs { grid-template-columns: 1fr; }
+  .sous-menu { display: none; }
+  .historique li { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<section id="ecran-connexion">
+  <form class="connexion" id="form-connexion" autocomplete="off">
+    <h1>Portail Festival</h1>
+    <p>Mantra Joie 2027. Entre le mot de passe de l'équipe pour voir les candidatures.</p>
+    <label for="mot-de-passe">Mot de passe</label>
+    <input id="mot-de-passe" type="password" autocomplete="current-password" required>
+    <button class="btn" type="submit" id="btn-connexion">Se connecter</button>
+    <div class="message-erreur" id="erreur-connexion" role="alert"></div>
+  </form>
+</section>
+
+<div class="app" id="app" hidden>
+  <aside class="menu">
+    <div class="marque" id="marque"></div>
+    <nav aria-label="Menu du Portail Festival">
+      <button type="button" data-vue="accueil">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Accueil
+      </button>
+      <button type="button" data-vue="candidatures">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>Candidatures
+      </button>
+      <div class="sous-menu" id="sous-menu" aria-label="Candidatures par catégorie"></div>
+      <button type="button" data-vue="participants">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 1.8 5 4.5"/></svg>Participants
+      </button>
+      <div class="sous-menu" id="sous-menu-participants" aria-label="Participants par catégorie"></div>
+      <button type="button" data-vue="benevoles">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/></svg>Bénévoles
+      </button>
+      <div class="sous-menu" id="sous-menu-benevoles" aria-label="Bénévoles par équipe"></div>
+      <a id="lien-drive" href="#" target="_blank" rel="noopener noreferrer" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Dossiers Drive
+      </a>
+    </nav>
+    <div class="bas">
+      <div class="version" id="version"></div>
+      <button class="btn btn-doux" type="button" id="btn-actualiser">Actualiser</button>
+      <button class="btn btn-doux" type="button" id="btn-deconnexion">Se déconnecter</button>
+    </div>
+  </aside>
+
+  <main>
+    <section id="vue-accueil" hidden>
+      <div class="hero" id="hero">
+        <div class="titre"><h1 id="hero-titre">Mantra Joie 2027</h1><p class="sous">Portail Festival</p></div>
+      </div>
+      <div class="totaux" id="totaux"></div>
+      <div class="bloc">
+        <div class="entete"><h2>Dernières candidatures</h2><button class="lien-bouton" type="button" id="voir-toutes">Voir toutes les candidatures</button></div>
+        <div id="recentes"></div>
+      </div>
+    </section>
+
+    <section id="vue-candidatures" hidden>
+      <div class="page">
+        <div class="titre-page">
+          <div class="rond"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></div>
+          <div><h1>Candidatures</h1><p id="sous-titre">Toutes les candidatures reçues</p></div>
+        </div>
+        <div class="outils"><input class="recherche" id="recherche" type="search" placeholder="Chercher un projet, un nom, un email" aria-label="Chercher"></div>
+        <div class="groupe-filtres"><span class="etiquette">Catégorie</span><div class="filtres" id="filtres-categorie" role="group" aria-label="Filtrer par catégorie"></div></div>
+        <div class="groupe-filtres"><span class="etiquette">Sélection</span><div class="filtres" id="filtres-statut" role="group" aria-label="Filtrer par sélection"></div></div>
+        <p class="compte" id="compte"></p>
+        <div class="liste" id="liste"></div>
+      </div>
+    </section>
+
+    <section id="vue-participants" hidden>
+      <div class="page">
+        <div class="titre-page">
+          <div class="rond"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 1.8 5 4.5"/></svg></div>
+          <div><h1>Participants</h1><p>Dossiers finaux reçus</p></div>
+        </div>
+        <div class="outils"><input class="recherche" id="recherche-p" type="search" placeholder="Chercher un projet, un nom, un email" aria-label="Chercher un participant"></div>
+        <div class="groupe-filtres"><span class="etiquette">Catégorie</span><div class="filtres" id="filtres-p-categorie" role="group" aria-label="Filtrer par catégorie"></div></div>
+        <div class="groupe-filtres"><span class="etiquette">Dossier final</span><div class="filtres" id="filtres-p-final" role="group" aria-label="Filtrer par dossier final"></div></div>
+        <p class="compte" id="compte-p"></p>
+        <div class="liste" id="liste-p"></div>
+      </div>
+    </section>
+
+    <section id="vue-benevoles" hidden>
+      <div class="page">
+        <div class="titre-page">
+          <div class="rond"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/></svg></div>
+          <div><h1>Bénévoles</h1><p>Une équipe au coeur du festival</p></div>
+        </div>
+        <div class="outils"><input class="recherche" id="recherche-b" type="search" placeholder="Chercher un nom, un email" aria-label="Chercher un bénévole"></div>
+        <div class="groupe-filtres"><span class="etiquette">Équipe préférée</span><div class="filtres" id="filtres-b-equipe" role="group" aria-label="Filtrer par équipe"></div></div>
+        <div class="groupe-filtres"><span class="etiquette">Sélection</span><div class="filtres" id="filtres-b-statut" role="group" aria-label="Filtrer par sélection"></div></div>
+        <p class="compte" id="compte-b"></p>
+        <div class="liste" id="liste-b"></div>
+      </div>
+    </section>
+
+    <section id="vue-detail" hidden>
+      <div class="page" id="detail"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec';
+const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
+const ORDRE_POLES = ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'];
+const COULEURS_POLES = {
+  'Artiste': ['#FFE3F2', '#7A0F52'], 'Atelier': ['#D6F4F6', '#06505E'], 'Bien-être': ['#DDF2E4', '#1F5E3A'],
+  'Artisan': ['#FBEFD2', '#6B4A08'], "L'Antre deux mondes": ['#E9DDF5', '#4B1E6B'], 'Stand / Miam Miam': ['#FFE1D6', '#8A3012']
+};
+const $ = (id) => document.getElementById(id);
+let jeton = '';
+let items = [];
+let config = {};
+let vue = 'accueil';
+let versionServeur = '';
+let participants = null;      // liste des dossiers finaux (chargée en arrière-plan)
+let benevoles = null;         // liste des bénévoles
+let statsServeur = null;
+let erreurListes = { participants: false, benevoles: false };
+let pCategorie = 'Toutes', pFinal = 'Tous';
+let bEquipe = 'Toutes', bStatut = 'Tous';
+let detailGenre = 'candidature', detailTab = '';
+let filtreCategorie = 'Toutes';
+let filtreStatut = 'Tous';
+
+try { jeton = sessionStorage.getItem('equipe_jeton') || ''; } catch (e) { jeton = ''; }
+
+async function appel(corps) {
+  const reponse = await fetch(SCRIPT_URL, {
+    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ kind: 'team' }, corps))
+  });
+  return reponse.json();
 }
 
-function eqMotDePasse_() {
-  return String(lireReglages_().mot_de_passe_equipe || '').trim();
+function oublierJeton() {
+  jeton = '';
+  try { sessionStorage.removeItem('equipe_jeton'); } catch (e) { /* stockage indisponible */ }
 }
 
-// Appelée par doPost quand kind === 'team'
-function equipe_(data) {
-  const op = clean_(data.op);
-  if (op === 'login') return eqConnexion_(String(data.password || '').trim());
-  if (!eqSessionValide_(clean_(data.token))) return { ok: false, auth: false, error: 'Session expirée. Reconnecte-toi.' };
-  if (op === 'list') return eqListe_();
-  if (op === 'detail') return eqDetail_(clean_(data.id));
-  if (op === 'status') return eqVerrouille_(function () { return eqStatut_(clean_(data.id), clean_(data.piste), clean_(data.valeur)); });
-  if (op === 'list_participants') return eqListeParticipants_();
-  if (op === 'detail_participant') return eqDetailParticipant_(clean_(data.id), clean_(data.tab));
-  if (op === 'list_benevoles') return eqListeBenevoles_();
-  if (op === 'detail_benevole') return eqDetailBenevole_(clean_(data.id));
-  if (op === 'stats') return eqStats_();
-  if (op === 'photos_list') return eqPhotosListe_(clean_(data.id), clean_(data.type), clean_(data.tab));
-  if (op === 'photo') return eqPhoto_(clean_(data.id), clean_(data.fid), false, clean_(data.type), clean_(data.tab));
-  if (op === 'photo_hd') return eqPhoto_(clean_(data.id), clean_(data.fid), true, clean_(data.type), clean_(data.tab));
-  if (op === 'send_email') return eqVerrouille_(function () { return eqEnvoyer_(clean_(data.id), data.edit); });
-  return { ok: false, error: 'Action inconnue.' };
+function montrerConnexion(message) {
+  $('app').hidden = true;
+  $('ecran-connexion').hidden = false;
+  $('erreur-connexion').textContent = message || '';
+  $('mot-de-passe').focus();
 }
 
-function eqConnexion_(motDePasse) {
-  const attendu = eqMotDePasse_();
-  if (!attendu) return { ok: false, error: "Le Portail Festival est fermé : aucun mot de passe n'est défini dans Réglages." };
-  const cache = CacheService.getScriptCache();
-  if (cache.get('eq_bloque')) return { ok: false, bloque: true, error: 'Trop d\'essais. Réessaie dans 15 minutes.' };
-  if (motDePasse && eqHash_(motDePasse) === eqHash_(attendu)) {
-    cache.remove('eq_echecs');
-    const jeton = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
-    cache.put('eq_jeton_' + jeton, eqHash_(attendu), EQ_SESSION_SECONDES);
-    return { ok: true, token: jeton };
+/* ---------- Connexion ---------- */
+$('form-connexion').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const bouton = $('btn-connexion');
+  const erreur = $('erreur-connexion');
+  erreur.textContent = '';
+  bouton.disabled = true;
+  bouton.textContent = 'Connexion en cours';
+  try {
+    const r = await appel({ op: 'login', password: $('mot-de-passe').value });
+    if (r.ok && r.token) {
+      jeton = r.token;
+      try { sessionStorage.setItem('equipe_jeton', jeton); } catch (err) { /* stockage indisponible */ }
+      $('mot-de-passe').value = '';
+      await charger();
+    } else {
+      erreur.textContent = r.error || 'Connexion impossible.';
+    }
+  } catch (err) {
+    erreur.textContent = 'Le serveur ne répond pas. Vérifie ta connexion et réessaie.';
+  } finally {
+    bouton.disabled = false;
+    bouton.textContent = 'Se connecter';
   }
-  Utilities.sleep(1000);
-  const echecs = Number(cache.get('eq_echecs') || 0) + 1;
-  if (echecs >= EQ_MAX_ECHECS) {
-    cache.put('eq_bloque', '1', EQ_BLOCAGE_SECONDES);
-    cache.remove('eq_echecs');
-    return { ok: false, bloque: true, error: 'Trop d\'essais. Réessaie dans 15 minutes.' };
+});
+
+$('btn-deconnexion').addEventListener('click', () => { oublierJeton(); items = []; montrerConnexion(''); });
+$('btn-actualiser').addEventListener('click', () => { participants = null; benevoles = null; charger(); });
+
+async function charger() {
+  try {
+    const r = await appel({ op: 'list', token: jeton });
+    if (r.auth === false) { oublierJeton(); montrerConnexion(r.error || 'Session expirée. Reconnecte-toi.'); return; }
+    if (!r.ok) throw new Error(r.error || 'Erreur');
+    items = r.items || [];
+    config = r.config || {};
+    versionServeur = r.version || '';
+    $('ecran-connexion').hidden = true;
+    $('app').hidden = false;
+    habiller();
+    naviguer(vue === 'detail' ? 'candidatures' : vue);
+    chargerEnArrierePlan();
+  } catch (err) {
+    montrerConnexion('Impossible de charger les données. Réessaie dans un instant.');
   }
-  cache.put('eq_echecs', String(echecs), EQ_BLOCAGE_SECONDES);
-  return { ok: false, error: 'Mot de passe incorrect.' };
 }
 
-// Un jeton n'est valable que tant que le mot de passe n'a pas changé.
-function eqSessionValide_(jeton) {
-  const attendu = eqMotDePasse_();
-  if (!attendu || !/^[a-f0-9]{64}$/.test(jeton)) return false;
-  return CacheService.getScriptCache().get('eq_jeton_' + jeton) === eqHash_(attendu);
+/* ---------- Chargements en arrière-plan : participants, bénévoles, chiffres ---------- */
+async function chargerEnArrierePlan() {
+  chargerStats();
+  chargerParticipants(true);
+  chargerBenevoles(true);
+}
+async function chargerStats() {
+  try {
+    const r = await appel({ op: 'stats', token: jeton });
+    if (sessionExpiree(r)) return;
+    if (r.ok) { statsServeur = r; if (vue === 'accueil') dessinerAccueil(); }
+  } catch (err) { /* les chiffres restent à « … » */ }
+}
+async function chargerParticipants(force) {
+  if (participants && !force) return;
+  try {
+    const r = await appel({ op: 'list_participants', token: jeton });
+    if (sessionExpiree(r)) return;
+    if (!r.ok) throw new Error(r.error || 'Erreur');
+    participants = r.items || []; erreurListes.participants = false;
+  } catch (err) { participants = null; erreurListes.participants = true; }
+  dessinerSousMenu();
+  if (vue === 'participants') dessinerParticipants();
+  if (vue === 'accueil') dessinerAccueil();
+}
+async function chargerBenevoles(force) {
+  if (benevoles && !force) return;
+  try {
+    const r = await appel({ op: 'list_benevoles', token: jeton });
+    if (sessionExpiree(r)) return;
+    if (!r.ok) throw new Error(r.error || 'Erreur');
+    benevoles = r.items || []; erreurListes.benevoles = false;
+  } catch (err) { benevoles = null; erreurListes.benevoles = true; }
+  dessinerSousMenu();
+  if (vue === 'benevoles') dessinerBenevoles();
+  if (vue === 'accueil') dessinerAccueil();
 }
 
-// Candidatures + statuts du Suivi, les plus récentes d'abord.
-function eqListe_() {
-  const classeur = SpreadsheetApp.openById(SHEET_ID);
-  const cand = classeur.getSheetByName(P_TABS.CANDIDATURES);
-  const suivi = classeur.getSheetByName(P_TABS.SUIVI);
-  const statuts = {};
-  if (suivi && suivi.getLastRow() >= 2) {
-    suivi.getRange(2, 1, suivi.getLastRow() - 1, SUIVI_HEADERS.length).getValues().forEach(function (v) {
-      if (!v[0]) return;
-      const l = {};
-      SUIVI_HEADERS.forEach(function (h, k) { l[h] = v[k]; });
-      statuts[l.id] = l;
-    });
-  }
-  const enAttente = {};
-  emailsEnAttente_().forEach(function (m) { enAttente[m.id] = true; });
-  const H = CANDIDATURES_HEADERS;
-  const items = [];
-  if (cand && cand.getLastRow() >= 2) {
-    cand.getRange(2, 1, cand.getLastRow() - 1, H.length).getValues().forEach(function (v) {
-      if (!v[H.indexOf('id')]) return;
-      const id = v[H.indexOf('id')];
-      const s = statuts[id] || {};
-      items.push({
-        id: id,
-        date: eqDate_(v[H.indexOf('Date')]),
-        pole: v[H.indexOf('Pôle')], projet: v[H.indexOf('Projet')], formule: v[H.indexOf('Formule')],
-        prenom: v[H.indexOf('Prénom')], nom: v[H.indexOf('Nom')], email: v[H.indexOf('Email')], telephone: String(v[H.indexOf('Téléphone')] || ''),
-        dossier: String(v[H.indexOf('Dossier Drive')] || ''), fiche: String(v[H.indexOf('Fiche')] || ''),
-        selection: s['Sélection'] || '', dossier_final: s['Dossier final'] || '', paiement: s['Paiement'] || '', confirmation: s['Confirmation'] || '',
-        alerte: String(s['Alerte'] || ''), email_a_envoyer: !!enAttente[id]
-      });
-    });
-  }
-  items.reverse();
-  return { ok: true, items: items, config: eqConfig_(), version: VERSION };
+/* ---------- Habillage : logo, image, lien Drive ---------- */
+function imageSure(v) {
+  v = String(v || '').trim();
+  return /^https:\/\/[^\s"'<>()]+$/i.test(v) || /^[\w.\-\/]+\.(png|jpe?g|webp|svg|gif)$/i.test(v) ? v : '';
 }
 
-// Réglages du Portail : logo, grande image, nom de l'édition, dossier Drive principal.
-// Une image est soit une adresse https, soit un nom de fichier du dépôt (ex. logo.png).
-function eqImageSure_(valeur) {
-  const v = String(valeur || '').trim();
-  if (/^https:\/\/[^\s"'<>()]+$/i.test(v)) return v;
-  if (/^[\w.\-\/]+\.(png|jpe?g|webp|svg|gif)$/i.test(v)) return v;
+function habiller() {
+  const marque = $('marque');
+  marque.innerHTML = '';
+  const logo = imageSure(config.logo);
+  if (logo) {
+    const img = document.createElement('img');
+    img.src = logo; img.alt = config.edition || 'Mantra Joie 2027';
+    img.addEventListener('error', () => { marque.innerHTML = ''; marque.appendChild(texteMarque()); });
+    marque.appendChild(img);
+  } else {
+    marque.appendChild(texteMarque());
+  }
+  const v = $('version');
+  v.className = 'version' + (versionServeur ? '' : ' alerte-version');
+  v.textContent = versionServeur ? 'Serveur ' + versionServeur : "Serveur pas à jour : Deploy > Manage deployments > New version";
+  $('hero-titre').textContent = config.edition || 'Mantra Joie 2027';
+  const image = imageSure(config.image);
+  const hero = $('hero');
+  hero.style.backgroundImage = '';
+  if (image) {
+    // On charge l'image d'abord : si le fichier est introuvable, le dégradé reste en place.
+    const test = new Image();
+    test.onload = () => { hero.style.backgroundImage = 'url("' + image.replace(/"/g, '%22') + '")'; };
+    test.onerror = () => { hero.style.backgroundImage = ''; };
+    test.src = image;
+  }
+  const drive = $('lien-drive');
+  if (/^https:\/\/drive\.google\.com\//.test(config.drive || '')) { drive.href = config.drive; drive.hidden = false; } else { drive.hidden = true; }
+}
+
+function texteMarque() {
+  const d = document.createElement('div');
+  d.className = 'nom';
+  d.textContent = 'Portail Festival';
+  const s = document.createElement('span');
+  s.className = 'edition';
+  s.textContent = config.edition || 'Mantra Joie 2027';
+  d.appendChild(s);
+  return d;
+}
+
+/* ---------- Navigation ---------- */
+document.querySelectorAll('[data-vue]').forEach((b) => b.addEventListener('click', () => {
+  if (b.dataset.vue === 'candidatures') { filtreCategorie = 'Toutes'; filtreStatut = 'Tous'; $('recherche').value = ''; }
+  if (b.dataset.vue === 'participants') { pCategorie = 'Toutes'; pFinal = 'Tous'; $('recherche-p').value = ''; }
+  if (b.dataset.vue === 'benevoles') { bEquipe = 'Toutes'; bStatut = 'Tous'; $('recherche-b').value = ''; }
+  naviguer(b.dataset.vue);
+}));
+$('voir-toutes').addEventListener('click', () => { filtreCategorie = 'Toutes'; filtreStatut = 'Tous'; $('recherche').value = ''; naviguer('candidatures'); });
+
+function naviguer(nom) {
+  vue = ['candidatures', 'participants', 'benevoles', 'detail'].indexOf(nom) >= 0 ? nom : 'accueil';
+  $('vue-accueil').hidden = vue !== 'accueil';
+  $('vue-candidatures').hidden = vue !== 'candidatures';
+  $('vue-participants').hidden = vue !== 'participants';
+  $('vue-benevoles').hidden = vue !== 'benevoles';
+  $('vue-detail').hidden = vue !== 'detail';
+  const actif = vue === 'detail' ? ({ candidature: 'candidatures', participant: 'participants', benevole: 'benevoles' })[detailGenre] : vue;
+  document.querySelectorAll('[data-vue]').forEach((b) => {
+    if (b.dataset.vue === actif) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
+  if (vue === 'accueil') dessinerAccueil(); else if (vue === 'candidatures') dessinerCandidatures();
+  else if (vue === 'participants') { dessinerParticipants(); if (!participants) chargerParticipants(); }
+  else if (vue === 'benevoles') { dessinerBenevoles(); if (!benevoles) chargerBenevoles(); }
+  dessinerSousMenu();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- Sous-menus : catégories (candidatures, participants) et équipes (bénévoles) ---------- */
+function remplirSousMenu(zoneId, noms, compter, actifSi, clic) {
+  const zone = $(zoneId);
+  zone.innerHTML = '';
+  noms.forEach((nom) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.appendChild(document.createTextNode(nom.court || nom.valeur));
+    const c = document.createElement('span'); c.className = 'n'; c.textContent = String(compter(nom.valeur)); b.appendChild(c);
+    if (actifSi(nom.valeur)) b.setAttribute('aria-current', 'page');
+    b.addEventListener('click', () => clic(nom.valeur));
+    zone.appendChild(b);
+  });
+}
+
+function dessinerSousMenu() {
+  const dansC = vue === 'candidatures' || (vue === 'detail' && detailGenre === 'candidature');
+  remplirSousMenu('sous-menu', ['Toutes'].concat(categories()).map((v) => ({ valeur: v })),
+    (v) => v === 'Toutes' ? items.length : items.filter((i) => i.pole === v).length,
+    (v) => dansC && filtreCategorie === v,
+    (v) => { filtreCategorie = v; filtreStatut = 'Tous'; $('recherche').value = ''; naviguer('candidatures'); });
+  const dansP = vue === 'participants' || (vue === 'detail' && detailGenre === 'participant');
+  const listeP = participants || [];
+  const catsP = ORDRE_POLES.filter((p) => listeP.some((i) => i.pole === p)).concat(Array.from(new Set(listeP.map((i) => i.pole))).filter((p) => ORDRE_POLES.indexOf(p) < 0));
+  remplirSousMenu('sous-menu-participants', participants ? ['Toutes'].concat(catsP).map((v) => ({ valeur: v })) : [],
+    (v) => v === 'Toutes' ? listeP.length : listeP.filter((i) => i.pole === v).length,
+    (v) => dansP && pCategorie === v,
+    (v) => { pCategorie = v; pFinal = 'Tous'; $('recherche-p').value = ''; naviguer('participants'); });
+  const dansB = vue === 'benevoles' || (vue === 'detail' && detailGenre === 'benevole');
+  remplirSousMenu('sous-menu-benevoles', benevoles ? [{ valeur: 'Toutes' }].concat(equipesBenevoles().map((v) => ({ valeur: v, court: equipeCourte(v) }))) : [],
+    (v) => v === 'Toutes' ? (benevoles || []).length : (benevoles || []).filter((i) => i.equipes.indexOf(v) >= 0).length,
+    (v) => dansB && bEquipe === v,
+    (v) => { bEquipe = v; bStatut = 'Tous'; $('recherche-b').value = ''; naviguer('benevoles'); });
+}
+
+// « ACCUEIL + Gardien·nes du temps le dimanche » devient « Accueil » dans les boutons.
+function equipeCourte(nom) {
+  const court = String(nom).split(/\s*[+(]/)[0].trim();
+  return court.charAt(0).toUpperCase() + court.slice(1).toLowerCase();
+}
+function equipesBenevoles() {
+  return Array.from(new Set((benevoles || []).reduce((a, i) => a.concat(i.equipes), [])));
+}
+
+/* ---------- Outils communs ---------- */
+function normaliser(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+function statutDe(item) { return item.selection || 'À étudier'; }
+function classeSelection(statut) {
+  if (statut === 'À étudier') return 'selection-etudier';
+  if (statut === 'Accepté') return 'selection-accepte';
+  if (statut === "Liste d'attente") return 'selection-attente';
+  if (statut === 'Refusé') return 'selection-refuse';
   return '';
 }
-
-function eqConfig_() {
-  const r = lireReglages_();
-  return {
-    logo: eqImageSure_(r.logo_portail),
-    image: eqImageSure_(r.image_accueil),
-    edition: String(r.edition || FESTIVAL),
-    mode: String(r.mode_envoi || 'TEST').trim().toUpperCase() === 'REEL' ? 'REEL' : 'TEST',
-    drive: 'https://drive.google.com/drive/folders/' + ROOT_FOLDER_ID
-  };
+function classeEtat(valeur) {
+  if (['Validé', 'Vérifié', 'Confirmé', 'Reçu'].indexOf(valeur) >= 0) return 'etat-ok';
+  if (['À vérifier', 'À compléter', 'En attente'].indexOf(valeur) >= 0) return 'etat-attention';
+  return '';
 }
-
-// Date lisible : 09/10/2026 15:26 (Google Sheets renvoie un objet Date, pas du texte).
-function eqDate_(valeur) {
-  if (!valeur) return '';
-  if (typeof valeur.getTime === 'function') return Utilities.formatDate(valeur, 'Europe/Paris', 'dd/MM/yyyy HH:mm');
-  const s = String(valeur);
-  const m = s.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2})$/);
-  return m ? m[3] + '/' + m[2] + '/' + m[1] + ' ' + m[4] : s;
-}
-
-
-// =====================================================================
-// FICHE D'UNE CANDIDATURE : détail, changement de statut, envoi d'email
-// Le mode TEST/REEL se lit ici, il ne se change jamais depuis le Portail.
-// =====================================================================
-// Questions déjà affichées ailleurs (titre, bloc Contact) : inutile de les répéter dans les réponses.
-const EQ_DOUBLON = /^(Nom du projet|Ton prénom|Ton nom de famille|Ton email|Ton téléphone|As-tu déjà participé|Quelle\(s\) année\(s\))/;
-const EQ_PISTES = ['Sélection', 'Dossier final', 'Paiement', 'Confirmation'];
-const EQ_LIBELLES_EMAIL = {
-  recue: 'Accusé de réception', acceptee: 'Candidature acceptée', attente: "Liste d'attente",
-  refusee: 'Candidature refusée', final_recu: 'Dossier final reçu', confirmee: 'Participation confirmée'
+const ICONES = {
+  doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/>',
+  dossier: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  tel: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+  cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  retour: '<path d="M19 12H5M11 6l-6 6 6 6"/>'
 };
-
-function eqVerrouille_(travail) {
-  const verrou = LockService.getScriptLock();
-  if (!verrou.tryLock(30000)) return { ok: false, error: 'Un autre changement est en cours. Réessaie dans un instant.' };
-  try { return travail(); } finally { verrou.releaseLock(); }
+function svgIcone(nom) {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONES[nom] + '</svg>';
 }
-
-function eqIdValide_(id) { return /^[a-zA-Z0-9-]{8,100}$/.test(id || ''); }
-
-function eqCandidature_(id) {
-  const cand = SpreadsheetApp.openById(SHEET_ID).getSheetByName(P_TABS.CANDIDATURES);
-  if (!cand || cand.getLastRow() < 2) return null;
-  const H = CANDIDATURES_HEADERS;
-  const largeur = Math.max(cand.getLastColumn(), H.length);
-  const entetes = cand.getRange(1, 1, 1, largeur).getValues()[0];
-  const lignes = cand.getRange(2, 1, cand.getLastRow() - 1, largeur).getValues();
-  for (let i = 0; i < lignes.length; i++) {
-    const v = lignes[i];
-    if (v[H.indexOf('id')] !== id) continue;
-    const texte = String(v[H.indexOf('Réponses')] || '');
-    // Une colonne par question : on les remet dans l'ordre du formulaire (celui du texte de secours).
-    const champs = [];
-    for (let k = H.length; k < largeur; k++) {
-      const valeur = String(v[k] == null ? '' : v[k]).trim();
-      if (entetes[k] && valeur !== '' && !EQ_DOUBLON.test(String(entetes[k]))) champs.push({ label: String(entetes[k]), value: valeur });
-    }
-    champs.sort(function (a, b) {
-      const ia = texte.indexOf(a.label + ' : '), ib = texte.indexOf(b.label + ' : ');
-      return (ia < 0 ? 1e9 : ia) - (ib < 0 ? 1e9 : ib);
-    });
-    return {
-      id: id, date: eqDate_(v[H.indexOf('Date')]), pole: v[H.indexOf('Pôle')], projet: v[H.indexOf('Projet')], formule: v[H.indexOf('Formule')],
-      prenom: v[H.indexOf('Prénom')], nom: v[H.indexOf('Nom')], email: v[H.indexOf('Email')], telephone: String(v[H.indexOf('Téléphone')] || ''),
-      passe: String(v[H.indexOf('Déjà participé')] || ''), dossier: String(v[H.indexOf('Dossier Drive')] || ''), fiche: String(v[H.indexOf('Fiche')] || ''),
-      champs: champs, reponses: texte
-    };
-  }
-  return null;
+// Gros bouton avec icône : lien Google (Docs ou Drive) ou bouton d'action. Grisé si le lien n'existe pas.
+function grosBouton(couleur, nom, texte, url, action) {
+  const sur = url ? /^https:\/\/(drive|docs)\.google\.com\//.test(String(url)) : true;
+  let b;
+  if (url !== null && url !== undefined) {
+    if (sur && url) { b = document.createElement('a'); b.href = url; b.target = '_blank'; b.rel = 'noopener noreferrer'; }
+    else { b = document.createElement('span'); b.className = ''; }
+  } else { b = document.createElement('button'); b.type = 'button'; if (action) b.addEventListener('click', action); }
+  b.className = 'btn-grand ' + couleur + (b.tagName === 'SPAN' ? ' inactif' : '');
+  b.innerHTML = svgIcone(nom);
+  const t = document.createElement('span'); t.textContent = texte; b.appendChild(t);
+  return b;
 }
-
-// Photos : on charge d'abord la liste (rapide), puis chaque photo à part, pour les afficher au fur et à mesure.
-// Les petites copies restent 6 h en mémoire : la 2e ouverture est instantanée.
-// type : 'candidature' (par défaut), 'participant' (dossier final) ou 'benevole' (portrait).
-function eqDossierUrl_(id, type, tab) {
-  if (type === 'benevole') {
-    const b = eqLireOnglet_('Bénévoles').filter(function (o) { return String(o.submission_id) === id; })[0];
-    return b ? String(b.drive_folder || '') : '';
-  }
-  if (type === 'participant') {
-    if (eqOngletsParticipants_().indexOf(tab) < 0) return '';
-    const p = eqLireOnglet_(tab).filter(function (o) { return String(o.submission_id) === id; })[0];
-    return p ? String(p.drive_folder || '') : '';
-  }
-  const c = eqCandidature_(id);
-  return c ? String(c.dossier || '') : '';
+function ligneInfo(nomIcone, texte) {
+  const li = document.createElement('li');
+  li.innerHTML = svgIcone(nomIcone);
+  const t = document.createElement('span'); t.textContent = texte; li.appendChild(t);
+  return li;
 }
-
-function eqFichiersImages_(dossier, motif) {
-  const sortie = [];
-  const it = dossier.getFiles();
-  while (it.hasNext()) {
-    const f = it.next();
-    if (motif.test(f.getName())) sortie.push(f);
-  }
-  sortie.sort(function (a, b) { return a.getName() < b.getName() ? -1 : 1; });
-  return sortie;
+function lienSur(url, texte) {
+  if (!/^https:\/\/(drive|docs)\.google\.com\//.test(String(url || ''))) return null;
+  const a = document.createElement('a');
+  a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = texte;
+  return a;
 }
-
-function eqSousDossier_(dossier, nom) {
-  const it = dossier.getFoldersByName(nom);
-  return it.hasNext() ? it.next() : null;
-}
-
-function eqPhotosListe_(id, type, tab) {
-  if (!eqIdValide_(id)) return { ok: false, error: 'Candidature inconnue.' };
-  type = type === 'benevole' || type === 'participant' ? type : 'candidature';
-  const cache = CacheService.getScriptCache();
-  const memo = cache.get('eq_phl_' + id);
-  if (memo) return { ok: true, photos: JSON.parse(memo) };
-  const url = eqDossierUrl_(id, type, tab);
-  if (!url) return { ok: false, error: 'Dossier introuvable.' };
-  const photos = [];
-  try {
-    const m = url.match(/folders\/([-\w]{20,})/);
-    if (m) {
-      const racine = DriveApp.getFolderById(m[1]);
-      let fichiers = [];
-      if (type === 'benevole') {
-        fichiers = eqFichiersImages_(racine, /-portrait\.jpe?g$/i);
-      } else if (type === 'participant') {
-        const dossierPhotos = eqSousDossier_(racine, 'Photos');
-        if (dossierPhotos) {
-          fichiers = eqFichiersImages_(dossierPhotos, /\.(jpe?g|png|webp)$/i);
-          const galerie = eqSousDossier_(dossierPhotos, 'Galerie');
-          if (galerie) fichiers = fichiers.concat(eqFichiersImages_(galerie, /\.(jpe?g|png|webp)$/i));
-        }
-      } else {
-        fichiers = eqFichiersImages_(racine, /^photo-\d+\.jpg$/);
-      }
-      fichiers.slice(0, 12).forEach(function (f) { photos.push({ fid: f.getId(), url: 'https://drive.google.com/file/d/' + f.getId() + '/view' }); });
-    }
-  } catch (err) {
-    console.log('Photos non listées : ' + (err && err.message ? err.message : err));
-  }
-  if (photos.length) cache.put('eq_phl_' + id, JSON.stringify(photos), 3600);
-  return { ok: true, photos: photos };
-}
-
-// hd = true : la grande image de la fiche. On envoie la vraie photo si elle n'est pas trop lourde, sinon la petite copie.
-function eqPhoto_(id, fid, hd, type, tab) {
-  if (!eqIdValide_(id) || !/^[-\w]{20,}$/.test(fid || '')) return { ok: false, error: 'Photo inconnue.' };
-  const liste = eqPhotosListe_(id, type, tab);
-  if (!liste.ok || !liste.photos.some(function (p) { return p.fid === fid; })) return { ok: false, error: 'Photo inconnue.' };
-  const cache = CacheService.getScriptCache();
-  if (hd) {
-    try {
-      const grand = DriveApp.getFileById(fid).getBlob();
-      const octets = grand.getBytes();
-      if (octets.length <= 1200000) return { ok: true, src: 'data:' + (grand.getContentType() || 'image/jpeg') + ';base64,' + Utilities.base64Encode(octets), hd: true };
-    } catch (errHd) { /* on retombe sur la petite copie */ }
-  }
-  const memo = cache.get('eq_ph_' + fid);
-  if (memo) return { ok: true, src: memo };
-  try {
-    const f = DriveApp.getFileById(fid);
-    const blob = f.getThumbnail() || f.getBlob();
-    const src = 'data:' + (blob.getContentType() || 'image/jpeg') + ';base64,' + Utilities.base64Encode(blob.getBytes());
-    if (src.length < 95000) cache.put('eq_ph_' + fid, src, 21600);
-    return { ok: true, src: src };
-  } catch (err) {
-    return { ok: false, error: 'Photo illisible.' };
-  }
-}
-
-function eqStatuts_(ligne) {
-  const s = {};
-  EQ_PISTES.forEach(function (p) { s[p] = ligne ? (ligne[p] || '') : ''; });
-  if (!s['Sélection']) s['Sélection'] = 'À étudier';
-  s.alerte = ligne ? String(ligne['Alerte'] || '') : '';
-  s.dernier_email = ligne ? String(ligne['Dernier email'] || '') : '';
+function puce(texte, classe) {
+  const s = document.createElement('span');
+  s.className = 'puce' + (classe ? ' ' + classe : '');
+  s.textContent = texte;
   return s;
 }
-
-// Email préparé pour cette personne (prêt à partir), avec son destinataire réel dans le mode actuel.
-function eqEmailPret_(id) {
-  const prets = emailsEnAttente_().filter(function (e) { return e.id === id; });
-  if (!prets.length) return null;
-  const cle = prets[prets.length - 1].cle;
-  const ligne = trouverSuivi_(id);
-  const email = ligne ? construireEmail_(cle, ligne) : { erreur: 'Ligne introuvable dans Suivi.' };
-  if (email.erreur) return { cle: cle, libelle: EQ_LIBELLES_EMAIL[cle] || cle, erreur: email.erreur };
-  return {
-    cle: cle, libelle: EQ_LIBELLES_EMAIL[cle] || cle, objet: email.options.subject,
-    objet_modifiable: email.options.subject.replace(/^\[TEST pour [^\]]*\]\s*/, ''), corps: email.options.body,
-    destinataire: email.options.to, reel: email.reel
+function puceCategorie(pole) {
+  const s = puce(pole);
+  const c = COULEURS_POLES[pole];
+  if (c) { s.style.background = c[0]; s.style.color = c[1]; }
+  return s;
+}
+function categories() {
+  const presentes = Array.from(new Set(items.map((i) => i.pole).filter(Boolean)));
+  return ORDRE_POLES.filter((p) => presentes.indexOf(p) >= 0).concat(presentes.filter((p) => ORDRE_POLES.indexOf(p) < 0));
+}
+function icone(nom) {
+  const chemins = {
+    fichier: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/>',
+    loupe: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+    coche: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>',
+    groupe: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 1.8 5 4.5"/>',
+    coeur: '<path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/>',
+    courrier: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'
   };
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + chemins[nom] + '</svg>';
 }
 
-// Tous les emails de cette candidature (accusé de réception compris), du plus récent au plus ancien.
-function eqHistorique_(id) {
-  const journal = SpreadsheetApp.openById(SHEET_ID).getSheetByName(P_TABS.JOURNAL);
-  const liste = [];
-  if (!journal || journal.getLastRow() < 2) return liste;
-  journal.getRange(2, 1, journal.getLastRow() - 1, JOURNAL_HEADERS.length).getValues().forEach(function (l) {
-    if (l[1] !== id || l[6] === 'Annulé') return;
-    liste.push({ date: eqDate_(l[0]), libelle: EQ_LIBELLES_EMAIL[l[4]] || String(l[4]), statut: String(l[6]), mode: String(l[5] || ''), detail: String(l[7] || '') });
-  });
-  return liste.reverse().slice(0, 30);
-}
-
-function eqDetail_(id) {
-  if (!eqIdValide_(id)) return { ok: false, error: 'Candidature inconnue.' };
-  const c = eqCandidature_(id);
-  if (!c) return { ok: false, error: 'Candidature introuvable.' };
-  const ligne = trouverSuivi_(id);
-  c.statuts = eqStatuts_(ligne);
-  c.email_pret = eqEmailPret_(id);
-  c.emails = eqHistorique_(id);
-  return { ok: true, detail: c, listes: SUIVI_LISTES, mode: eqConfig_().mode };
-}
-
-// Change un statut du Suivi (les emails se préparent comme dans le Sheet, rien ne part).
-function eqStatut_(id, piste, valeur) {
-  if (!eqIdValide_(id)) return { ok: false, error: 'Candidature inconnue.' };
-  if (EQ_PISTES.indexOf(piste) < 0 || (SUIVI_LISTES[piste] || []).indexOf(valeur) < 0) return { ok: false, error: 'Statut inconnu.' };
-  const feuille = feuilleSuivi_();
-  const ligne = trouverSuivi_(id);
-  if (!ligne) return { ok: false, error: 'Cette candidature est absente de Suivi. Menu Portail du Sheet : Créer les lignes Suivi manquantes.' };
-  const r = changerStatut_(feuille, ligne._row, piste, valeur);
-  const apres = trouverSuivi_(id);
-  return { ok: r.ok !== false, message: r.message, statuts: eqStatuts_(apres), email_pret: eqEmailPret_(id), emails: eqHistorique_(id) };
-}
-
-// Envoie l'email préparé. En mode TEST il part vers l'adresse de test, jamais vers le candidat.
-// edit (facultatif) : { objet, corps, base } = texte modifié pour cet envoi seulement, le modèle ne change pas.
-function eqEnvoyer_(id, edit) {
-  if (!eqIdValide_(id)) return { ok: false, error: 'Candidature inconnue.' };
-  const ligne = trouverSuivi_(id);
-  if (!ligne) return { ok: false, error: 'Cette candidature est absente de Suivi.' };
-  let surcharge = null;
-  if (edit && typeof edit === 'object') {
-    const objet = String(edit.objet || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 200);
-    const corps = String(edit.corps || '').replace(/\r\n/g, '\n').trim().slice(0, 20000);
-    if (!objet || !corps) return { ok: false, error: "L'objet et le texte de l'email ne peuvent pas être vides." };
-    surcharge = { objet: objet, corps: corps, base: String(edit.base || '') };
-  }
-  const r = envoyerPourLigne_(ligne, surcharge);
-  if (!r) return { ok: false, error: "Aucun email prêt pour cette candidature. Change d'abord un statut." };
-  const apres = trouverSuivi_(id);
-  return { ok: r.statut === 'Envoyé', statut: r.statut, detail: r.detail, statuts: eqStatuts_(apres), email_pret: eqEmailPret_(id), emails: eqHistorique_(id) };
-}
-
-
-// =====================================================================
-// PARTICIPANTS (dossiers finaux) et BÉNÉVOLES
-// Les lignes viennent des onglets de la base ; les statuts, des lignes Suivi.
-// Participants : rapprochés de leur candidature par email + projet + pôle.
-// Bénévoles : la ligne Suivi porte la même référence d'inscription.
-// =====================================================================
-// Calculé à l'appel (et non au chargement du fichier) : TABS est défini dans Code.gs, dont l'ordre de chargement n'est pas garanti.
-function eqOngletsParticipants_() { return Object.keys(TABS).filter(function (c) { return c !== 'Bénévole'; }).map(function (c) { return TABS[c]; }); }
-
-// Lit un onglet de la base (Artistes, Bénévoles...) : une liste d'objets { clé: valeur }.
-function eqLireOnglet_(tab) {
-  const feuille = SpreadsheetApp.openById(SHEET_ID).getSheetByName(tab);
-  if (!feuille || feuille.getLastRow() < 2) return [];
-  const colonnes = columnsFor_(tab);
-  const largeur = Math.max(feuille.getLastColumn(), colonnes.length);
-  const valeurs = feuille.getRange(1, 1, feuille.getLastRow(), largeur).getValues();
-  const indices = colonnes.map(function (c) { return valeurs[0].indexOf(c.label); });
-  return valeurs.slice(1).map(function (v) {
-    const o = {};
-    colonnes.forEach(function (c, k) { if (indices[k] >= 0) o[c.key] = v[indices[k]]; });
-    return o;
-  }).filter(function (o) { return o.submission_id; });
-}
-
-function eqCle_(email, projet, pole) {
-  return cleRapprochement_(email) + '|' + cleRapprochement_(projet) + '|' + cleRapprochement_(pole);
-}
-
-function eqSuiviLignes_() {
-  const feuille = feuilleSuivi_();
-  const lignes = [];
-  if (feuille.getLastRow() < 2) return lignes;
-  feuille.getRange(2, 1, feuille.getLastRow() - 1, SUIVI_HEADERS.length).getValues().forEach(function (v) {
-    if (!v[0]) return;
-    const l = {};
-    SUIVI_HEADERS.forEach(function (h, k) { l[h] = v[k]; });
-    lignes.push(l);
-  });
-  return lignes;
-}
-
-function eqDateTri_(valeur) { const d = dateCellule_(valeur); return d ? d.getTime() : 0; }
-
-function eqListeParticipants_() {
-  const parCle = {};
-  eqSuiviLignes_().forEach(function (l) { parCle[eqCle_(l['Email'], l['Projet'], l['Pôle'])] = l; });
-  const items = [];
-  Object.keys(TABS).forEach(function (categorie) {
-    if (categorie === 'Bénévole') return;
-    eqLireOnglet_(TABS[categorie]).forEach(function (o) {
-      const pole = String(o.category || categorie);
-      const s = parCle[eqCle_(o.email, o.name, pole)] || null;
-      items.push({
-        id: String(o.submission_id), tab: TABS[categorie], pole: pole, nom: String(o.name || ''),
-        sous_titre: String(o.subtitle || o.title_pro || o.artist_type || ''), email: String(o.email || ''),
-        date: eqDate_(o.timestamp), _t: eqDateTri_(o.timestamp), dossier: String(o.drive_folder || ''), fiche: String(o.document_url || ''),
-        suivi_id: s ? String(s.id) : '', selection: s ? (s['Sélection'] || '') : '', dossier_final: s ? (s['Dossier final'] || '') : '',
-        paiement: s ? (s['Paiement'] || '') : '', confirmation: s ? (s['Confirmation'] || '') : '', alerte: s ? String(s['Alerte'] || '') : ''
-      });
+/* ---------- Accueil ---------- */
+function dessinerAccueil() {
+  const zone = $('totaux');
+  zone.innerHTML = '';
+  const cartes = [
+    { libelle: 'Candidatures', nombre: items.length, couleur: 'var(--magenta)', icone: 'fichier', statut: 'Tous' },
+    { libelle: 'À étudier', nombre: items.filter((i) => statutDe(i) === 'À étudier').length, couleur: 'var(--violet)', icone: 'loupe', statut: 'À étudier' },
+    { libelle: 'Acceptées', nombre: items.filter((i) => statutDe(i) === 'Accepté').length, couleur: 'var(--turquoise)', icone: 'coche', statut: 'Accepté' },
+    { libelle: 'Participants', nombre: participants ? participants.length : (statsServeur ? statsServeur.participants : '…'), couleur: '#B5207F', icone: 'groupe', vers: 'participants' },
+    { libelle: 'Bénévoles', nombre: benevoles ? benevoles.length : (statsServeur ? statsServeur.benevoles : '…'), couleur: '#148FA8', icone: 'coeur', vers: 'benevoles' },
+    { libelle: 'Emails à envoyer', nombre: statsServeur ? statsServeur.emails_a_envoyer : items.filter((i) => i.email_a_envoyer).length, couleur: '#C43D2B', icone: 'courrier', statut: 'Email à envoyer' }
+  ];
+  cartes.forEach((c) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'total';
+    const p = document.createElement('span'); p.className = 'pastille'; p.style.background = c.couleur; p.innerHTML = icone(c.icone);
+    const l = document.createElement('span'); l.className = 'libelle'; l.textContent = c.libelle;
+    const n = document.createElement('span'); n.className = 'nombre'; n.textContent = String(c.nombre);
+    const k = document.createElement('span'); k.className = 'lien'; k.textContent = 'Voir la liste';
+    b.appendChild(p); b.appendChild(l); b.appendChild(n); b.appendChild(k);
+    b.addEventListener('click', () => {
+      if (c.vers === 'participants') { pCategorie = 'Toutes'; pFinal = 'Tous'; $('recherche-p').value = ''; naviguer('participants'); return; }
+      if (c.vers === 'benevoles') { bEquipe = 'Toutes'; bStatut = 'Tous'; $('recherche-b').value = ''; naviguer('benevoles'); return; }
+      filtreCategorie = 'Toutes'; filtreStatut = c.statut; $('recherche').value = ''; naviguer('candidatures');
     });
+    zone.appendChild(b);
   });
-  items.sort(function (a, b) { return b._t - a._t; });
-  items.forEach(function (i) { delete i._t; });
-  return { ok: true, items: items };
+  const liste = $('recentes');
+  liste.innerHTML = '';
+  if (!items.length) {
+    const v = document.createElement('div'); v.className = 'vide'; v.textContent = "Aucune candidature pour l'instant."; liste.appendChild(v); return;
+  }
+  items.slice(0, 5).forEach((i) => {
+    const ligne = document.createElement('div'); ligne.className = 'recent';
+    const nom = document.createElement('div'); nom.className = 'projet'; nom.textContent = i.projet;
+    const cat = document.createElement('div'); cat.appendChild(puceCategorie(i.pole));
+    const date = document.createElement('div'); date.className = 'meta'; date.textContent = i.date;
+    if (i.email_a_envoyer) { const pe = puce('Email à envoyer', 'a-envoyer'); pe.style.marginLeft = '8px'; cat.appendChild(pe); }
+    const liens = document.createElement('div'); liens.className = 'liens';
+    liens.appendChild(boutonOuvrir(i.id));
+    ligne.appendChild(nom); ligne.appendChild(cat); ligne.appendChild(date); ligne.appendChild(liens);
+    liste.appendChild(ligne);
+  });
 }
 
-const EQ_GROUPES = {
-  presentation: 'Présentation', members: 'Membres', second: 'Deuxième personne', links: 'Liens',
-  artisttech: 'Technique', workshoptech: 'Technique', standtech: 'Technique', technical: 'Technique', seo: 'Pour le site (SEO)'
-};
-const EQ_ORDRE_GROUPES = ['Présentation', 'Membres', 'Deuxième personne', 'Technique', 'Liens', 'Pour le site (SEO)'];
-// Déjà montrés ailleurs (titre, contact, boutons) ou purement techniques : pas répétés dans les cartes.
-const EQ_EXCLUS = ['category', 'name', 'phone', 'email', 'first_name', 'last_name', 'drive_folder', 'document_url', 'submission_id', 'timestamp', 'consent',
-  'featured_image', 'gallery_folder', 'gallery_formats', 'technical_sheet', 'volunteer_portrait', 'volunteer_team_1', 'volunteer_team_2', 'volunteer_motivation'];
+/* ---------- Candidatures ---------- */
+$('recherche').addEventListener('input', dessinerCandidatures);
 
-// Toutes les informations du dossier final, regroupées en cartes (rien d'oublié : on suit les colonnes de l'onglet).
-function eqGroupes_(tab, o) {
-  const groupes = {};
-  const ajouter = function (titre, champ) { (groupes[titre] = groupes[titre] || []).push(champ); };
-  const vus = {};
-  columnsFor_(tab).forEach(function (c) {
-    if (EQ_EXCLUS.indexOf(c.key) >= 0) return;
-    const valeur = String(o[c.key] == null ? '' : o[c.key]).trim();
-    if (valeur === '') return;
-    const titre = EQ_GROUPES[c.group] || 'Autres informations';
-    const membre = c.key.match(/^member_(\d)_(name|bio)$/);
-    if (membre) {
-      if (vus[membre[1]]) return;
-      vus[membre[1]] = true;
-      const nom = String(o['member_' + membre[1] + '_name'] || '').trim();
-      const bio = String(o['member_' + membre[1] + '_bio'] || '').trim();
-      if (nom || bio) ajouter('Membres', { label: nom || ('Membre ' + membre[1]), value: bio || '-' });
+function boutonFiltre(zone, nom, nombre, actif, classe, action) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'filtre' + (classe ? ' ' + classe : ''); b.setAttribute('aria-pressed', String(actif));
+  b.appendChild(document.createTextNode(nom));
+  const c = document.createElement('span'); c.className = 'n'; c.textContent = String(nombre); b.appendChild(c);
+  b.addEventListener('click', action);
+  zone.appendChild(b);
+}
+
+function dessinerCandidatures() {
+  const zc = $('filtres-categorie'); zc.innerHTML = '';
+  boutonFiltre(zc, 'Toutes', items.length, filtreCategorie === 'Toutes', '', () => { filtreCategorie = 'Toutes'; dessinerCandidatures(); dessinerSousMenu(); });
+  categories().forEach((p) => {
+    boutonFiltre(zc, p, items.filter((i) => i.pole === p).length, filtreCategorie === p, '', () => { filtreCategorie = p; dessinerCandidatures(); dessinerSousMenu(); });
+  });
+  const parCat = items.filter((i) => filtreCategorie === 'Toutes' || i.pole === filtreCategorie);
+  const zs = $('filtres-statut'); zs.innerHTML = '';
+  boutonFiltre(zs, 'Tous', parCat.length, filtreStatut === 'Tous', 'statut', () => { filtreStatut = 'Tous'; dessinerCandidatures(); });
+  STATUTS.forEach((s) => {
+    boutonFiltre(zs, s, parCat.filter((i) => statutDe(i) === s).length, filtreStatut === s, 'statut', () => { filtreStatut = s; dessinerCandidatures(); });
+  });
+  boutonFiltre(zs, 'Email à envoyer', parCat.filter((i) => i.email_a_envoyer).length, filtreStatut === 'Email à envoyer', 'statut', () => { filtreStatut = 'Email à envoyer'; dessinerCandidatures(); });
+  const mot = normaliser($('recherche').value);
+  const visibles = parCat.filter((i) => {
+    if (filtreStatut === 'Email à envoyer') { if (!i.email_a_envoyer) return false; }
+    else if (filtreStatut !== 'Tous' && statutDe(i) !== filtreStatut) return false;
+    if (!mot) return true;
+    return normaliser([i.projet, i.prenom, i.nom, i.email, i.pole].join(' ')).indexOf(mot) >= 0;
+  });
+  $('compte').textContent = visibles.length + ' candidature' + (visibles.length > 1 ? 's' : '') + ' sur ' + items.length;
+  const liste = $('liste'); liste.innerHTML = '';
+  if (!visibles.length) {
+    const v = document.createElement('div'); v.className = 'vide';
+    v.textContent = items.length ? 'Aucune candidature ne correspond. Change les filtres ou la recherche.' : "Aucune candidature pour l'instant.";
+    liste.appendChild(v); return;
+  }
+  visibles.forEach((i) => {
+    const ligne = document.createElement('article'); ligne.className = 'ligne';
+    const c1 = document.createElement('div');
+    const projet = document.createElement('div'); projet.className = 'projet'; projet.textContent = i.projet;
+    const qui = document.createElement('div'); qui.className = 'meta'; qui.textContent = i.prenom + ' ' + i.nom + ' - ' + i.email;
+    c1.appendChild(projet); c1.appendChild(qui);
+    const c2 = document.createElement('div');
+    const p2 = document.createElement('div'); p2.className = 'puces';
+    p2.appendChild(puceCategorie(i.pole));
+    if (i.formule === 'Duo') p2.appendChild(puce('Duo'));
+    c2.appendChild(p2);
+    const date = document.createElement('div'); date.className = 'meta'; date.textContent = 'Reçue le ' + i.date; c2.appendChild(date);
+    const c3 = document.createElement('div'); c3.className = 'puces';
+    const statut = statutDe(i);
+    c3.appendChild(puce(statut, classeSelection(statut)));
+    if (statut === 'Accepté') {
+      if (i.dossier_final) c3.appendChild(puce('Dossier final : ' + i.dossier_final, classeEtat(i.dossier_final)));
+      if (i.paiement && i.paiement !== 'Non concerné') c3.appendChild(puce('Paiement : ' + i.paiement, classeEtat(i.paiement)));
+      if (i.confirmation) c3.appendChild(puce('Confirmation : ' + i.confirmation, classeEtat(i.confirmation)));
+    }
+    if (i.email_a_envoyer) c3.appendChild(puce('Email à envoyer', 'a-envoyer'));
+    const c4 = document.createElement('div'); c4.className = 'liens';
+    c4.appendChild(boutonOuvrir(i.id));
+    const fiche = lienSur(i.fiche, 'Fiche'); if (fiche) c4.appendChild(fiche);
+    const dossier = lienSur(i.dossier, 'Dossier'); if (dossier) c4.appendChild(dossier);
+    ligne.appendChild(c1); ligne.appendChild(c2); ligne.appendChild(c3); ligne.appendChild(c4);
+    if (i.alerte) { const a = document.createElement('div'); a.className = 'alerte'; a.textContent = i.alerte; ligne.appendChild(a); }
+    liste.appendChild(ligne);
+  });
+}
+
+/* ---------- Participants et bénévoles : listes ---------- */
+function messageChargement(zone, texte) {
+  zone.innerHTML = '';
+  const d = document.createElement('div'); d.className = 'chargement-liste'; d.setAttribute('role', 'status');
+  const t = document.createElement('span'); t.className = 'tourne'; d.appendChild(t);
+  const s = document.createElement('span'); s.textContent = texte; d.appendChild(s);
+  zone.appendChild(d);
+}
+function messageErreurListe(zone, texte, relancer) {
+  zone.innerHTML = '';
+  const p = document.createElement('p'); p.className = 'message ko'; p.textContent = texte; zone.appendChild(p);
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-doux'; b.textContent = 'Réessayer';
+  b.addEventListener('click', relancer); zone.appendChild(b);
+}
+function ouvrirLigne(genre, i) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'btn btn-ouvrir'; b.textContent = 'Ouvrir';
+  b.addEventListener('mouseenter', () => { if (jeton) demanderDetail(genre, i.id, i.tab); });
+  b.addEventListener('focus', () => { if (jeton) demanderDetail(genre, i.id, i.tab); });
+  b.addEventListener('click', () => ouvrirFiche(genre, i.id, i.tab));
+  return b;
+}
+function pastillesSuivi(i, accepteSeulement) {
+  const c3 = document.createElement('div'); c3.className = 'puces';
+  const statut = statutDe(i);
+  if (!i.suivi_id && i.suivi_id !== undefined) { c3.appendChild(puce('Sans candidature liée', 'sans-suivi')); return c3; }
+  c3.appendChild(puce(statut, classeSelection(statut)));
+  if (!accepteSeulement || statut === 'Accepté') {
+    if (i.dossier_final) c3.appendChild(puce('Dossier final : ' + i.dossier_final, classeEtat(i.dossier_final)));
+    if (i.paiement && i.paiement !== 'Non concerné') c3.appendChild(puce('Paiement : ' + i.paiement, classeEtat(i.paiement)));
+    if (i.confirmation) c3.appendChild(puce('Confirmation : ' + i.confirmation, classeEtat(i.confirmation)));
+  }
+  return c3;
+}
+
+function dessinerParticipants() {
+  const liste = $('liste-p');
+  if (!participants) {
+    $('filtres-p-categorie').innerHTML = ''; $('filtres-p-final').innerHTML = ''; $('compte-p').textContent = '';
+    if (erreurListes.participants) messageErreurListe(liste, 'Impossible de charger les participants.', () => { erreurListes.participants = false; dessinerParticipants(); chargerParticipants(true); });
+    else messageChargement(liste, 'Chargement des participants… Cela peut prendre quelques secondes.');
+    return;
+  }
+  const zc = $('filtres-p-categorie'); zc.innerHTML = '';
+  const cats = ORDRE_POLES.filter((p) => participants.some((i) => i.pole === p)).concat(Array.from(new Set(participants.map((i) => i.pole))).filter((p) => ORDRE_POLES.indexOf(p) < 0));
+  boutonFiltre(zc, 'Toutes', participants.length, pCategorie === 'Toutes', '', () => { pCategorie = 'Toutes'; dessinerParticipants(); dessinerSousMenu(); });
+  cats.forEach((p) => boutonFiltre(zc, p, participants.filter((i) => i.pole === p).length, pCategorie === p, '', () => { pCategorie = p; dessinerParticipants(); dessinerSousMenu(); }));
+  const parCat = participants.filter((i) => pCategorie === 'Toutes' || i.pole === pCategorie);
+  const etats = ['Non reçu', 'Reçu', 'À compléter', 'Validé'];
+  const zf = $('filtres-p-final'); zf.innerHTML = '';
+  boutonFiltre(zf, 'Tous', parCat.length, pFinal === 'Tous', 'statut', () => { pFinal = 'Tous'; dessinerParticipants(); });
+  etats.forEach((s) => boutonFiltre(zf, s, parCat.filter((i) => i.dossier_final === s).length, pFinal === s, 'statut', () => { pFinal = s; dessinerParticipants(); }));
+  boutonFiltre(zf, 'Sans candidature liée', parCat.filter((i) => !i.suivi_id).length, pFinal === 'Sans candidature liée', 'statut', () => { pFinal = 'Sans candidature liée'; dessinerParticipants(); });
+  const mot = normaliser($('recherche-p').value);
+  const visibles = parCat.filter((i) => {
+    if (pFinal === 'Sans candidature liée') { if (i.suivi_id) return false; }
+    else if (pFinal !== 'Tous' && i.dossier_final !== pFinal) return false;
+    return !mot || normaliser([i.nom, i.sous_titre, i.email, i.pole].join(' ')).indexOf(mot) >= 0;
+  });
+  $('compte-p').textContent = visibles.length + ' participant' + (visibles.length > 1 ? 's' : '') + ' sur ' + participants.length;
+  liste.innerHTML = '';
+  if (!visibles.length) { const v = document.createElement('div'); v.className = 'vide'; v.textContent = participants.length ? 'Aucun participant ne correspond. Change les filtres ou la recherche.' : "Aucun dossier final reçu pour l'instant."; liste.appendChild(v); return; }
+  visibles.forEach((i) => {
+    const ligne = document.createElement('article'); ligne.className = 'ligne';
+    const c1 = document.createElement('div');
+    const nom = document.createElement('div'); nom.className = 'projet'; nom.textContent = i.nom;
+    const sous = document.createElement('div'); sous.className = 'meta'; sous.textContent = (i.sous_titre ? i.sous_titre + ' - ' : '') + i.email;
+    c1.appendChild(nom); c1.appendChild(sous);
+    const c2 = document.createElement('div');
+    const p2 = document.createElement('div'); p2.className = 'puces'; p2.appendChild(puceCategorie(i.pole)); c2.appendChild(p2);
+    const date = document.createElement('div'); date.className = 'meta'; date.textContent = 'Dossier reçu le ' + i.date; c2.appendChild(date);
+    const c3 = pastillesSuivi(i, false);
+    if (i.email_a_envoyer) c3.appendChild(puce('Email à envoyer', 'a-envoyer'));
+    const c4 = document.createElement('div'); c4.className = 'liens';
+    c4.appendChild(ouvrirLigne('participant', i));
+    const fiche = lienSur(i.fiche, 'Fiche'); if (fiche) c4.appendChild(fiche);
+    const dossier = lienSur(i.dossier, 'Dossier'); if (dossier) c4.appendChild(dossier);
+    ligne.appendChild(c1); ligne.appendChild(c2); ligne.appendChild(c3); ligne.appendChild(c4);
+    if (i.alerte) { const a = document.createElement('div'); a.className = 'alerte'; a.textContent = i.alerte; ligne.appendChild(a); }
+    liste.appendChild(ligne);
+  });
+}
+$('recherche-p').addEventListener('input', dessinerParticipants);
+
+function dessinerBenevoles() {
+  const liste = $('liste-b');
+  if (!benevoles) {
+    $('filtres-b-equipe').innerHTML = ''; $('filtres-b-statut').innerHTML = ''; $('compte-b').textContent = '';
+    if (erreurListes.benevoles) messageErreurListe(liste, 'Impossible de charger les bénévoles.', () => { erreurListes.benevoles = false; dessinerBenevoles(); chargerBenevoles(true); });
+    else messageChargement(liste, 'Chargement des bénévoles… Cela peut prendre quelques secondes.');
+    return;
+  }
+  const ze = $('filtres-b-equipe'); ze.innerHTML = '';
+  boutonFiltre(ze, 'Toutes', benevoles.length, bEquipe === 'Toutes', '', () => { bEquipe = 'Toutes'; dessinerBenevoles(); dessinerSousMenu(); });
+  equipesBenevoles().forEach((t) => boutonFiltre(ze, equipeCourte(t), benevoles.filter((i) => i.equipes.indexOf(t) >= 0).length, bEquipe === t, '', () => { bEquipe = t; dessinerBenevoles(); dessinerSousMenu(); }));
+  const parEquipe = benevoles.filter((i) => bEquipe === 'Toutes' || i.equipes.indexOf(bEquipe) >= 0);
+  const zs = $('filtres-b-statut'); zs.innerHTML = '';
+  boutonFiltre(zs, 'Tous', parEquipe.length, bStatut === 'Tous', 'statut', () => { bStatut = 'Tous'; dessinerBenevoles(); });
+  STATUTS.forEach((s) => boutonFiltre(zs, s, parEquipe.filter((i) => statutDe(i) === s).length, bStatut === s, 'statut', () => { bStatut = s; dessinerBenevoles(); }));
+  const mot = normaliser($('recherche-b').value);
+  const visibles = parEquipe.filter((i) => (bStatut === 'Tous' || statutDe(i) === bStatut) && (!mot || normaliser([i.nom, i.email, i.equipes.join(' ')].join(' ')).indexOf(mot) >= 0));
+  $('compte-b').textContent = visibles.length + ' bénévole' + (visibles.length > 1 ? 's' : '') + ' sur ' + benevoles.length;
+  liste.innerHTML = '';
+  if (!visibles.length) { const v = document.createElement('div'); v.className = 'vide'; v.textContent = benevoles.length ? 'Aucun bénévole ne correspond. Change les filtres ou la recherche.' : "Aucune candidature de bénévole pour l'instant."; liste.appendChild(v); return; }
+  visibles.forEach((i) => {
+    const ligne = document.createElement('article'); ligne.className = 'ligne';
+    const c1 = document.createElement('div');
+    const nom = document.createElement('div'); nom.className = 'projet'; nom.textContent = i.nom;
+    const sous = document.createElement('div'); sous.className = 'meta'; sous.textContent = i.email; c1.appendChild(nom); c1.appendChild(sous);
+    const c2 = document.createElement('div');
+    const p2 = document.createElement('div'); p2.className = 'puces'; i.equipes.forEach((t) => p2.appendChild(puce(equipeCourte(t), 'equipe'))); c2.appendChild(p2);
+    const date = document.createElement('div'); date.className = 'meta'; date.textContent = 'Reçue le ' + i.date; c2.appendChild(date);
+    const c3 = document.createElement('div'); c3.className = 'puces';
+    if (i.sans_suivi) c3.appendChild(puce('Pas encore de suivi', 'sans-suivi'));
+    else c3.appendChild(puce(statutDe(i), classeSelection(statutDe(i))));
+    if (i.email_a_envoyer) c3.appendChild(puce('Email à envoyer', 'a-envoyer'));
+    const c4 = document.createElement('div'); c4.className = 'liens';
+    c4.appendChild(ouvrirLigne('benevole', i));
+    const fiche = lienSur(i.fiche, 'Fiche'); if (fiche) c4.appendChild(fiche);
+    const dossier = lienSur(i.dossier, 'Dossier'); if (dossier) c4.appendChild(dossier);
+    ligne.appendChild(c1); ligne.appendChild(c2); ligne.appendChild(c3); ligne.appendChild(c4);
+    if (i.alerte) { const a = document.createElement('div'); a.className = 'alerte'; a.textContent = i.alerte; ligne.appendChild(a); }
+    liste.appendChild(ligne);
+  });
+}
+$('recherche-b').addEventListener('input', dessinerBenevoles);
+
+/* ---------- Fiche (candidature, participant ou bénévole) ---------- */
+let detailId = '';
+const detailsPrets = {};   // id -> { quand, promesse } : ouverture instantanée après un survol
+const photosPrets = {};    // id -> [data URL] : les photos déjà reçues
+
+const OPS_DETAIL = { candidature: 'detail', participant: 'detail_participant', benevole: 'detail_benevole' };
+function demanderDetail(genre, id, tab) {
+  if (typeof genre === 'string' && id === undefined) { id = genre; genre = 'candidature'; }
+  genre = genre || 'candidature';
+  const cle = genre + ':' + id;
+  const prets = detailsPrets[cle];
+  if (prets && Date.now() - prets.quand < 15000) return prets.promesse;
+  const corps = { op: OPS_DETAIL[genre], token: jeton, id: id };
+  if (genre === 'participant') corps.tab = tab || '';
+  const promesse = appel(corps);
+  detailsPrets[cle] = { quand: Date.now(), promesse: promesse };
+  promesse.catch(() => { delete detailsPrets[cle]; });
+  return promesse;
+}
+
+function boutonOuvrir(id) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'btn btn-ouvrir'; b.textContent = 'Ouvrir';
+  // Dès que la souris passe dessus, on commence à charger la fiche : elle s'ouvre plus vite.
+  b.addEventListener('mouseenter', () => { if (jeton) demanderDetail('candidature', id); });
+  b.addEventListener('focus', () => { if (jeton) demanderDetail('candidature', id); });
+  b.addEventListener('click', () => ouvrirFiche('candidature', id));
+  return b;
+}
+
+function el(balise, classe, texte) {
+  const e = document.createElement(balise);
+  if (classe) e.className = classe;
+  if (texte != null) e.textContent = texte;
+  return e;
+}
+
+function carte(titre) {
+  const c = el('section', 'carte');
+  c.appendChild(el('h2', '', titre));
+  return c;
+}
+
+function sessionExpiree(r) {
+  if (r && r.auth === false) { oublierJeton(); montrerConnexion(r.error || 'Session expirée. Reconnecte-toi.'); return true; }
+  return false;
+}
+
+function ouvrirDetail(id) { return ouvrirFiche('candidature', id); }
+async function ouvrirFiche(genre, id, tab) {
+  detailId = id; detailGenre = genre; detailTab = tab || '';
+  const zone = $('detail');
+  zone.innerHTML = '';
+  zone.appendChild(el('p', 'compte', 'Chargement de la fiche et des photos...'));
+  naviguer('detail');
+  const retourVers = ({ candidature: 'candidatures', participant: 'participants', benevole: 'benevoles' })[genre];
+  try {
+    const r = await demanderDetail(genre, id, tab);
+    if (sessionExpiree(r)) return;
+    if (!r.ok) throw new Error(r.error || 'Erreur');
+    if (detailId !== id) return;
+    dessinerDetail(r.detail, r.listes || {}, r.mode);
+    chargerPhotos(id);
+  } catch (err) {
+    zone.innerHTML = '';
+    const retour = el('button', 'retour', 'Retour'); retour.type = 'button';
+    retour.addEventListener('click', () => naviguer(retourVers));
+    zone.appendChild(retour);
+    zone.appendChild(el('p', 'message ko', "Impossible d'ouvrir cette candidature. Réessaie dans un instant."));
+  }
+}
+
+function carteGroupe(g) {
+  const c = carte(g.titre);
+  const grille = el('div', 'champs');
+  g.champs.forEach((champ) => {
+    const b = el('div', 'champ' + (champ.value.length > 90 || champ.value.indexOf('\n') >= 0 ? ' large' : ''));
+    b.appendChild(el('div', 'q', champ.label));
+    const v = el('div', 'v');
+    if (champ.lien && /^https?:\/\//i.test(champ.value)) {
+      const a = document.createElement('a'); a.href = champ.value; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = champ.value;
+      v.className = 'v liens-champ'; v.appendChild(a);
+    } else v.textContent = champ.value;
+    b.appendChild(v); grille.appendChild(b);
+  });
+  c.appendChild(grille);
+  return c;
+}
+function carteMotivation(texte) {
+  const c = carte('Motivation et compétences');
+  const b = el('div', 'champ large'); b.appendChild(el('div', 'v', texte));
+  const g = el('div', 'champs'); g.appendChild(b); c.appendChild(g);
+  return c;
+}
+
+const PHOTO_OK = /^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+\/=]+$/;
+
+function ajouterPhoto(grille, src, url, texte) {
+  if (!PHOTO_OK.test(src)) return;
+  const a = document.createElement('a');
+  if (/^https:\/\/drive\.google\.com\//.test(url || '')) { a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.title = 'Ouvrir en grand dans Drive'; }
+  const img = document.createElement('img'); img.src = src; img.alt = texte; a.appendChild(img);
+  grille.appendChild(a);
+}
+
+const heroNet = {};   // id -> data URL de la grande version déjà reçue
+
+function afficherHero(id, src, url) {
+  const zoneImage = $('fiche-image');
+  if (!zoneImage || detailId !== id || !PHOTO_OK.test(src)) return;
+  let a = zoneImage.querySelector('a'), img = zoneImage.querySelector('img');
+  if (!img) {
+    a = document.createElement('a'); img = document.createElement('img'); img.alt = 'Photo principale';
+    if (/^https:\/\/drive\.google\.com\//.test(url || '')) { a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.title = 'Ouvrir en grand dans Drive'; }
+    a.appendChild(img); zoneImage.appendChild(a);
+    const initiale = zoneImage.querySelector('.initiale'); if (initiale) initiale.remove();
+  }
+  img.src = src;
+  zoneImage.classList.remove('attente-image');
+}
+
+function typePhotos() { return detailGenre === 'candidature' ? '' : detailGenre; }
+async function heroNette(id, fid, url) {
+  if (heroNet[id]) { afficherHero(id, heroNet[id], url); return; }
+  try {
+    const r = await appel({ op: 'photo_hd', token: jeton, id: id, fid: fid, type: typePhotos(), tab: detailTab });
+    if (r && r.ok && r.hd && PHOTO_OK.test(r.src)) { heroNet[id] = r.src; afficherHero(id, r.src, url); }
+  } catch (err) { /* la petite copie reste affichée */ }
+}
+
+async function chargerPhotos(id) {
+  const grille = $('grille-photos'), info = $('info-photos');
+  if (!grille) return;
+  if (photosPrets[id]) {
+    photosPrets[id].forEach((p) => ajouterPhoto(grille, p.src, p.url, 'Photo'));
+    info.textContent = photosPrets[id].length ? '' : 'Aucune photo dans le dossier.';
+    if (photosPrets[id].length) { afficherHero(id, heroNet[id] || photosPrets[id][0].src, photosPrets[id][0].url); if (photosPrets[id][0].fid) heroNette(id, photosPrets[id][0].fid, photosPrets[id][0].url); }
+    if (!photosPrets[id].length) { const zi = $('fiche-image'); if (zi) zi.classList.remove('attente-image'); }
+    return;
+  }
+  try {
+    const liste = await appel({ op: 'photos_list', token: jeton, id: id, type: typePhotos(), tab: detailTab });
+    if (sessionExpiree(liste)) return;
+    if (detailId !== id || !$('grille-photos')) return;
+    if (!liste.ok || !(liste.photos || []).length) { info.textContent = 'Aucune photo dans le dossier.'; return; }
+    info.textContent = liste.photos.length + ' photo' + (liste.photos.length > 1 ? 's' : '') + ', chargement...';
+    const cases = liste.photos.map(() => { const c = el('div', 'attente'); grille.appendChild(c); return c; });
+    const recues = [];
+    await Promise.all(liste.photos.map(async (p, k) => {
+      try {
+        const r = await appel({ op: 'photo', token: jeton, id: id, fid: p.fid, type: typePhotos(), tab: detailTab });
+        if (r.ok && PHOTO_OK.test(r.src)) recues[k] = { src: r.src, url: p.url, fid: p.fid };
+        if (k === 0 && recues[0]) { afficherHero(id, recues[0].src, recues[0].url); heroNette(id, p.fid, p.url); }
+        if (detailId !== id || !cases[k].parentNode) return;
+        if (recues[k]) {
+          const tmp = el('div'); ajouterPhoto(tmp, r.src, p.url, 'Photo ' + (k + 1));
+          if (tmp.firstChild) grille.replaceChild(tmp.firstChild, cases[k]); else cases[k].remove();
+        } else cases[k].remove();
+      } catch (err) { if (cases[k].parentNode) cases[k].remove(); }
+    }));
+    photosPrets[id] = recues.filter(Boolean);
+    if (photosPrets[id].length && !$('fiche-image').querySelector('img')) { afficherHero(id, photosPrets[id][0].src, photosPrets[id][0].url); heroNette(id, photosPrets[id][0].fid, photosPrets[id][0].url); }
+    if (!photosPrets[id].length && $('fiche-image')) $('fiche-image').classList.remove('attente-image');
+    if ($('info-photos') && detailId === id) $('info-photos').textContent = photosPrets[id].length ? '' : 'Les photos ne se sont pas chargées. Utilise le lien Dossier Drive.';
+  } catch (err) {
+    if ($('info-photos')) $('info-photos').textContent = 'Les photos ne se sont pas chargées. Utilise le lien Dossier Drive.';
+  }
+}
+
+function majItem(id, statuts) {
+  const i = items.find((x) => x.id === id);
+  if (!i || !statuts) return;
+  i.selection = statuts['Sélection'] === 'À étudier' ? '' : statuts['Sélection'];
+  i.dossier_final = statuts['Dossier final']; i.paiement = statuts['Paiement']; i.confirmation = statuts['Confirmation'];
+  i.alerte = statuts.alerte || '';
+}
+function majListes(genre, d, statuts) {
+  if (genre === 'candidature') { majItem(d.id, statuts); return; }
+  const liste = genre === 'participant' ? participants : benevoles;
+  const i = (liste || []).find((x) => genre === 'participant' ? (d.suivi_id && x.suivi_id === d.suivi_id) : x.id === d.id);
+  if (!i || !statuts) return;
+  i.selection = statuts['Sélection'] === 'À étudier' ? '' : statuts['Sélection'];
+  i.dossier_final = statuts['Dossier final']; i.paiement = statuts['Paiement']; i.confirmation = statuts['Confirmation'];
+  i.alerte = statuts.alerte || '';
+}
+function majEmailAEnvoyer(genre, d, pret) {
+  let i;
+  if (genre === 'candidature') i = items.find((x) => x.id === d.id);
+  else if (genre === 'participant') i = (participants || []).find((x) => d.suivi_id && x.suivi_id === d.suivi_id);
+  else i = (benevoles || []).find((x) => x.id === d.id);
+  if (i) i.email_a_envoyer = !!pret;
+}
+
+function dessinerDetail(d, listes, mode) {
+  const genre = d.genre || 'candidature';
+  const sid = d.suivi_id !== undefined ? d.suivi_id : d.id;      // la ligne de Suivi qui porte les statuts et les emails
+  const cleDetail = genre + ':' + d.id;
+  const zone = $('detail');
+  zone.innerHTML = '';
+  const retourTexte = ({ candidature: 'Retour aux candidatures', participant: 'Retour aux participants', benevole: 'Retour aux bénévoles' })[genre];
+  const retourVers = ({ candidature: 'candidatures', participant: 'participants', benevole: 'benevoles' })[genre];
+  const retour = el('button', 'retour', retourTexte); retour.type = 'button';
+  retour.addEventListener('click', () => naviguer(retourVers));
+  zone.appendChild(retour);
+
+  const sousTitre = genre === 'candidature' ? (d.champs || []).find((c) => /activité en une phrase/i.test(c.label)) : null;
+  const champsAffiches = genre === 'candidature' ? (d.champs || []).filter((c) => c !== sousTitre) : [];
+  const sousTexte = genre === 'participant' ? (d.sous_titre || '') : (sousTitre ? sousTitre.value : '');
+
+  // En-tête : grande image à gauche, titre et infos à droite
+  const hero = el('section', 'fiche-hero');
+  const image = el('div', 'fiche-image attente-image'); image.id = 'fiche-image';
+  image.appendChild(el('span', 'initiale', (d.projet || '?').trim().charAt(0).toUpperCase()));
+  const entete = el('div', 'fiche-texte detail-entete');
+  entete.appendChild(el('h1', '', d.projet));
+  const puces = el('div', 'puces');
+  if (genre === 'benevole') (d.equipes || []).forEach((t) => puces.appendChild(puce(equipeCourte(t), 'equipe')));
+  else { puces.appendChild(puceCategorie(d.pole)); if (d.formule === 'Duo') puces.appendChild(puce('Duo')); }
+  entete.appendChild(puces);
+  if (sousTexte) entete.appendChild(el('p', 'fiche-soustitre', sousTexte));
+  const infos = el('ul', 'fiche-infos');
+  infos.appendChild(ligneInfo('user', d.prenom + ' ' + d.nom));
+  if (d.email) infos.appendChild(ligneInfo('mail', d.email));
+  if (d.telephone) infos.appendChild(ligneInfo('tel', d.telephone));
+  infos.appendChild(ligneInfo('cal', ({ candidature: 'Reçue le ', participant: 'Dossier reçu le ', benevole: 'Candidature reçue le ' })[genre] + d.date + (d.passe ? ' - Déjà participé : ' + d.passe : '')));
+  entete.appendChild(infos);
+  const m = el('span', 'mode ' + (mode === 'REEL' ? 'reel' : 'test'),
+    mode === 'REEL' ? 'Mode REEL : les emails partent vers les candidats' : "Mode TEST : les emails partent vers l'adresse de test, pas vers les candidats");
+  entete.appendChild(m);
+  hero.appendChild(image); hero.appendChild(entete);
+  zone.appendChild(hero);
+
+  // Trois gros boutons avec icône
+  const grands = el('div', 'actions-grandes');
+  grands.appendChild(grosBouton('teal', 'doc', 'Fiche Google Docs', d.fiche || '', null));
+  grands.appendChild(grosBouton('rose', 'image', genre === 'benevole' ? 'Portrait' : 'Photos', null, () => { const c = $('carte-photos'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
+  grands.appendChild(grosBouton('violet', 'dossier', 'Dossier Drive', d.dossier || '', null));
+  zone.appendChild(grands);
+
+  // Photos : la carte existe tout de suite, chaque photo s'affiche dès qu'elle arrive
+  const cartePhotos = carte(genre === 'benevole' ? 'Portrait' : 'Photos');
+  cartePhotos.id = 'carte-photos';
+  const grillePhotos = el('div', 'grille-photos'); grillePhotos.id = 'grille-photos';
+  const infoPhotos = el('p', 'compte', 'Chargement des photos...'); infoPhotos.id = 'info-photos';
+  cartePhotos.appendChild(infoPhotos); cartePhotos.appendChild(grillePhotos);
+
+  // Réponses (une boîte par question)
+  let carteReponses = null;
+  if (champsAffiches.length) {
+    carteReponses = carte('Réponses au formulaire');
+    const grille = el('div', 'champs');
+    champsAffiches.forEach((c) => {
+      const b = el('div', 'champ' + (c.value.length > 90 || c.value.indexOf('\n') >= 0 ? ' large' : ''));
+      b.appendChild(el('div', 'q', c.label)); b.appendChild(el('div', 'v', c.value));
+      grille.appendChild(b);
+    });
+    carteReponses.appendChild(grille);
+  } else if (d.reponses && !(d.champs || []).length) {
+    carteReponses = carte('Réponses au formulaire'); carteReponses.appendChild(el('p', 'reponses', d.reponses));
+  }
+
+  const cartesExtra = [];
+  if (genre === 'participant') (d.groupes || []).forEach((g) => cartesExtra.push(carteGroupe(g)));
+  if (genre === 'benevole' && d.motivation) cartesExtra.push(carteMotivation(d.motivation));
+
+  // Statuts
+  const cs = carte('Suivi');
+  const boutons = el('div', 'statuts-boutons'); boutons.setAttribute('role', 'group'); boutons.setAttribute('aria-label', 'Sélection');
+  const autres = el('div', 'autres-statuts');
+  const message = el('p', 'message'); message.setAttribute('role', 'status');
+  const emailZone = el('section', 'carte email-pret');
+  let statuts = d.statuts;
+
+  function verrouiller(oui) {
+    cs.querySelectorAll('button, select').forEach((x) => { x.disabled = oui; });
+  }
+  function redessinerStatuts() {
+    boutons.innerHTML = '';
+    if (!sid) {
+      autres.innerHTML = ''; autres.style.display = 'block';
+      autres.appendChild(el('p', 'note-suivi', genre === 'benevole'
+        ? "Ce bénévole n'a pas encore de ligne dans Suivi. Dans le Sheet : menu Portail > Créer les lignes Suivi manquantes."
+        : "Aucune candidature n'est liée à ce dossier final (même email, même projet, même pôle). Le suivi n'est donc pas disponible ici."));
       return;
     }
-    ajouter(titre, { label: c.label, value: valeur, lien: c.group === 'links' });
-  });
-  return EQ_ORDRE_GROUPES.concat(Object.keys(groupes).filter(function (t) { return EQ_ORDRE_GROUPES.indexOf(t) < 0; }))
-    .filter(function (t) { return groupes[t]; }).map(function (t) { return { titre: t, champs: groupes[t] }; });
+    (listes['Sélection'] || []).forEach((v) => {
+      const b = el('button', '', v); b.type = 'button'; b.dataset.statut = v; b.setAttribute('aria-pressed', String(statuts['Sélection'] === v));
+      b.addEventListener('click', () => changer('Sélection', v));
+      boutons.appendChild(b);
+    });
+    autres.innerHTML = '';
+    if (genre === 'benevole') { autres.style.display = 'none'; return; }
+    if (genre === 'candidature' && statuts['Sélection'] !== 'Accepté') {
+      autres.style.display = 'block';
+      autres.appendChild(el('p', 'note-suivi', 'Dossier final, paiement et confirmation apparaissent quand la candidature est acceptée.'));
+      return;
+    }
+    autres.style.display = '';
+    ['Dossier final', 'Paiement', 'Confirmation'].forEach((piste) => {
+      const w = el('div'); const id = 'st-' + piste.replace(/\s/g, '-');
+      const lab = el('label', '', piste); lab.htmlFor = id;
+      const sel = document.createElement('select'); sel.id = id;
+      const vide = document.createElement('option'); vide.value = ''; vide.textContent = '-'; sel.appendChild(vide);
+      (listes[piste] || []).forEach((v) => { const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o); });
+      sel.value = statuts[piste] || '';
+      sel.className = classeEtat(sel.value) || (sel.value ? 'etat-neutre' : '');
+      sel.addEventListener('change', () => { if (sel.value) changer(piste, sel.value); else sel.value = statuts[piste] || ''; sel.className = classeEtat(sel.value) || (sel.value ? 'etat-neutre' : ''); });
+      w.appendChild(lab); w.appendChild(sel); autres.appendChild(w);
+    });
+  }
+  async function changer(piste, valeur) {
+    verrouiller(true); message.className = 'message'; message.textContent = 'Enregistrement...';
+    try {
+      delete detailsPrets[cleDetail];
+      const r = await appel({ op: 'status', token: jeton, id: sid, piste: piste, valeur: valeur });
+      if (sessionExpiree(r)) return;
+      if (r.statuts) { statuts = r.statuts; majListes(genre, d, statuts); }
+      if ('email_pret' in r) { redessinerEmail(r.email_pret); majEmailAEnvoyer(genre, d, r.email_pret); }
+      if (r.emails) redessinerHistorique(r.emails);
+      const pretMaisPasParti = !!(r.email_pret && !r.email_pret.erreur);
+      message.className = 'message ' + (r.ok ? (pretMaisPasParti ? 'ko' : 'ok') : 'ko');
+      message.textContent = r.ok ? 'Statut enregistré.' + (pretMaisPasParti ? ' ⚠ Un email est prêt mais PAS encore envoyé : vérifie-le plus bas, puis clique sur Envoyer.' : '') : (r.message || r.error || 'Changement refusé.');
+    } catch (err) {
+      message.className = 'message ko'; message.textContent = 'Le serveur ne répond pas. Réessaie.';
+    } finally { redessinerStatuts(); verrouiller(false); redessinerAlerte(); }
+  }
+  const alerte = el('p', 'alerte');
+  function redessinerAlerte() { alerte.textContent = statuts.alerte || ''; }
+  cs.appendChild(boutons); cs.appendChild(autres); cs.appendChild(message); cs.appendChild(alerte);
+  zone.appendChild(cs);
+
+  // Email prêt
+  function redessinerEmail(pret) {
+    emailZone.innerHTML = '';
+    emailZone.appendChild(el('h2', '', 'Email'));
+    if (!pret) { emailZone.appendChild(el('p', 'meta', "Aucun email prêt. Change un statut pour en préparer un.")); return; }
+    emailZone.appendChild(el('p', 'ligne-mail', 'Prêt : ' + pret.libelle));
+    if (pret.erreur) { emailZone.appendChild(el('p', 'message ko', pret.erreur)); return; }
+    emailZone.appendChild(el('p', 'avis-email', '⚠ Cet email n\u2019est pas encore parti. Relis-le, puis clique sur Envoyer.'));
+    emailZone.appendChild(el('p', 'ligne-mail', 'Destinataire : ' + pret.destinataire + (pret.reel ? (genre === 'candidature' ? ' (le candidat)' : ' (la personne concernée)') : ' (adresse de test)')));
+    const lo = el('label', 'etiq', 'Objet'); lo.htmlFor = 'mail-objet';
+    const objet = document.createElement('input'); objet.type = 'text'; objet.id = 'mail-objet'; objet.className = 'champ-mail'; objet.maxLength = 200; objet.value = pret.objet_modifiable;
+    const lc = el('label', 'etiq', 'Texte de l\u2019email'); lc.htmlFor = 'mail-corps';
+    const corps = document.createElement('textarea'); corps.id = 'mail-corps'; corps.className = 'champ-mail'; corps.maxLength = 20000; corps.value = pret.corps;
+    emailZone.appendChild(lo); emailZone.appendChild(objet); emailZone.appendChild(lc); emailZone.appendChild(corps);
+    emailZone.appendChild(el('p', 'astuce', "Tu peux ajouter ou changer des mots : ça ne modifie que cet email. Le modèle reste le même pour tout le monde. Si tu modifies le texte, le gras du modèle n'apparaît plus."));
+    const actions = el('div', 'actions');
+    const envoyer = el('button', 'btn', "Envoyer l'email"); envoyer.type = 'button';
+    const resultat = el('p', 'message');
+    envoyer.addEventListener('click', () => {
+      actions.innerHTML = '';
+      const modifie = objet.value.trim() !== pret.objet_modifiable || corps.value.trim() !== pret.corps.trim();
+      objet.disabled = true; corps.disabled = true;
+      const oui = el('button', 'btn', 'Confirmer : envoyer' + (modifie ? ' (texte modifié)' : '') + ' à ' + pret.destinataire); oui.type = 'button';
+      const non = el('button', 'btn btn-doux', 'Annuler'); non.type = 'button';
+      non.addEventListener('click', () => { const o = objet.value, c = corps.value; redessinerEmail(pret); $('mail-objet').value = o; $('mail-corps').value = c; });
+      oui.addEventListener('click', async () => {
+        oui.disabled = true; non.disabled = true; resultat.className = 'message'; resultat.textContent = 'Envoi en cours...';
+        try {
+          const corpsEnvoi = { op: 'send_email', token: jeton, id: sid };
+          if (modifie) corpsEnvoi.edit = { objet: objet.value, corps: corps.value, base: pret.corps };
+          delete detailsPrets[cleDetail];
+          const r = await appel(corpsEnvoi);
+          if (sessionExpiree(r)) return;
+          if (r.statuts) { statuts = r.statuts; majListes(genre, d, statuts); redessinerStatuts(); redessinerAlerte(); }
+          majEmailAEnvoyer(genre, d, 'email_pret' in r ? r.email_pret : null);
+          if (r.ok) { message.className = 'message'; message.textContent = ''; }   // plus d'avertissement « pas encore envoyé »
+          if (r.emails) redessinerHistorique(r.emails);
+          redessinerEmail('email_pret' in r ? r.email_pret : null);
+          const fin = el('p', 'message fin ' + (r.ok ? 'ok' : 'ko'));
+          fin.textContent = r.ok ? 'Email envoyé.' + (r.detail ? ' (' + r.detail + ')' : '') : (r.error || 'Envoi non réussi : ' + (r.statut || '') + (r.detail ? ' (' + r.detail + ')' : ''));
+          emailZone.appendChild(fin);
+        } catch (err) {
+          resultat.className = 'message ko'; resultat.textContent = 'Le serveur ne répond pas. Vérifie le Sheet avant de réessayer.';
+          oui.disabled = false; non.disabled = false;
+        }
+      });
+      actions.appendChild(oui); actions.appendChild(non);
+    });
+    actions.appendChild(envoyer);
+    emailZone.appendChild(actions); emailZone.appendChild(resultat);
+  }
+  const histZone = carte(({ candidature: 'Emails de cette candidature', participant: 'Emails de ce participant', benevole: 'Emails de ce bénévole' })[genre]);
+  function redessinerHistorique(liste) {
+    while (histZone.childNodes.length > 1) histZone.removeChild(histZone.lastChild);
+    if (!liste.length) { histZone.appendChild(el('p', 'meta', "Aucun email pour l'instant.")); return; }
+    const ul = el('ul', 'historique');
+    liste.forEach((m) => {
+      const li = el('li');
+      li.appendChild(el('span', 'qui', m.libelle));
+      const classe = m.statut === 'Envoyé' ? 'mail-ok' : (m.statut === 'Erreur' ? 'mail-ko' : (m.statut === 'À envoyer' || m.statut === 'En attente' ? 'mail-ko' : 'mail-neutre'));
+      li.appendChild(puce(m.statut === 'À envoyer' ? 'Pas encore envoyé' : m.statut, classe));
+      li.appendChild(el('span', 'quand', m.date + (m.mode ? ' (' + m.mode + ')' : '')));
+      li.appendChild(el('span', 'quand', m.detail));
+      ul.appendChild(li);
+    });
+    histZone.appendChild(ul);
+  }
+  redessinerStatuts(); redessinerAlerte(); redessinerEmail(d.email_pret);
+  zone.appendChild(emailZone);
+  redessinerHistorique(d.emails || []);
+  zone.appendChild(histZone);
+  [cs, emailZone, carteReponses].concat(cartesExtra).concat([cartePhotos, histZone]).forEach((bloc) => { if (bloc) zone.appendChild(bloc); });
 }
 
-function eqSuiviPourParticipant_(o, pole) {
-  const cle = eqCle_(o.email, o.name, pole);
-  const trouves = eqSuiviLignes_().filter(function (l) { return eqCle_(l['Email'], l['Projet'], l['Pôle']) === cle; });
-  return trouves.length ? trouves[trouves.length - 1] : null;
-}
-
-function eqDetailParticipant_(id, tab) {
-  if (!eqIdValide_(id) || eqOngletsParticipants_().indexOf(tab) < 0) return { ok: false, error: 'Participant inconnu.' };
-  const o = eqLireOnglet_(tab).filter(function (x) { return String(x.submission_id) === id; })[0];
-  if (!o) return { ok: false, error: 'Participant introuvable.' };
-  const pole = String(o.category || '');
-  const s = eqSuiviPourParticipant_(o, pole);
-  const suiviId = s ? String(s.id) : '';
-  const detail = {
-    genre: 'participant', id: id, tab: tab, pole: pole, projet: String(o.name || ''),
-    sous_titre: String(o.subtitle || o.title_pro || o.artist_type || ''),
-    prenom: String(o.first_name || ''), nom: String(o.last_name || ''), email: String(o.email || ''), telephone: String(o.phone || ''),
-    date: eqDate_(o.timestamp), dossier: String(o.drive_folder || ''), fiche: String(o.document_url || ''),
-    groupes: eqGroupes_(tab, o), suivi_id: suiviId, statuts: eqStatuts_(s),
-    email_pret: suiviId ? eqEmailPret_(suiviId) : null, emails: suiviId ? eqHistorique_(suiviId) : []
-  };
-  return { ok: true, detail: detail, listes: SUIVI_LISTES, mode: eqConfig_().mode };
-}
-
-function eqListeBenevoles_() {
-  const parId = {};
-  eqSuiviLignes_().forEach(function (l) { parId[String(l.id)] = l; });
-  const enAttente = {};
-  emailsEnAttente_().forEach(function (m) { enAttente[m.id] = true; });
-  const items = eqLireOnglet_('Bénévoles').map(function (o) {
-    const id = String(o.submission_id);
-    const s = parId[id] || null;
-    const motivation = String(o.volunteer_motivation || '');
-    return {
-      id: id, nom: String(o.name || ''), email: String(o.email || ''), telephone: String(o.phone || ''), date: eqDate_(o.timestamp), _t: eqDateTri_(o.timestamp),
-      equipes: [o.volunteer_team_1, o.volunteer_team_2].map(function (t) { return String(t || ''); }).filter(Boolean),
-      motivation: motivation.length > 160 ? motivation.slice(0, 160) + '...' : motivation,
-      dossier: String(o.drive_folder || ''), fiche: String(o.document_url || ''),
-      selection: s ? (s['Sélection'] || '') : '', alerte: s ? String(s['Alerte'] || '') : '', email_a_envoyer: !!enAttente[id], sans_suivi: !s
-    };
-  });
-  items.sort(function (a, b) { return b._t - a._t; });
-  items.forEach(function (i) { delete i._t; });
-  return { ok: true, items: items };
-}
-
-function eqDetailBenevole_(id) {
-  if (!eqIdValide_(id)) return { ok: false, error: 'Bénévole inconnu.' };
-  const o = eqLireOnglet_('Bénévoles').filter(function (x) { return String(x.submission_id) === id; })[0];
-  if (!o) return { ok: false, error: 'Bénévole introuvable.' };
-  const s = trouverSuivi_(id);
-  const detail = {
-    genre: 'benevole', id: id, projet: String(o.name || ''), prenom: String(o.first_name || ''), nom: String(o.last_name || ''),
-    email: String(o.email || ''), telephone: String(o.phone || ''), date: eqDate_(o.timestamp),
-    equipes: [o.volunteer_team_1, o.volunteer_team_2].map(function (t) { return String(t || ''); }).filter(Boolean),
-    motivation: String(o.volunteer_motivation || ''), dossier: String(o.drive_folder || ''), fiche: String(o.document_url || ''),
-    suivi_id: s ? id : '', statuts: eqStatuts_(s), email_pret: s ? eqEmailPret_(id) : null, emails: s ? eqHistorique_(id) : []
-  };
-  return { ok: true, detail: detail, listes: SUIVI_LISTES, mode: eqConfig_().mode };
-}
-
-// Chiffres de l'accueil (comptés sans tout relire : rapide).
-function eqStats_() {
-  const classeur = SpreadsheetApp.openById(SHEET_ID);
-  const compter = function (tab) { const f = classeur.getSheetByName(tab); return f && f.getLastRow() > 1 ? f.getLastRow() - 1 : 0; };
-  let participants = 0;
-  eqOngletsParticipants_().forEach(function (tab) { participants += compter(tab); });
-  return { ok: true, participants: participants, benevoles: compter('Bénévoles'), emails_a_envoyer: emailsEnAttente_().length };
-}
+if (jeton) { charger(); } else { montrerConnexion(''); }
+</script>
+</body>
+</html>
