@@ -365,6 +365,19 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
 .choix-accueil article.candidature { grid-column: 1 / -1; border-color: var(--magenta); background: #FFF7FB; }
 .conditions { background: #FFF7E8; border: 2px solid var(--or); border-radius: 14px; padding: 16px 18px; font-size: 15px; line-height: 1.6; white-space: pre-line; margin-top: 10px; }
 #ecran-cand-0 .puces, #ecran-cand-1 .champ .puces, #ecran-cand-2 .champ .puces { margin-top: 4px; }
+/* Choix du pôle : grands boutons colorés, bien lisibles */
+#cand-poles { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 14px; }
+#cand-poles .puce { min-height: 64px; font-size: 18px; font-weight: 700; padding: 14px 18px; border-radius: 16px; display: flex; align-items: center; justify-content: center; text-align: center;
+  background: var(--pole-fond, #fff); border: 3px solid var(--pole-bord, #ddd); color: #1C1B3A; }
+#cand-poles .puce:hover:not(:disabled) { filter: brightness(.97); }
+#cand-poles .puce.choisie { background: linear-gradient(100deg, #B5207F, #6B2C91); border-color: transparent; color: #fff; transform: scale(1.03); box-shadow: 0 6px 16px rgba(107, 44, 145, .35); }
+#cand-poles .puce.choisie::before { content: "\2713  "; }
+#cand-poles .squelette { min-height: 64px; border-radius: 16px; background: linear-gradient(100deg, #EEE9F6 30%, #F8F5FC 50%, #EEE9F6 70%); background-size: 200% 100%; animation: brille 1.2s linear infinite; }
+@keyframes brille { to { background-position: -200% 0; } }
+.chargement-poles { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 3px solid var(--turquoise); border-radius: 16px; background: #F1FBFC; font-weight: 700; font-size: 17px; color: #1C1B3A; }
+.chargement-poles .tourne { width: 22px; height: 22px; border-radius: 50%; border: 4px solid #BFE6EA; border-top-color: var(--turquoise); animation: tourne .8s linear infinite; flex: none; }
+@keyframes tourne { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { #cand-poles .squelette, .chargement-poles .tourne { animation: none; } }
 #cand-vignettes { margin-top: 10px; }
 .cand-etape { font-size: 13px; color: rgba(28,27,58,.6); margin-top: 6px; }
 /* Barre de progression de l'envoi : bien visible, texte foncé */
@@ -470,7 +483,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
         </div>
       </div>
       <div class="message-erreur" id="erreur-cand-0"></div>
-      <div class="nav-etapes"><button class="btn btn-retour" type="button" onclick="aller(0)">Retour</button><button class="btn btn-avant" type="button" onclick="candSuite0()">Continuer</button></div>
+      <div class="nav-etapes"><button class="btn btn-retour" type="button" onclick="aller(0)">Retour</button><button class="btn btn-avant" type="button" id="btn-cand-suite0" onclick="candSuite0()">Continuer</button></div>
     </section>
 
     <!-- ============ CANDIDATURE : QUI ES-TU ============ -->
@@ -822,7 +835,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.10-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.11-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
@@ -877,7 +890,15 @@ window.addEventListener('resize', () => majColibri(etapeCourante));
 function erreur(n, msg) {
   const e = $('erreur-' + n);
   e.textContent = msg; e.classList.add('visible');
-  setTimeout(() => e.classList.remove('visible'), 8000);
+  clearTimeout(e._t);
+  e._t = setTimeout(() => e.classList.remove('visible'), 8000);
+}
+// Le message d'erreur disparaît dès que la personne corrige quelque chose.
+function effacerErreur(n) {
+  const e = $('erreur-' + n);
+  if (!e) return;
+  clearTimeout(e._t);
+  e.classList.remove('visible');
 }
 
 // ------------------ Ecran 0 ------------------
@@ -1775,6 +1796,8 @@ function candChamp(f) {
     div.appendChild(box);
   } else {
     const el = document.createElement(f.t === 'a' ? 'textarea' : 'input');
+    el.id = 'cand-champ-' + f.k; el.name = f.k; lab.htmlFor = el.id;
+    el.autocomplete = ({ first_name: 'given-name', last_name: 'family-name', email: 'email', phone: 'tel' })[f.k] || 'off';
     if (f.t === 'a') { el.rows = 3; el.maxLength = 2000; } else { el.type = f.t === 'n' ? 'number' : (f.type || 'text'); if (f.t !== 'n') el.maxLength = 300; }
     if (f.t === 'n') { el.min = '0'; el.step = 'any'; }
     el.value = cand.vals[f.k] || '';
@@ -1798,11 +1821,36 @@ function candValider(champs) {
 }
 function candMontant(m) { return /^[0-9][0-9\s.,]*$/.test(String(m).trim()) ? String(m).trim() + ' €' : String(m); }
 
+// La configuration (pôles, conditions, ouvert ou fermé) se charge dès l'ouverture de la page :
+// quand la personne clique sur Candidater, elle est déjà là ou presque.
+let candPrefetch = null;
+function candPreCharger() {
+  if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return;
+  candPrefetch = fetch(CONFIG.scriptUrl + '?action=config').then(r => r.json()).catch(() => null);
+}
+const CAND_COULEURS = {
+  'Artiste': ['#FFE3F2', '#E58BC4'], 'Atelier': ['#D6F4F6', '#6CC6D1'], 'Bien-être': ['#DDF2E4', '#7CC79A'],
+  'Artisan': ['#FBEFD2', '#E3BE63'], "L'Antre deux mondes": ['#E9DDF5', '#B596D8'], 'Stand / Miam Miam': ['#FFE1D6', '#EE9C7E']
+};
+function candEtatChargement(actif) {
+  cand.chargement = actif;
+  const bouton = $('btn-cand-suite0');
+  if (bouton) { bouton.disabled = actif; bouton.style.opacity = actif ? '.55' : ''; }
+  if (!actif) return;
+  $('cand-conditions').style.display = 'none';
+  $('cand-etat').innerHTML = '<div class="chargement-poles" role="status" aria-live="polite"><span class="tourne"></span><span>Chargement des pôles… Cela peut prendre quelques secondes, merci de patienter.</span></div>';
+  $('cand-poles').innerHTML = '<div class="squelette"></div>'.repeat(6);
+}
 async function ouvrirCandidature() {
   aller('cand-0');
-  $('cand-etat').innerHTML = '<p class="aide">Chargement…</p>';
-  try { const r = await fetch(CONFIG.scriptUrl + '?action=config'); cand.config = await r.json(); }
-  catch (e) { cand.config = null; }
+  candEtatChargement(true);
+  const deja = candPrefetch; candPrefetch = null;   // utilisé une seule fois, ensuite on recharge pour être à jour
+  cand.config = null;
+  try {
+    if (deja) cand.config = await deja;
+    if (!cand.config) { const r = await fetch(CONFIG.scriptUrl + '?action=config'); cand.config = await r.json(); }
+  } catch (e) { cand.config = null; }
+  candEtatChargement(false);
   candAfficherPoles();
 }
 function candAfficherPoles() {
@@ -1817,6 +1865,7 @@ function candAfficherPoles() {
   if (!c.poles.some(p => p.ouvert)) { etat.innerHTML = '<div class="message-erreur visible">Toutes les candidatures sont fermées pour le moment.</div>'; }
   c.poles.forEach(p => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'puce'; b.dataset.pole = p.nom;
+    const coul = CAND_COULEURS[p.nom] || ['#E6E6EE', '#A5A5BD']; b.style.setProperty('--pole-fond', coul[0]); b.style.setProperty('--pole-bord', coul[1]);
     b.textContent = p.ouvert ? p.nom : p.nom + ' (fermé)';
     if (!p.ouvert) { b.disabled = true; b.style.opacity = '.5'; b.style.cursor = 'not-allowed'; }
     else b.onclick = () => { $('cand-poles').querySelectorAll('.puce').forEach(x => x.classList.remove('choisie')); b.classList.add('choisie'); candChoisirPole(p.nom); };
@@ -1853,7 +1902,10 @@ async function candPdf() {
   finally { btn.disabled = false; btn.textContent = avant; }
 }
 function candSuite0() {
-  if (!cand.config || !cand.config.ouvert.candidatures) return erreur('cand-0', 'Les candidatures sont fermées pour le moment.');
+  // « Fermé » ne s'affiche que si la page a vraiment lu que c'est fermé. Pendant le chargement ou en cas d'échec, on le dit autrement.
+  if (cand.chargement) return erreur('cand-0', 'Les pôles sont encore en chargement. Patiente quelques secondes, puis clique à nouveau sur Continuer.');
+  if (!cand.config || !cand.config.ok) return erreur('cand-0', 'Le formulaire n’a pas pu se charger. Clique sur Retour puis sur Candidater pour réessayer.');
+  if (!cand.config.ouvert.candidatures) return erreur('cand-0', 'Les candidatures sont fermées pour le moment.');
   if (!cand.pole) return erreur('cand-0', 'Choisis ton pôle.');
   const p = cand.config.poles.find(x => x.nom === cand.pole);
   if (!p.ouvert) return erreur('cand-0', 'Les candidatures sont fermées pour ce pôle.');
@@ -1921,6 +1973,14 @@ function candProgres(actif) {
     etape.textContent = pct < 25 ? 'Envoi de tes photos et de tes réponses…' : pct < 60 ? 'Enregistrement de ta candidature…' : 'Création de ta fiche et de ton email de confirmation… (cela peut prendre une vingtaine de secondes)';
   }, 500);
 }
+['cand-0', 'cand-1', 'cand-2'].forEach(n => {
+  const ecran = $('ecran-' + n);
+  ['input', 'change', 'click'].forEach(ev => ecran.addEventListener(ev, e => {
+    if (e.target.closest && e.target.closest('.nav-etapes')) return;   // le bouton Continuer lui-même ne l'efface pas
+    effacerErreur(n);
+  }));
+});
+candPreCharger();
 async function candEnvoyer() {
   const champs = candChamps();
   const m = candValider(champs);
