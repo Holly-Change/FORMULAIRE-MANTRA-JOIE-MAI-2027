@@ -257,6 +257,39 @@ main { padding: 0 0 40px; min-width: 0; }
 .sous-menu { display: grid; gap: 2px; margin: 2px 0 6px 18px; padding-left: 10px; border-left: 2px solid rgba(255, 255, 255, 0.25); }
 .menu nav .sous-menu button { padding: 6px 10px; font-size: .92rem; font-weight: 600; justify-content: space-between; }
 .menu nav .sous-menu button .n { opacity: .7; font-weight: 400; }
+/* Sections du menu repliées : une seule ouverte à la fois, avec une flèche */
+.menu nav button[data-vue="candidatures"], .menu nav button[data-vue="participants"], .menu nav button[data-vue="benevoles"] { position: relative; }
+.menu nav button[aria-expanded]::after { content: ""; position: absolute; right: 14px; top: 50%; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-70%) rotate(-45deg); opacity: .75; transition: transform .15s; }
+.menu nav button[aria-expanded="true"]::after { transform: translateY(-40%) rotate(45deg); }
+.sous-menu[hidden] { display: none; }
+.sous-menu .legende { display: flex; gap: 12px; padding: 2px 10px 4px; font-size: .78rem; opacity: .85; }
+.sous-menu .legende span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.sous-menu .legende .l-cand::before { background: #F3C9E0; }
+.sous-menu .legende .l-part::before { background: #CDEBD5; }
+.menu nav .sous-menu button .nombres { display: inline-flex; gap: 5px; }
+.menu nav .sous-menu button .nb { min-width: 22px; text-align: center; padding: 0 6px; border-radius: 999px; font-size: .8rem; font-weight: 700; opacity: 1; color: #1C1B3A; }
+.menu nav .sous-menu button .nb.c { background: #F3C9E0; }
+.menu nav .sous-menu button .nb.p { background: #CDEBD5; }
+
+/* Page Statistiques */
+.stats-cartes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 6px 0 4px; }
+.stats-carte { background: var(--carte); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.85); box-shadow: 0 6px 22px rgba(90, 70, 150, 0.08); border-radius: 16px; padding: 14px 16px; }
+.stats-carte .chiffre { font-family: var(--police-titres); font-size: 2rem; font-weight: 700; line-height: 1.1; }
+.stats-carte .nom { font-weight: 700; margin-top: 2px; }
+.stats-carte .detail { color: var(--doux); font-size: .88rem; margin-top: 2px; }
+.stats-bloc h2 { font-family: var(--police-titres); font-size: 1.15rem; margin: 0 0 10px; }
+.stats-bloc .note { color: var(--doux); font-size: .9rem; margin: 8px 0 0; }
+.barres { display: grid; gap: 8px; }
+.barre-ligne { display: grid; grid-template-columns: minmax(110px, 190px) 1fr; gap: 10px; align-items: center; }
+.barre-ligne .nom { font-weight: 600; overflow-wrap: anywhere; }
+.barre-piste { display: flex; align-items: center; gap: 8px; }
+.barre-remplie { height: 16px; border-radius: 999px; min-width: 4px; }
+.barre-remplie.c { background: #F3C9E0; } .barre-remplie.p { background: #CDEBD5; } .barre-remplie.t { background: #CBE6EC; } .barre-remplie.v { background: #E0D6F3; } .barre-remplie.o { background: #F8E7BD; }
+.barre-valeur { font-weight: 700; min-width: 26px; }
+.stats-deux { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.graph-jours { width: 100%; height: auto; display: block; }
+@media (max-width: 900px) { .stats-cartes { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stats-deux { grid-template-columns: 1fr; } }
+.btn-doux-clair { background: rgba(255, 255, 255, 0.75); color: var(--navy); border: 1.5px solid rgba(11, 42, 71, 0.12); box-shadow: none; }
 .statuts-boutons button[disabled], .autres-statuts select[disabled] { opacity: .6; cursor: wait; }
 .autres-statuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-top: 16px; }
 .autres-statuts label { display: block; font-weight: 700; font-size: .9rem; color: var(--doux); margin-bottom: 4px; }
@@ -319,12 +352,45 @@ main { padding: 0 0 40px; min-width: 0; }
   .historique li { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- Habillage aquarelle (v3.17) : images dans le dossier assets/ du dépôt GitHub ----------
+   Chaque image est ÉTIRÉE (100% 100%), jamais répétée. Si une image manque, on voit simplement les couleurs douces. */
+body { background: linear-gradient(160deg, #F3F0FC 0%, #EAF3FA 55%, #F1EEFB 100%) fixed; }
+body::before { content: ""; position: fixed; left: -2.65%; top: -1.95%; width: 102.9%; height: 103.4%; z-index: -1; pointer-events: none; opacity: .5;
+  background: url("assets/background-left.png") 0 0 / 100% 100% no-repeat; }
+body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: min(240px, 32vw); aspect-ratio: 286 / 307; z-index: -1; pointer-events: none; opacity: .75;
+  background: url("assets/background-overlay-1.png") 0 0 / 100% 100% no-repeat; }
+/* Menu de gauche : aquarelle lilas étirée, voile blanc pour garder le texte lisible */
+.menu { background: linear-gradient(rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.38)), url("assets/left-menu-background.png") 0 0 / 100% 100% no-repeat, #ECE6FA; color: var(--navy); border-right: 1px solid rgba(110, 90, 170, 0.15); }
+.menu .lotus { display: block; width: 78%; max-width: 150px; height: auto; margin: 0 auto 6px; }
+.marque .nom { color: var(--violet); }
+.marque .edition { color: var(--turquoise); }
+.menu nav button, .menu nav a { color: var(--navy); }
+.menu nav button:hover, .menu nav a:hover { background: rgba(255, 255, 255, 0.55); }
+.menu nav button[aria-current="page"] { background: rgba(255, 255, 255, 0.78); color: #4A3590; box-shadow: inset 3px 0 0 #8F7BDB; }
+.sous-menu { border-left-color: rgba(110, 90, 170, 0.28); }
+.menu .bas .btn-doux { color: var(--navy); border-color: rgba(11, 42, 71, 0.22); }
+.menu .bas .btn-doux:hover { background: rgba(255, 255, 255, 0.6); }
+.version { color: rgba(11, 42, 71, 0.62); }
+.version.alerte-version { color: #B3401F; }
+.btn { background: linear-gradient(100deg, #E3CBF0, #C5D0F4); color: #3C2A6E; }
+.connexion .lotus-connexion { display: block; width: 150px; max-width: 60%; height: auto; margin: 0 auto 10px; }
+.connexion { text-align: center; }
+.connexion label, .connexion .message-erreur { text-align: left; }
+@media (max-width: 900px) {
+  .barre-mobile { background: rgba(255, 255, 255, 0.88); color: var(--navy); }
+  .barre-mobile .titre-mobile { color: var(--violet); }
+  .burger { border-color: rgba(11, 42, 71, 0.3); background: rgba(255, 255, 255, 0.7); color: var(--navy); }
+}
+.cat-nom { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.icone-pole { width: 24px; height: 24px; object-fit: contain; flex: none; }
 </style>
 </head>
 <body>
 
 <section id="ecran-connexion">
   <form class="connexion" id="form-connexion" autocomplete="off">
+    <img class="lotus-connexion" src="assets/lotus-portal-logo.png" alt="" onerror="this.remove()">
     <h1>Portail Festival</h1>
     <p>Mantra Joie 2027. Entre le mot de passe de l'équipe pour voir les candidatures.</p>
     <label for="mot-de-passe">Mot de passe</label>
@@ -342,6 +408,7 @@ main { padding: 0 0 40px; min-width: 0; }
     </button>
   </div>
   <aside class="menu" id="menu-principal">
+    <img class="lotus" src="assets/lotus-portal-logo.png" alt="" onerror="this.remove()">
     <div class="marque" id="marque"></div>
     <nav aria-label="Menu du Portail Festival">
       <button type="button" data-vue="accueil">
@@ -359,6 +426,9 @@ main { padding: 0 0 40px; min-width: 0; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/></svg>Bénévoles
       </button>
       <div class="sous-menu" id="sous-menu-benevoles" aria-label="Bénévoles par équipe"></div>
+      <button type="button" data-vue="stats">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>Statistiques
+      </button>
       <a id="lien-drive" href="#" target="_blank" rel="noopener noreferrer" hidden>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Dossiers Drive
       </a>
@@ -424,6 +494,17 @@ main { padding: 0 0 40px; min-width: 0; }
       </div>
     </section>
 
+    <section id="vue-stats" hidden>
+      <div class="page">
+        <div class="titre-page">
+          <div class="rond"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></div>
+          <div><h1>Statistiques</h1><p>Candidatures, dossiers, emails et utilisation du Portail</p></div>
+        </div>
+        <div class="outils"><button class="btn btn-doux-clair" type="button" id="stats-actualiser">Actualiser les chiffres</button><span class="compte" id="stats-calcule"></span></div>
+        <div id="stats-contenu"></div>
+      </div>
+    </section>
+
     <section id="vue-detail" hidden>
       <div class="page" id="detail"></div>
     </section>
@@ -431,9 +512,28 @@ main { padding: 0 0 40px; min-width: 0; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.15-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.19-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
+// Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
+// Pour changer une icône : modifie seulement le nom du fichier ici. Si le fichier manque, l'icône disparaît sans casser la page.
+const ICONES_POLES = {
+  'Artiste': 'ICON ARTISTE.png',
+  'Atelier': 'ICON ATELIER.png',
+  'Bien-être': 'ICON BIEN-ETRE.png',
+  'Artisan': 'ICON ARTISAN.png',
+  "L'Antre deux mondes": 'ICON MOON AND START - ENTRE DEUX MONDES.png',
+  'Stand / Miam Miam': 'ICON FOOD TRUCK.png',
+  'Autre': 'ICON STAND.png'
+};
+function iconePole(pole) {
+  const fichier = ICONES_POLES[pole];
+  if (!fichier) return null;
+  const img = document.createElement('img');
+  img.className = 'icone-pole'; img.alt = ''; img.src = 'assets/' + encodeURIComponent(fichier);
+  img.addEventListener('error', () => img.remove());
+  return img;
+}
 const ORDRE_POLES = ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'];
 const COULEURS_POLES = {
   'Artiste': ['#FFE3F2', '#7A0F52'], 'Atelier': ['#D6F4F6', '#06505E'], 'Bien-être': ['#DDF2E4', '#1F5E3A'],
@@ -448,6 +548,8 @@ let versionServeur = '';
 let participants = null;      // liste des dossiers finaux (chargée en arrière-plan)
 let benevoles = null;         // liste des bénévoles
 let statsServeur = null;
+let statsDetail = null, statsEnCours = false;
+let sectionOuverte = '';   // une seule section du menu est dépliée à la fois
 let erreurListes = { participants: false, benevoles: false };
 let pCategorie = 'Toutes', pFinal = 'Tous';
 let bEquipe = 'Toutes', bStatut = 'Tous';
@@ -516,8 +618,8 @@ $('form-connexion').addEventListener('submit', async (e) => {
   }
 });
 
-$('btn-deconnexion').addEventListener('click', () => { oublierJeton(); items = []; montrerConnexion(''); });
-$('btn-actualiser').addEventListener('click', () => { participants = null; benevoles = null; charger(); });
+$('btn-deconnexion').addEventListener('click', () => { oublierJeton(); items = []; statsDetail = null; statsServeur = null; sectionOuverte = ''; montrerConnexion(''); });
+$('btn-actualiser').addEventListener('click', () => { participants = null; benevoles = null; statsDetail = null; charger(); });
 
 async function charger() {
   try {
@@ -547,7 +649,7 @@ async function chargerStats() {
   try {
     const r = await appel({ op: 'stats', token: jeton });
     if (sessionExpiree(r)) return;
-    if (r.ok) { statsServeur = r; if (vue === 'accueil') dessinerAccueil(); }
+    if (r.ok) { statsServeur = r; if (vue === 'accueil') dessinerAccueil(); dessinerSousMenu(); }
   } catch (err) { /* les chiffres restent à « … » */ }
 }
 async function chargerParticipants(force) {
@@ -626,6 +728,13 @@ function texteMarque() {
 
 /* ---------- Navigation ---------- */
 document.querySelectorAll('[data-vue]').forEach((b) => b.addEventListener('click', () => {
+  const nom = b.dataset.vue;
+  const estSection = ['candidatures', 'participants', 'benevoles'].indexOf(nom) >= 0;
+  // Deuxième clic sur une section déjà ouverte, quand on voit déjà toute sa liste : on la replie. Sinon on affiche toute la liste.
+  const filtresParDefaut = nom === 'candidatures' ? (filtreCategorie === 'Toutes' && filtreStatut === 'Tous' && $('recherche').value === '')
+    : nom === 'participants' ? (pCategorie === 'Toutes' && pFinal === 'Tous' && $('recherche-p').value === '')
+    : nom === 'benevoles' ? (bEquipe === 'Toutes' && bStatut === 'Tous' && $('recherche-b').value === '') : true;
+  if (estSection && sectionOuverte === nom && vue === nom && filtresParDefaut) { sectionOuverte = ''; dessinerSousMenu(); return; }
   if (b.dataset.vue === 'candidatures') { filtreCategorie = 'Toutes'; filtreStatut = 'Tous'; $('recherche').value = ''; }
   if (b.dataset.vue === 'participants') { pCategorie = 'Toutes'; pFinal = 'Tous'; $('recherche-p').value = ''; }
   if (b.dataset.vue === 'benevoles') { bEquipe = 'Toutes'; bStatut = 'Tous'; $('recherche-b').value = ''; }
@@ -634,56 +743,225 @@ document.querySelectorAll('[data-vue]').forEach((b) => b.addEventListener('click
 $('voir-toutes').addEventListener('click', () => { filtreCategorie = 'Toutes'; filtreStatut = 'Tous'; $('recherche').value = ''; naviguer('candidatures'); });
 
 function naviguer(nom) {
-  vue = ['candidatures', 'participants', 'benevoles', 'detail'].indexOf(nom) >= 0 ? nom : 'accueil';
+  vue = ['candidatures', 'participants', 'benevoles', 'stats', 'detail'].indexOf(nom) >= 0 ? nom : 'accueil';
   $('vue-accueil').hidden = vue !== 'accueil';
   $('vue-candidatures').hidden = vue !== 'candidatures';
   $('vue-participants').hidden = vue !== 'participants';
   $('vue-benevoles').hidden = vue !== 'benevoles';
+  $('vue-stats').hidden = vue !== 'stats';
   $('vue-detail').hidden = vue !== 'detail';
   const actif = vue === 'detail' ? ({ candidature: 'candidatures', participant: 'participants', benevole: 'benevoles' })[detailGenre] : vue;
   document.querySelectorAll('[data-vue]').forEach((b) => {
     if (b.dataset.vue === actif) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
+  sectionOuverte = ['candidatures', 'participants', 'benevoles'].indexOf(actif) >= 0 ? actif : '';
   if (vue === 'accueil') dessinerAccueil(); else if (vue === 'candidatures') dessinerCandidatures();
+  else if (vue === 'stats') chargerStatsDetail(false);
   else if (vue === 'participants') { dessinerParticipants(); if (!participants) chargerParticipants(); }
   else if (vue === 'benevoles') { dessinerBenevoles(); if (!benevoles) chargerBenevoles(); }
   dessinerSousMenu();
   window.scrollTo(0, 0);
 }
 
+
+/* ---------- Page Statistiques ---------- */
+const LIBELLES_EMAILS = { recue: 'Candidature reçue', acceptee: 'Candidature acceptée', attente: "Liste d'attente", refusee: 'Candidature refusée', final_recu: 'Dossier final reçu', confirmee: 'Participation confirmée',
+  benevole_recue: 'Bénévole : reçue', benevole_acceptee: 'Bénévole : acceptée', benevole_attente: "Bénévole : liste d'attente", benevole_refusee: 'Bénévole : refusée' };
+const COULEUR_STATUT = { 'À étudier': 'v', 'Accepté': 'p', "Liste d'attente": 'o', 'Refusé': 'c' };
+
+async function chargerStatsDetail(frais) {
+  if (statsDetail && !frais) { dessinerStats(); return; }
+  if (statsEnCours) return;
+  statsEnCours = true;
+  const zone = $('stats-contenu'); zone.innerHTML = '';
+  const attente = el('p', 'compte'); attente.appendChild(roue('Calcul des statistiques...')); zone.appendChild(attente);
+  try {
+    const r = await appel({ op: 'stats_detail', token: jeton, frais: !!frais });
+    if (sessionExpiree(r)) return;
+    if (!r.ok) throw new Error(r.error || 'Erreur');
+    statsDetail = r; dessinerStats();
+  } catch (err) {
+    zone.innerHTML = ''; zone.appendChild(el('p', 'message ko', 'Impossible de calculer les statistiques pour le moment. Réessaie.'));
+  } finally { statsEnCours = false; }
+}
+
+function barresStats(donnees, classe) {
+  const boite = el('div', 'barres');
+  if (!donnees.length) { boite.appendChild(el('p', 'compte', 'Rien pour le moment.')); return boite; }
+  const max = Math.max.apply(null, [1].concat(donnees.map((d) => d[1])));
+  donnees.forEach((d) => {
+    const ligne = el('div', 'barre-ligne');
+    ligne.appendChild(el('span', 'nom', d[0]));
+    const piste = el('div', 'barre-piste');
+    const rempli = el('span', 'barre-remplie ' + (typeof d[2] === 'string' ? d[2] : classe)); rempli.style.width = Math.round(d[1] / max * 100) + '%';
+    piste.appendChild(rempli); piste.appendChild(el('span', 'barre-valeur', String(d[1])));
+    ligne.appendChild(piste); boite.appendChild(ligne);
+  });
+  return boite;
+}
+function graphJours(donnees, couleur, libelle) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const W = 720, H = 150, gauche = 30, bas = 24, haut = 12;
+  const total = donnees.reduce((a, d) => a + d.n, 0);
+  const max = Math.max.apply(null, [1].concat(donnees.map((d) => d.n)));
+  const pas = (W - gauche) / donnees.length;
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('class', 'graph-jours'); svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', libelle + ' : ' + total + ' au total sur les 30 derniers jours, maximum ' + max + ' par jour');
+  const texte = (x, y, t, ancre) => { const e = document.createElementNS(ns, 'text'); e.setAttribute('x', x); e.setAttribute('y', y); e.setAttribute('font-size', '11'); e.setAttribute('fill', '#4B4660'); if (ancre) e.setAttribute('text-anchor', ancre); e.textContent = t; svg.appendChild(e); };
+  const base = H - bas;
+  const ligne = document.createElementNS(ns, 'line'); ligne.setAttribute('x1', gauche); ligne.setAttribute('x2', W); ligne.setAttribute('y1', base); ligne.setAttribute('y2', base); ligne.setAttribute('stroke', '#D9CFE8'); svg.appendChild(ligne);
+  donnees.forEach((d, i) => {
+    const hauteur = d.n ? Math.max(3, d.n / max * (base - haut)) : 0;
+    const r = document.createElementNS(ns, 'rect'); r.setAttribute('x', gauche + i * pas + 2); r.setAttribute('width', Math.max(pas - 4, 2)); r.setAttribute('y', base - hauteur); r.setAttribute('height', hauteur); r.setAttribute('rx', 3); r.setAttribute('fill', couleur);
+    const t = document.createElementNS(ns, 'title'); t.textContent = d.jour.slice(8) + '/' + d.jour.slice(5, 7) + ' : ' + d.n; r.appendChild(t);
+    svg.appendChild(r);
+  });
+  texte(gauche - 6, haut + 8, String(max), 'end'); texte(gauche - 6, base, '0', 'end');
+  texte(gauche, H - 6, donnees[0].jour.slice(8) + '/' + donnees[0].jour.slice(5, 7)); texte(W, H - 6, 'aujourd’hui', 'end');
+  return svg;
+}
+function carteStats(chiffre, nom, detail) {
+  const c = el('div', 'stats-carte');
+  c.appendChild(el('div', 'chiffre', String(chiffre))); c.appendChild(el('div', 'nom', nom)); if (detail) c.appendChild(el('div', 'detail', detail));
+  return c;
+}
+function blocStats(titre) { const b = el('div', 'carte stats-bloc'); b.appendChild(el('h2', '', titre)); return b; }
+
+function dessinerStats() {
+  const s = statsDetail; const zone = $('stats-contenu'); zone.innerHTML = '';
+  if (!s) return;
+  $('stats-calcule').textContent = 'Calculé le ' + s.calcule;
+  const cand = s.candidatures, part = s.participants, ben = s.benevoles, mail = s.emails, por = s.portail;
+  const cartes = el('div', 'stats-cartes');
+  cartes.appendChild(carteStats(cand.total, 'Candidatures', (cand.par_statut['Accepté'] || 0) + ' acceptées'));
+  cartes.appendChild(carteStats(part.total, 'Dossiers finaux', (part.confirmation['Confirmé'] || 0) + ' participations confirmées'));
+  cartes.appendChild(carteStats(ben.total, 'Bénévoles', (ben.par_statut['Accepté'] || 0) + ' acceptés'));
+  cartes.appendChild(carteStats(mail.envoyes, 'Emails envoyés', mail.envoyes_reel + ' réels, ' + mail.envoyes_test + " d'essai"));
+  cartes.appendChild(carteStats(por.connexions, 'Connexions au Portail', por.connexions_7j + ' ces 7 derniers jours'));
+  cartes.appendChild(carteStats(por.heures_actives + ' h', "Temps d'utilisation", por.derniere_connexion ? 'Dernière connexion : ' + por.derniere_connexion : 'Aucune connexion enregistrée'));
+  zone.appendChild(cartes);
+
+  const b1 = blocStats('Candidatures reçues par jour, sur 30 jours');
+  b1.appendChild(graphJours(cand.par_jour, '#E9A6CB', 'Candidatures par jour'));
+  zone.appendChild(b1);
+
+  const poles = ORDRE_POLES.filter((p) => cand.par_pole[p] || part.par_pole[p]).concat(Object.keys(cand.par_pole).concat(Object.keys(part.par_pole)).filter((p, i, a) => ORDRE_POLES.indexOf(p) < 0 && a.indexOf(p) === i));
+  const deux = el('div', 'stats-deux');
+  const b2 = blocStats('Candidatures par pôle'); b2.appendChild(barresStats(poles.map((p) => [p, cand.par_pole[p] || 0]), 'c'));
+  const b3 = blocStats('Dossiers finaux par pôle'); b3.appendChild(barresStats(poles.map((p) => [p, part.par_pole[p] || 0]), 'p'));
+  deux.appendChild(b2); deux.appendChild(b3); zone.appendChild(deux);
+
+  const deux2 = el('div', 'stats-deux');
+  const b4 = blocStats('Réponses aux candidatures'); b4.appendChild(barresStats(['À étudier', 'Accepté', "Liste d'attente", 'Refusé'].map((k) => [k, cand.par_statut[k] || 0, COULEUR_STATUT[k]]), 'v'));
+  const b5 = blocStats('Où en sont les dossiers finaux');
+  b5.appendChild(barresStats([['Contrat signé reçu', part.contrats], ['Preuve de paiement reçue', part.preuves], ['Paiement vérifié', part.paiement['Vérifié'] || 0], ['Participation confirmée', part.confirmation['Confirmé'] || 0]], 't'));
+  b5.appendChild(el('p', 'note', 'Sur ' + part.total + ' dossier(s) final(aux) reçu(s).'));
+  deux2.appendChild(b4); deux2.appendChild(b5); zone.appendChild(deux2);
+
+  const deux3 = el('div', 'stats-deux');
+  const b6 = blocStats('Bénévoles par équipe'); b6.appendChild(barresStats(Object.keys(ben.par_equipe).map((k) => [equipeCourte(k), ben.par_equipe[k]]), 'c'));
+  b6.appendChild(el('p', 'note', 'Chaque bénévole choisit deux équipes : il est compté dans les deux.'));
+  const b7 = blocStats('Bénévoles : réponses'); b7.appendChild(barresStats(['À étudier', 'Accepté', "Liste d'attente", 'Refusé'].map((k) => [k, ben.par_statut[k] || 0, COULEUR_STATUT[k]]), 'v'));
+  deux3.appendChild(b6); deux3.appendChild(b7); zone.appendChild(deux3);
+
+  const b8 = blocStats('Emails');
+  const cartesMail = el('div', 'stats-cartes');
+  cartesMail.appendChild(carteStats(mail.quota_restant === null ? '?' : mail.quota_restant, "Envois restants aujourd'hui", 'Limite quotidienne de Google'));
+  cartesMail.appendChild(carteStats(mail.erreurs, 'Emails en erreur', mail.erreurs ? 'À regarder dans le Journal' : 'Rien à signaler'));
+  cartesMail.appendChild(carteStats(mail.a_envoyer, 'Emails prêts, pas encore envoyés', 'À relire et envoyer'));
+  b8.appendChild(cartesMail);
+  b8.appendChild(el('p', 'note', 'Envoyés par jour, sur 30 jours'));
+  b8.appendChild(graphJours(mail.par_jour, '#8CCBD3', 'Emails envoyés par jour'));
+  b8.appendChild(el('p', 'note', 'Par type d’email'));
+  b8.appendChild(barresStats(Object.keys(mail.par_type).map((k) => [LIBELLES_EMAILS[k] || k, mail.par_type[k]]), 't'));
+  zone.appendChild(b8);
+
+  const b9 = blocStats('Utilisation du Portail');
+  b9.appendChild(graphJours(por.par_jour, '#B9A5E3', 'Connexions par jour'));
+  b9.appendChild(el('p', 'note', "Une seule clé d'accès est partagée par l'équipe : on compte les connexions et le temps d'utilisation, pas les personnes. Le temps d'utilisation ne compte pas les pauses de plus de 30 minutes."));
+  zone.appendChild(b9);
+
+  const notes = [];
+  if (s.demo) notes.push('Ces chiffres incluent ' + s.demo + ' profils de démonstration.');
+  notes.push("Les visites du formulaire public ne sont pas mesurées : le formulaire est une page statique sans compteur.");
+  zone.appendChild(el('p', 'note', notes.join(' ')));
+}
+$('stats-actualiser').addEventListener('click', () => { statsDetail = null; chargerStatsDetail(true); });
+
 /* ---------- Sous-menus : catégories (candidatures, participants) et équipes (bénévoles) ---------- */
-function remplirSousMenu(zoneId, noms, compter, actifSi, clic) {
+function remplirSousMenu(zoneId, noms, compter, actifSi, clic, legende) {
   const zone = $(zoneId);
   zone.innerHTML = '';
+  if (legende && noms.length) {
+    const l = document.createElement('div'); l.className = 'legende';
+    const c = document.createElement('span'); c.className = 'l-cand'; c.textContent = 'Candidatures';
+    const p = document.createElement('span'); p.className = 'l-part'; p.textContent = 'Participants';
+    l.appendChild(c); l.appendChild(p); zone.appendChild(l);
+  }
   noms.forEach((nom) => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.appendChild(document.createTextNode(nom.court || nom.valeur));
-    const c = document.createElement('span'); c.className = 'n'; c.textContent = String(compter(nom.valeur)); b.appendChild(c);
+    const libelle = document.createElement('span'); libelle.className = 'cat-nom';
+    const icone = iconePole(nom.valeur); if (icone) libelle.appendChild(icone);
+    libelle.appendChild(document.createTextNode(nom.court || nom.valeur));
+    b.appendChild(libelle);
+    const compte = compter(nom.valeur);
+    if (Array.isArray(compte)) {
+      const boite = document.createElement('span'); boite.className = 'nombres';
+      ['c', 'p'].forEach((k, i) => {
+        const n = document.createElement('span'); n.className = 'nb ' + k; n.textContent = String(compte[i]);
+        n.title = (i === 0 ? 'Candidatures : ' : 'Participants : ') + compte[i];
+        boite.appendChild(n);
+      });
+      b.appendChild(boite);
+    } else {
+      const c = document.createElement('span'); c.className = 'n'; c.textContent = String(compte); b.appendChild(c);
+    }
     if (actifSi(nom.valeur)) b.setAttribute('aria-current', 'page');
     b.addEventListener('click', () => clic(nom.valeur));
     zone.appendChild(b);
   });
 }
 
+// Catégories connues : celles des candidatures et celles des participants, dans l'ordre habituel.
+function categoriesMenu() {
+  const toutes = ORDRE_POLES.filter((p) => items.some((i) => i.pole === p) || (participants || []).some((i) => i.pole === p) || (statsServeur && statsServeur.participants_par_pole && statsServeur.participants_par_pole[p]));
+  const autres = Array.from(new Set(items.map((i) => i.pole).concat((participants || []).map((i) => i.pole)))).filter((p) => ORDRE_POLES.indexOf(p) < 0);
+  return toutes.concat(autres);
+}
+function nombreParticipants(v) {
+  if (participants) return v === 'Toutes' ? participants.length : participants.filter((i) => i.pole === v).length;
+  if (statsServeur && statsServeur.participants_par_pole) {
+    if (v === 'Toutes') return statsServeur.participants;
+    return statsServeur.participants_par_pole[v] === undefined ? 0 : statsServeur.participants_par_pole[v];
+  }
+  return '…';
+}
+
 function dessinerSousMenu() {
   const dansC = vue === 'candidatures' || (vue === 'detail' && detailGenre === 'candidature');
-  remplirSousMenu('sous-menu', ['Toutes'].concat(categories()).map((v) => ({ valeur: v })),
-    (v) => v === 'Toutes' ? items.length : items.filter((i) => i.pole === v).length,
+  const compteurs = (v) => [v === 'Toutes' ? items.length : items.filter((i) => i.pole === v).length, nombreParticipants(v)];
+  remplirSousMenu('sous-menu', ['Toutes'].concat(categoriesMenu()).map((v) => ({ valeur: v })),
+    compteurs,
     (v) => dansC && filtreCategorie === v,
-    (v) => { filtreCategorie = v; filtreStatut = 'Tous'; $('recherche').value = ''; naviguer('candidatures'); });
+    (v) => { filtreCategorie = v; filtreStatut = 'Tous'; $('recherche').value = ''; naviguer('candidatures'); }, true);
   const dansP = vue === 'participants' || (vue === 'detail' && detailGenre === 'participant');
-  const listeP = participants || [];
-  const catsP = ORDRE_POLES.filter((p) => listeP.some((i) => i.pole === p)).concat(Array.from(new Set(listeP.map((i) => i.pole))).filter((p) => ORDRE_POLES.indexOf(p) < 0));
-  remplirSousMenu('sous-menu-participants', participants ? ['Toutes'].concat(catsP).map((v) => ({ valeur: v })) : [],
-    (v) => v === 'Toutes' ? listeP.length : listeP.filter((i) => i.pole === v).length,
+  remplirSousMenu('sous-menu-participants', ['Toutes'].concat(categoriesMenu()).map((v) => ({ valeur: v })),
+    compteurs,
     (v) => dansP && pCategorie === v,
-    (v) => { pCategorie = v; pFinal = 'Tous'; $('recherche-p').value = ''; naviguer('participants'); });
+    (v) => { pCategorie = v; pFinal = 'Tous'; $('recherche-p').value = ''; naviguer('participants'); }, true);
   const dansB = vue === 'benevoles' || (vue === 'detail' && detailGenre === 'benevole');
   remplirSousMenu('sous-menu-benevoles', benevoles ? [{ valeur: 'Toutes' }].concat(equipesBenevoles().map((v) => ({ valeur: v, court: equipeCourte(v) }))) : [],
     (v) => v === 'Toutes' ? (benevoles || []).length : (benevoles || []).filter((i) => i.equipes.indexOf(v) >= 0).length,
     (v) => dansB && bEquipe === v,
     (v) => { bEquipe = v; bStatut = 'Tous'; $('recherche-b').value = ''; naviguer('benevoles'); });
+  // repli : une seule section ouverte
+  [['candidatures', 'sous-menu'], ['participants', 'sous-menu-participants'], ['benevoles', 'sous-menu-benevoles']].forEach((s) => {
+    $(s[1]).hidden = sectionOuverte !== s[0];
+    const bouton = document.querySelector('button[data-vue="' + s[0] + '"]');
+    bouton.setAttribute('aria-expanded', String(sectionOuverte === s[0]));
+  });
 }
 
 // « ACCUEIL + Gardien·nes du temps le dimanche » devient « Accueil » dans les boutons.
