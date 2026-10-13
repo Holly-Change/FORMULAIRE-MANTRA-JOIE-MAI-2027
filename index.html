@@ -1,707 +1,2183 @@
-/**
- * PORTAIL FESTIVAL : connexion par mot de passe partagé + liste des candidatures.
- *
- * - Le mot de passe est la ligne « mot_de_passe_equipe » de l'onglet Réglages.
- * - Vide = l'espace équipe est fermé. Le changer déconnecte tout le monde.
- * - 5 essais ratés = connexion bloquée 15 minutes pour tout le monde
- *   (impossible de savoir qui essaie, donc le blocage est global).
- * - Le mode TEST/REEL n'est jamais modifiable depuis l'espace équipe.
- */
-const EQ_SESSION_SECONDES = 21600; // 6 h, maximum de CacheService
-const EQ_MAX_ECHECS = 5;
-const EQ_BLOCAGE_SECONDES = 900;   // 15 min
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Inscriptions - Festival Mantra Joie 2027</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23B5207F%22/%3E%3Cstop offset=%221%22 stop-color=%22%236B2C91%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22url(%23g)%22/%3E%3Cpolygon points=%2232.0,8.0 34.3,26.5 42.6,21.4 37.5,29.7 56.0,32.0 37.5,34.3 42.6,42.6 34.3,37.5 32.0,56.0 29.7,37.5 21.4,42.6 26.5,34.3 8.0,32.0 26.5,29.7 21.4,21.4 29.7,26.5%22 fill=%22%23fff%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ================================================================
+   BLOC BRANDING - c'est ici qu'on rhabille pour un autre festival
+   (les reglages JS sont dans le bloc CONFIG en haut du script)
+   ================================================================ */
+:root {
+  --magenta:   #A44FC4;   /* accent principal : boutons, puce active (orchidée, moins rose) */
+  --violet:    #6E5BD0;   /* accent secondaire (bleu-violet) */
+  --turquoise: #2BB8C4;
+  --corail:    #F0663C;
+  --or:        #E0A93B;
+  --navy:      #1C1B3A;   /* texte */
+  --creme:     #FFFDF9;   /* fond */
+  --carte:     #FFFFFF;
+  --ligne:     rgba(28, 27, 58, 0.12);
+  --erreur:    #C43D2B;
+  --police-titres: 'Baloo 2', system-ui, sans-serif;
+  --police-corps:  'Nunito Sans', system-ui, sans-serif;
+}
+/* ================================================================ */
 
-function eqHash_(texte) {
-  return Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 'mantra-equipe|' + String(texte)));
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--police-corps);
+  color: var(--navy);
+  background: var(--creme);
+  background-image:
+    radial-gradient(1200px 500px at 85% -5%, rgba(110, 91, 208, 0.07), transparent 60%),
+    radial-gradient(900px 500px at 0% 100%, rgba(43, 184, 196, 0.06), transparent 60%);
+  min-height: 100vh;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.page { max-width: 680px; margin: 0 auto; padding: 20px 16px 60px; }
+
+/* ---------- En-tete ---------- */
+.entete { text-align: center; padding: 8px 0 4px; }
+.entete img.logo { width: min(240px, 60vw); height: auto; }
+.ruban {
+  height: 5px; border-radius: 3px; margin: 10px auto 0; max-width: 340px;
+  background: linear-gradient(90deg, var(--magenta), var(--violet), var(--turquoise), var(--or), var(--corail));
 }
 
-function eqMotDePasse_() {
-  return String(lireReglages_().mot_de_passe_equipe || '').trim();
+/* ---------- Sentier du colibri ---------- */
+.sentier { position: relative; height: 74px; margin: 18px 4px 6px; }
+.sentier .trace {
+  position: absolute; left: 24px; right: 24px; top: 50px;
+  border-top: 3px dotted rgba(142, 61, 166, 0.35);
+}
+.sentier .fleurs {
+  position: absolute; left: 24px; right: 24px; top: 50px;
+  display: flex; justify-content: space-between;
+}
+.fleur {
+  width: 16px; height: 16px; margin-top: -8px;
+  font-size: 13px; line-height: 16px; text-align: center;
+  transform: scale(0); transition: transform .5s cubic-bezier(.34,1.56,.64,1);
+}
+.fleur.eclose { transform: scale(1); }
+#colibri {
+  position: absolute; top: 0; left: 0;
+  width: 52px; height: auto;
+  transition: left 1s cubic-bezier(.45,.05,.35,1);
+  animation: voler 2.6s ease-in-out infinite;
+  filter: drop-shadow(0 3px 6px rgba(28,27,58,.18));
+  z-index: 2;
+}
+@keyframes voler { 0%, 100% { margin-top: 0; } 50% { margin-top: -7px; } }
+
+/* ---------- Carte / ecrans ---------- */
+.carte {
+  background: var(--carte); border: 1px solid var(--ligne);
+  border-radius: 20px; padding: 28px 24px 30px;
+  box-shadow: 0 10px 30px rgba(28, 27, 58, 0.06);
+}
+@media (max-width: 480px) { .carte { padding: 22px 16px 26px; } }
+.ecran { display: none; }
+.ecran.actif { display: block; animation: arriver .45s ease both; }
+@keyframes arriver { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.surtitre {
+  font-family: var(--police-titres); font-weight: 600; font-size: 14px;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--violet);
+}
+h1, h2 { font-family: var(--police-titres); font-weight: 700; line-height: 1.2; margin: 4px 0 10px; }
+h1 { font-size: clamp(26px, 6vw, 34px); }
+h2 { font-size: clamp(22px, 5vw, 27px); }
+.intro { font-size: 17px; }
+.aide { font-size: 14.5px; color: rgba(28,27,58,.8); margin-top: 4px; }
+
+/* ---------- Champs ---------- */
+.champ { margin-top: 20px; }
+label.etiquette { display: block; font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+label.etiquette .astuce { font-weight: 400; color: rgba(28,27,58,.7); font-size: 14px; }
+.obligatoire::after { content: " *"; color: var(--magenta); }
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]):not([type="range"]):not([type="button"]):not([type="submit"]), select, textarea {
+  width: 100%; font: inherit; font-size: 16px; color: var(--navy);
+  background: var(--creme); border: 2px solid var(--ligne);
+  border-radius: 12px; padding: 12px 14px; transition: border-color .2s;
+}
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--magenta); }
+textarea { resize: none; overflow: hidden; min-height: 90px; }
+
+/* Jauge de longueur : orange vers vert, avec repere de minimum */
+.jauge { position: relative; height: 7px; border-radius: 4px; background: var(--ligne); margin-top: 7px; }
+.jauge .niveau {
+  height: 100%; width: 0%; border-radius: 4px;
+  background: var(--or); transition: width .25s, background .25s;
+}
+.jauge .niveau.vert { background: var(--turquoise); }
+.jauge .repere {
+  position: absolute; top: -3px; bottom: -3px; width: 2px;
+  background: var(--violet); border-radius: 1px;
+}
+.jauge-texte { font-size: 13px; color: rgba(28,27,58,.55); margin-top: 4px; }
+.jauge-texte.vert { color: var(--turquoise); font-weight: 700; }
+
+/* Zoom par boutons */
+.zoom-mot { font-weight: 700; font-size: 14px; color: var(--violet); }
+.btn-zoom {
+  width: 44px; height: 44px; border-radius: 50%;
+  font-size: 24px; font-weight: 700; line-height: 1;
+  color: #fff; border: none; cursor: pointer;
+  background: linear-gradient(120deg, var(--magenta), var(--violet));
+  box-shadow: 0 3px 10px rgba(164, 79, 196, 0.3);
+  transition: transform .12s;
+}
+.btn-zoom:active { transform: scale(.92); }
+
+/* Indication "clique et deplace" dans le cadre */
+.cadre .indication {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  background: rgba(28, 27, 58, 0.72); color: #fff;
+  font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 999px;
+  pointer-events: none; transition: opacity .4s; white-space: nowrap;
+}
+.cadre .indication.cachee { opacity: 0; }
+
+/* Apercu Google avec vignette */
+.g-ligne { display: flex; gap: 12px; align-items: flex-start; }
+.g-texte { flex: 1; min-width: 0; }
+.g-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; flex: none; }
+
+/* Test des liens */
+.liste-test-liens { margin-top: 10px; }
+.liste-test-liens a {
+  display: block; margin-top: 6px; color: var(--turquoise);
+  font-weight: 700; font-size: 14.5px; word-break: break-all; text-decoration: none;
 }
 
-// Appelée par doPost quand kind === 'team'
-function equipe_(data) {
-  const op = clean_(data.op);
-  if (op === 'login') return eqConnexion_(String(data.password || '').trim());
-  if (!eqSessionValide_(clean_(data.token))) return { ok: false, auth: false, error: 'Session expirée. Reconnecte-toi.' };
-  eqToucherSession_(clean_(data.token));
-  if (op === 'list') return eqListe_();
-  if (op === 'detail') return eqDetail_(clean_(data.id));
-  if (op === 'status') return eqVerrouille_(function () { return eqStatut_(clean_(data.id), clean_(data.piste), clean_(data.valeur)); });
-  if (op === 'list_participants') return eqListeParticipants_();
-  if (op === 'detail_participant') return eqDetailParticipant_(clean_(data.id), clean_(data.tab));
-  if (op === 'list_benevoles') return eqListeBenevoles_();
-  if (op === 'detail_benevole') return eqDetailBenevole_(clean_(data.id));
-  if (op === 'stats') return eqStats_();
-  if (op === 'stats_detail') return eqStatsDetail_(!!data.frais);
-  if (op === 'creer_suivi') return eqVerrouille_(function () { return eqCreerSuivi_(clean_(data.genre), clean_(data.id), clean_(data.tab)); });
-  if (op === 'photos_list') return eqPhotosListe_(clean_(data.id), clean_(data.type), clean_(data.tab));
-  if (op === 'photo') return eqPhoto_(clean_(data.id), clean_(data.fid), false, clean_(data.type), clean_(data.tab));
-  if (op === 'photo_hd') return eqPhoto_(clean_(data.id), clean_(data.fid), true, clean_(data.type), clean_(data.tab));
-  if (op === 'send_email') return eqVerrouille_(function () { return eqEnvoyer_(clean_(data.id), data.edit); });
-  return { ok: false, error: 'Action inconnue.' };
+/* Apercu video */
+.video-lien { position: relative; display: block; max-width: 320px; margin-top: 10px; }
+.video-lien img { width: 100%; border-radius: 12px; display: block; }
+.video-lien .jouer {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(28, 27, 58, 0.75); color: #fff;
+  font-size: 20px; line-height: 52px; text-align: center;
 }
 
-function eqConnexion_(motDePasse) {
-  const attendu = eqMotDePasse_();
-  if (!attendu) return { ok: false, error: "Le Portail Festival est fermé : aucun mot de passe n'est défini dans Réglages." };
-  const cache = CacheService.getScriptCache();
-  if (cache.get('eq_bloque')) return { ok: false, bloque: true, error: 'Trop d\'essais. Réessaie dans 15 minutes.' };
-  if (motDePasse && eqHash_(motDePasse) === eqHash_(attendu)) {
-    cache.remove('eq_echecs');
-    const jeton = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
-    cache.put('eq_jeton_' + jeton, eqHash_(attendu), EQ_SESSION_SECONDES);
-    eqJournaliserConnexion_(jeton);
-    return { ok: true, token: jeton };
-  }
-  Utilities.sleep(1000);
-  const echecs = Number(cache.get('eq_echecs') || 0) + 1;
-  if (echecs >= EQ_MAX_ECHECS) {
-    cache.put('eq_bloque', '1', EQ_BLOCAGE_SECONDES);
-    cache.remove('eq_echecs');
-    return { ok: false, bloque: true, error: 'Trop d\'essais. Réessaie dans 15 minutes.' };
-  }
-  cache.put('eq_echecs', String(echecs), EQ_BLOCAGE_SECONDES);
-  return { ok: false, error: 'Mot de passe incorrect.' };
+/* Boutons d'insertion */
+.inserer { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.btn-inserer {
+  font: inherit; font-size: 13px; font-weight: 700; color: var(--violet);
+  background: rgba(142, 61, 166, 0.08); border: 1.5px solid rgba(142, 61, 166, 0.3);
+  border-radius: 999px; padding: 6px 13px; cursor: pointer; transition: all .15s;
+}
+.btn-inserer:hover { background: rgba(142, 61, 166, 0.16); }
+
+/* Puces de choix */
+.puces { display: flex; flex-wrap: wrap; gap: 8px; }
+.puce {
+  font: inherit; font-size: 15px; font-weight: 600; color: var(--navy);
+  background: var(--creme); border: 2px solid var(--ligne);
+  border-radius: 999px; padding: 9px 16px; cursor: pointer; transition: all .18s;
+}
+.puce:hover { border-color: var(--violet); }
+.puce.choisie { background: var(--magenta); border-color: var(--magenta); color: #fff; transform: scale(1.04); }
+.duo { display: flex; gap: 8px; }
+.duo .puce { flex: 1; text-align: center; }
+
+/* ---------- Photos ---------- */
+.zone-depot {
+  border: 2px dashed rgba(142, 61, 166, 0.4); border-radius: 14px;
+  background: rgba(142, 61, 166, 0.04); padding: 26px 16px;
+  text-align: center; cursor: pointer; transition: all .2s; font-size: 15px;
+}
+.zone-depot:hover { border-color: var(--magenta); background: rgba(214,36,140,.05); }
+.zone-depot strong { color: var(--violet); }
+
+/* Recadreur (partage entre photo principale et galerie) */
+.recadreur { display: none; margin-top: 14px; }
+.cadre {
+  position: relative; width: 100%; margin: 0 auto;
+  overflow: hidden; border-radius: 12px; background: #eee;
+  cursor: grab; touch-action: none; border: 2px solid var(--ligne);
+}
+.cadre.saisi { cursor: grabbing; }
+.cadre img {
+  position: absolute; top: 0; left: 0;
+  transform-origin: 0 0; user-select: none; pointer-events: none; max-width: none;
+}
+.cadre.vertical { max-width: 340px; }
+.zoom-ligne { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.zoom-ligne input[type="range"] { flex: 1; accent-color: var(--magenta); }
+.formats-galerie { margin-bottom: 10px; }
+
+.apercu-principal { margin-top: 12px; display: none; }
+.apercu-principal img {
+  width: 100%; border-radius: 12px; border: 2px solid var(--turquoise);
+  animation: rebond .5s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes rebond { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.etat-photo { font-size: 14px; color: var(--turquoise); font-weight: 700; margin-top: 6px; }
+
+.vignettes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.vignette {
+  position: relative; width: 96px; border-radius: 10px; overflow: hidden;
+  border: 2px solid var(--ligne); animation: rebond .5s cubic-bezier(.34,1.56,.64,1);
+}
+.vignette img { width: 100%; display: block; }
+.vignette .retirer {
+  position: absolute; top: 3px; right: 3px; width: 22px; height: 22px;
+  border-radius: 50%; background: rgba(28,27,58,.75); color: #fff;
+  border: none; font-size: 13px; line-height: 22px; cursor: pointer;
+}
+.vignette .badge {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: rgba(28,27,58,.65); color: #fff;
+  font-size: 10.5px; font-weight: 700; text-align: center; padding: 2px 0;
 }
 
-// Un jeton n'est valable que tant que le mot de passe n'a pas changé.
-function eqSessionValide_(jeton) {
-  const attendu = eqMotDePasse_();
-  if (!attendu || !/^[a-f0-9]{64}$/.test(jeton)) return false;
-  return CacheService.getScriptCache().get('eq_jeton_' + jeton) === eqHash_(attendu);
+/* ---------- Boutons / navigation ---------- */
+.nav-etapes { display: flex; gap: 10px; margin-top: 28px; }
+.btn {
+  font-family: var(--police-titres); font-size: 17px; font-weight: 700;
+  border: none; border-radius: 999px; padding: 13px 26px; cursor: pointer;
+  transition: transform .15s, box-shadow .15s, opacity .15s;
+}
+.btn:active { transform: scale(.97); }
+.btn-avant {
+  flex: 1; color: #fff;
+  background: linear-gradient(100deg, var(--magenta), var(--violet));
+  box-shadow: 0 6px 18px rgba(164, 79, 196, 0.3);
+}
+.btn-avant:hover { box-shadow: 0 8px 22px rgba(164, 79, 196, 0.4); }
+.btn-retour { background: transparent; color: var(--violet); border: 2px solid var(--ligne); }
+.btn[disabled] { opacity: .45; cursor: not-allowed; box-shadow: none; }
+
+.message-erreur {
+  display: none; margin-top: 14px; padding: 11px 14px;
+  background: rgba(196, 61, 43, 0.08); border: 1px solid rgba(196,61,43,.3);
+  border-radius: 12px; color: var(--erreur); font-size: 14.5px; font-weight: 600;
+  white-space: pre-line;
+}
+.message-erreur.visible { display: block; }
+
+/* ---------- Recap facon page finale ---------- */
+.apercu-page {
+  border: 1px solid var(--ligne); border-radius: 16px;
+  overflow: hidden; margin-top: 14px; background: var(--creme);
+}
+.apercu-page .une { width: 100%; display: block; }
+.apercu-page .corps { padding: 18px 18px 20px; }
+.apercu-page .surtitre { font-size: 12.5px; }
+.apercu-page h3 {
+  font-family: var(--police-titres); font-size: 24px; line-height: 1.15; margin: 2px 0 2px;
+}
+.apercu-page .sous-titre { font-size: 16px; color: var(--violet); font-weight: 600; font-style: italic; }
+.apercu-page .texte-page { margin-top: 12px; font-size: 15px; white-space: pre-line; }
+.apercu-page .bio-page { margin-top: 10px; font-size: 14px; color: rgba(28,27,58,.75); white-space: pre-line; }
+.apercu-google {
+  margin: 14px 0 0; padding: 12px 14px; background: #fff;
+  border: 1px solid var(--ligne); border-radius: 12px;
+}
+.apercu-google .legende {
+  font-size: 11.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: rgba(28,27,58,.45); margin-bottom: 6px;
+}
+.apercu-google .g-titre { color: #1a0dab; font-size: 17px; line-height: 1.25; }
+.apercu-google .g-snippet { color: #4d5156; font-size: 13.5px; margin-top: 3px; }
+.galerie-page { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.galerie-page .mini { position: relative; width: 100px; border-radius: 8px; overflow: hidden; border: 1px solid var(--ligne); }
+.galerie-page .mini img { width: 100%; display: block; }
+.galerie-page .mini span {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: rgba(28,27,58,.6); color: #fff; font-size: 10px; text-align: center; padding: 1px 0;
+}
+.liens-page { margin-top: 12px; font-size: 14px; word-break: break-all; }
+.liens-page a { color: var(--turquoise); font-weight: 700; text-decoration: none; }
+
+/* ---------- Consentement : impossible a rater ---------- */
+.consentement-boite {
+  margin-top: 22px; padding: 3px; border-radius: 16px;
+  background: linear-gradient(100deg, var(--magenta), var(--or), var(--corail));
+}
+.consentement-interieur {
+  background: #FFF7E8; border-radius: 13px; padding: 16px 16px 14px;
+}
+.consentement-interieur .titre-consent {
+  font-family: var(--police-titres); font-weight: 700; font-size: 17px; color: var(--corail);
+  margin-bottom: 6px;
+}
+.consentement { display: flex; gap: 12px; align-items: flex-start; font-size: 15px; }
+.consentement input {
+  margin-top: 3px; width: 22px; height: 22px; accent-color: var(--magenta); flex: none; cursor: pointer;
 }
 
-// Candidatures + statuts du Suivi, les plus récentes d'abord.
-function eqListe_() {
-  const classeur = SpreadsheetApp.openById(SHEET_ID);
-  const cand = classeur.getSheetByName(P_TABS.CANDIDATURES);
-  const suivi = classeur.getSheetByName(P_TABS.SUIVI);
-  const statuts = {};
-  if (suivi && suivi.getLastRow() >= 2) {
-    suivi.getRange(2, 1, suivi.getLastRow() - 1, SUIVI_HEADERS.length).getValues().forEach(function (v) {
-      if (!v[0]) return;
-      const l = {};
-      SUIVI_HEADERS.forEach(function (h, k) { l[h] = v[k]; });
-      statuts[l.id] = l;
+/* Barre d'envoi */
+.envoi-progression { display: none; margin-top: 18px; padding: 16px 18px; border: 3px solid var(--magenta); border-radius: 16px; background: #FFF7FB; }
+.envoi-progression .ep-titre { font-weight: 700; font-size: 17px; color: #1C1B3A; margin-bottom: 10px; }
+.envoi-progression .rail { height: 16px; border-radius: 99px; background: #EBDDE8; overflow: hidden; }
+.envoi-progression .remplissage {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--magenta), var(--violet), var(--turquoise));
+  transition: width .25s;
+}
+.envoi-progression .texte-envoi { font-size: 14px; margin-top: 6px; text-align: center; color: var(--violet); font-weight: 600; }
+
+/* ---------- Merci ---------- */
+#ecran-merci { text-align: center; }
+#ecran-merci .colibri-final { width: 90px; margin: 8px auto 6px; display: block; animation: boucle-joie 2.2s ease-in-out infinite; }
+@keyframes boucle-joie {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%      { transform: translateY(-14px) rotate(-8deg); }
+  50%      { transform: translateY(0) rotate(0deg); }
+  75%      { transform: translateY(-8px) rotate(8deg); }
+}
+#canvas-confettis { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+
+.hp { position: absolute; left: -6000px; top: -6000px; }
+.pied { text-align: center; font-size: 12.5px; color: rgba(28,27,58,.4); margin-top: 22px; }
+.pied .porte { font-size: 9px; color: rgba(28,27,58,.22); text-decoration: none; margin-left: 6px; }
+.pied .porte:hover, .pied .porte:focus { color: rgba(28,27,58,.7); text-decoration: underline; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+.choix-accueil { display:grid; grid-template-columns:1fr; gap:16px; margin:25px 0; }
+.choix-accueil article { background:var(--creme); border:2px solid var(--ligne); border-radius:16px; padding:18px; display:flex; flex-direction:column; gap:12px; }
+.choix-accueil h2 { font-size:21px; margin:0; }
+.choix-accueil p { margin:0; flex:1; }
+.choix-accueil button { width:100%; }
+@media(max-width:550px){.choix-accueil{grid-template-columns:1fr}}
+.portrait-bloc { padding:15px; border:1px solid var(--ligne); border-radius:12px; margin:14px 0; }
+#recadreur-portrait { margin:18px 0; }
+#questions-techniques label.etiquette, .membre label.etiquette { margin-top:18px; }
+#questions-techniques label.etiquette:first-child, .membre label.etiquette:first-child { margin-top:0; }
+input[type="file"]:not([hidden]) { width:100%; padding:12px; border:2px solid var(--ligne); border-radius:12px; background:var(--creme); font:inherit; }
+input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--violet); border-radius:20px; background:white; color:var(--violet); padding:8px 12px; font:inherit; font-weight:700; margin-right:12px; cursor:pointer; }
+#questions-techniques .duo { margin:10px 0 4px; }
+/* ---------- Formulaire final : titre, catégorie choisie et étapes en onglets ---------- */
+.fil-inscription { margin: 0 0 18px; }
+.titre-inscription { font-size: clamp(22px, 5vw, 28px); margin: 0 0 8px; }
+.categorie-choisie { display: inline-block; margin: 0 0 12px; padding: 5px 14px; border-radius: 999px; background: #EFE7F8; color: #43296F; font-weight: 700; font-size: 15px; }
+.fil-inscription[hidden], .categorie-choisie[hidden] { display: none !important; }
+/* Étapes en onglets : pas de barre de défilement. Les étapes non actives montrent seulement leur numéro, l'étape en cours montre son nom. */
+.onglets-inscription { display: flex; gap: 4px; border-bottom: 2px solid #D9CFE8; overflow: visible; }
+.onglets-inscription button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 6px; font: inherit; font-size: 14px; font-weight: 600; color: #4B4660; background: #F3EEF7; border: 1px solid #D9CFE8; border-bottom: none; border-radius: 10px 10px 0 0; padding: 8px 10px; cursor: pointer; margin-bottom: -2px; min-width: 38px; }
+.onglets-inscription button .num { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #D9CFE8; color: #43296F; font-size: 12px; font-weight: 700; }
+.onglets-inscription button .nom { display: none; }
+.onglets-inscription button[aria-selected="true"] { flex: 1 1 auto; justify-content: flex-start; min-width: 0; background: #fff; color: #1C1B3A; border-color: #B9A5E3; border-top: 3px solid #8E3DA6; padding-top: 6px; border-bottom: 2px solid #fff; }
+.onglets-inscription button[aria-selected="true"] .nom { display: inline; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.onglets-inscription button[aria-selected="true"] .num { background: #8E3DA6; color: #fff; }
+.onglets-inscription button:not([aria-selected="true"]):not(:disabled):hover { background: #E6DEF6; }
+.onglets-inscription button:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ---------- Candidature publique ---------- */
+.choix-accueil article.candidature { border: 3px solid #B5207F; background: #FFF0F8; }
+.choix-accueil article.benevole { border: 3px solid #1FA8C3; background: #E9F9FB; }
+.choix-accueil article.participants { border: 3px solid #6B2C91; background: #F3ECFA; }
+.choix-accueil article.candidature h2 { color: #B5207F; }
+.choix-accueil article.benevole h2 { color: #0A7A8F; }
+.choix-accueil article.participants h2 { color: #6B2C91; }
+.choix-accueil article.candidature .btn-avant { background: linear-gradient(100deg, #B5207F, #C9308F); }
+.choix-accueil article.benevole .btn-avant { background: linear-gradient(100deg, #0A7A8F, #148FA8); }
+.choix-accueil article.participants .btn-avant { background: linear-gradient(100deg, #6B2C91, #8636A6); }
+.conditions { background: #FFF7E8; border: 2px solid var(--or); border-radius: 14px; padding: 16px 18px; font-size: 15px; line-height: 1.6; white-space: pre-line; margin-top: 10px; }
+#ecran-cand-0 .puces, #ecran-cand-1 .champ .puces, #ecran-cand-2 .champ .puces { margin-top: 4px; }
+/* Choix du pôle : grands boutons colorés, bien lisibles */
+#cand-poles { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 14px; }
+#cand-poles .puce { min-height: 64px; font-size: 18px; font-weight: 700; padding: 14px 18px; border-radius: 16px; display: flex; align-items: center; justify-content: center; text-align: center;
+  background: var(--pole-fond, #fff); border: 3px solid var(--pole-bord, #ddd); color: #1C1B3A; }
+#cand-poles .puce:hover:not(:disabled) { filter: brightness(.97); }
+#cand-poles .puce.choisie { background: linear-gradient(100deg, #B5207F, #6B2C91); border-color: transparent; color: #fff; transform: scale(1.03); box-shadow: 0 6px 16px rgba(107, 44, 145, .35); }
+#cand-poles .puce.choisie::before { content: "\2713  "; }
+#cand-poles .squelette { min-height: 64px; border-radius: 16px; background: linear-gradient(100deg, #EEE9F6 30%, #F8F5FC 50%, #EEE9F6 70%); background-size: 200% 100%; animation: brille 1.2s linear infinite; }
+@keyframes brille { to { background-position: -200% 0; } }
+.chargement-poles { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 3px solid var(--turquoise); border-radius: 16px; background: #F1FBFC; font-weight: 700; font-size: 17px; color: #1C1B3A; }
+.chargement-poles .tourne { width: 22px; height: 22px; border-radius: 50%; border: 4px solid #BFE6EA; border-top-color: var(--turquoise); animation: tourne .8s linear infinite; flex: none; }
+@keyframes tourne { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { #cand-poles .squelette, .chargement-poles .tourne { animation: none; } }
+#cand-vignettes { margin-top: 10px; }
+.cand-etape { font-size: 13px; color: rgba(28,27,58,.6); margin-top: 6px; }
+/* Barre de progression de l'envoi : bien visible, texte foncé */
+.cand-progress { display: none; margin-top: 18px; padding: 16px 18px; border: 3px solid var(--magenta); border-radius: 16px; background: #FFF7FB; }
+.cand-progress .cp-titre { font-weight: 700; font-size: 17px; color: #1C1B3A; }
+.cand-progress .cp-barre { height: 16px; border-radius: 99px; background: #EBDDE8; overflow: hidden; margin: 12px 0 8px; }
+.cand-progress .cp-remplissage { height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, var(--magenta), var(--or)); transition: width .6s ease; }
+.cand-progress .cp-etape { font-size: 15px; color: #1C1B3A; }
+
+/* ---------- Habillage aquarelle (v3.17) : images du dossier assets/ du dépôt GitHub ----------
+   Étirées (100% 100%), jamais répétées, légèrement agrandies pour cacher la marge transparente des images. Si une image manque, on voit seulement les couleurs douces. */
+body::before { content: ""; position: fixed; left: -2.65%; top: -1.95%; width: 102.9%; height: 103.4%; z-index: -1; pointer-events: none; opacity: .45;
+  background: url("assets/background-left.png") 0 0 / 100% 100% no-repeat; }
+body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: min(220px, 34vw); aspect-ratio: 286 / 307; z-index: -1; pointer-events: none; opacity: .7;
+  background: url("assets/background-overlay-1.png") 0 0 / 100% 100% no-repeat; }
+#cand-poles .puce .icone-pole { width: 38px; height: 38px; object-fit: contain; flex: none; margin-right: 12px; }
+</style>
+</head>
+<body>
+
+<canvas id="canvas-confettis"></canvas>
+
+<div class="page">
+
+  <header class="entete">
+    <img class="logo" src="logo.png" alt="Festival Mantra Joie">
+    <div class="ruban"></div>
+  </header>
+
+  <div class="sentier" id="sentier" hidden>
+    <div class="trace"></div>
+    <div class="fleurs">
+      <div class="fleur" data-etape="1">🌸</div>
+      <div class="fleur" data-etape="2">🌼</div>
+      <div class="fleur" data-etape="3">🌺</div>
+      <div class="fleur" data-etape="4">🌷</div>
+      <div class="fleur" data-etape="5">🌻</div>
+      <div class="fleur" data-etape="6">🌻</div>
+      <div class="fleur" data-etape="7">✨</div>
+    </div>
+    <img id="colibri" src="colibri-droit.png" alt="">
+  </div>
+
+  <main class="carte">
+    <div class="fil-inscription" id="fil-inscription" hidden>
+      <h1 class="titre-inscription">Je complète mon inscription</h1>
+      <div class="categorie-choisie" id="fil-categorie" hidden></div>
+      <div class="onglets-inscription" id="onglets-inscription" role="tablist" aria-label="Les étapes de ton inscription"></div>
+    </div>
+
+    <!-- ============ ECRAN 0 : BIENVENUE ============ -->
+    <section class="ecran actif" id="ecran-0">
+      <p class="surtitre">Festival Mantra Joie 2027</p>
+      <h1>Bienvenue ! 🌈</h1>
+      <p class="intro">Quel bonheur de t'accueillir dans l'aventure Mantra Joie ! 🌈</p>
+      <div class="choix-accueil">
+        <article class="candidature"><h2>Candidater ✨</h2><p>Tu souhaites participer au festival comme artiste, atelier, artisan, bien-être ou stand ? Dépose ta candidature ici.</p><button class="btn btn-avant" type="button" onclick="ouvrirCandidature()">Candidater</button></article>
+        <article class="benevole"><h2>Devenir bénévole 💛</h2><p>Tu souhaites rejoindre l'équipe du festival ? Présente-toi ici.</p><button class="btn btn-avant" type="button" onclick="aller('benevole')">Devenir bénévole</button></article>
+        <article class="participants"><h2>Participants ✨</h2><p>Tu es déjà inscrit·e et validé·e ? Complète tes informations pour ta participation et nos supports de communication.</p><button class="btn btn-avant" type="button" onclick="aller('acces')">Compléter mon inscription</button></article>
+      </div>
+
+      <div class="hp" aria-hidden="true">
+        <label>Votre site web <input type="text" id="honeypot" tabindex="-1" autocomplete="off"></label>
+      </div>
+
+    </section>
+
+    <section class="ecran" id="ecran-acces">
+      <h2>Compléter mon inscription</h2>
+      <p>Ce formulaire est réservé aux personnes déjà inscrites et validées.</p>
+      <div class="champ"><label class="etiquette obligatoire" for="access_code">Ton code d'accès <span class="astuce">(dans le message reçu)</span></label><input type="text" id="access_code" autocomplete="off" autocapitalize="characters"></div>
+      <div class="message-erreur" id="erreur-acces"></div>
+      <div class="nav-etapes"><button class="btn btn-retour" onclick="aller(0)">Retour</button><button class="btn btn-avant" onclick="verifierCode()">Continuer</button></div>
+    </section>
+
+    <section class="ecran" id="ecran-benevole">
+      <p class="surtitre">Festival Mantra Joie 2027</p><h1>Devenir bénévole 💛</h1>
+      <p class="intro">Quel bonheur que tu aies envie de rejoindre l'aventure ! Ensemble, faisons vibrer Mantra Joie 💛</p>
+      <p>Choisis deux pôles dans lesquels tu as, de préférence, des compétences.</p>
+      <div class="champ"><label class="etiquette obligatoire" for="vol_email">Email</label><input id="vol_email" type="email" autocomplete="email"></div>
+      <div class="champ"><label class="etiquette obligatoire" for="vol_last_name">Nom</label><input id="vol_last_name" autocomplete="family-name"></div>
+      <div class="champ"><label class="etiquette obligatoire" for="vol_first_name">Prénom</label><input id="vol_first_name" autocomplete="given-name"></div>
+      <div class="champ"><label class="etiquette obligatoire" for="vol_phone">Téléphone</label><input id="vol_phone" type="tel" autocomplete="tel" placeholder="06 12 34 56 78"><p class="aide">En France, indique ton numéro habituel. Ajoute l'indicatif seulement pour un numéro étranger.</p></div>
+      <div class="champ"><label class="etiquette obligatoire">Deux pôles préférés</label><div id="vol-teams"></div></div>
+      <div class="champ"><label class="etiquette obligatoire" for="vol_motivation">Motivation et compétences</label><textarea id="vol_motivation" rows="4"></textarea></div>
+      <div class="champ" id="champ-vol-portrait"><label class="etiquette" for="vol-portrait">Ton portrait <span class="astuce">(facultatif, à recadrer ici)</span></label><input id="vol-portrait" type="file" accept="image/*"><div id="vol-portrait-etat" class="etat-photo"></div></div>
+      <div class="recadreur" id="recadreur-portrait">
+        <h2 id="titre-portrait">Recadrer le portrait</h2>
+        <div class="cadre" id="cadre-portrait"><img id="img-portrait" alt=""><div class="indication">✋ Clique et déplace la photo</div></div>
+        <div class="zoom-ligne"><span class="zoom-mot">Zoom</span><button type="button" class="btn-zoom" id="zoom-moins-portrait" aria-label="Zoom arrière">−</button><button type="button" class="btn-zoom" id="zoom-plus-portrait" aria-label="Zoom avant">+</button></div>
+        <div class="nav-etapes"><button class="btn btn-retour" onclick="annulerPortrait()">Annuler</button><button class="btn btn-avant" onclick="garderPortrait()">Valider le portrait</button></div>
+      </div>
+      <div class="message-erreur" id="erreur-benevole"></div>
+      <div class="cand-progress" id="vol-progress" role="status" aria-live="polite">
+        <div class="cp-titre">⏳ Envoi en cours : ne ferme pas cette page</div>
+        <div class="cp-barre"><div class="cp-remplissage" id="vp-rempl"></div></div>
+        <div class="cp-etape" id="vp-etape"></div>
+      </div>
+      <div class="nav-etapes"><button class="btn btn-retour" onclick="aller(0)">Retour</button><button class="btn btn-avant" id="btn-benevole" onclick="envoyerBenevole()">Envoyer ma candidature 💛</button></div>
+    </section>
+
+    <!-- ============ CANDIDATURE : PÔLE ET CONDITIONS ============ -->
+    <section class="ecran" id="ecran-cand-0">
+      <p class="surtitre">Candidature · étape 1 sur 3</p>
+      <h2>Choisis ton pôle</h2>
+      <p class="aide">Lis les conditions avant de continuer : elles s’affichent en entier juste en dessous.</p>
+      <div id="cand-etat"></div>
+      <div class="puces" id="cand-poles" style="margin-top:14px"></div>
+      <div id="cand-conditions" style="display:none">
+        <h3 style="font-family:var(--police-titres);font-size:20px;margin-top:22px">Conditions de participation</h3>
+        <div class="conditions" id="cand-conditions-texte"></div>
+        <div class="nav-etapes" id="cand-pdf-boite" style="margin-top:10px"><button class="btn btn-retour" type="button" id="cand-pdf" onclick="candPdf()">📄 Télécharger les conditions (PDF)</button></div>
+        <div class="message-erreur" id="cand-conditions-vide" style="margin-top:10px">Les conditions de ce pôle ne sont pas encore publiées. Reviens bientôt.</div>
+        <div class="consentement-boite" id="cand-terms-boite">
+          <div class="consentement-interieur"><label class="consentement"><input type="checkbox" id="cand_terms"><span>J’ai lu et j’accepte les conditions de participation et les critères de sélection du festival.</span></label></div>
+        </div>
+      </div>
+      <div class="message-erreur" id="erreur-cand-0"></div>
+      <div class="nav-etapes"><button class="btn btn-retour" type="button" onclick="aller(0)">Retour</button><button class="btn btn-avant" type="button" id="btn-cand-suite0" onclick="candSuite0()">Continuer</button></div>
+    </section>
+
+    <!-- ============ CANDIDATURE : QUI ES-TU ============ -->
+    <section class="ecran" id="ecran-cand-1">
+      <p class="surtitre">Candidature · étape 2 sur 3</p>
+      <h2>Qui es-tu ?</h2>
+      <div id="cand-commun"></div>
+      <div class="message-erreur" id="erreur-cand-1"></div>
+      <div class="nav-etapes"><button class="btn btn-retour" type="button" onclick="aller('cand-0')">Retour</button><button class="btn btn-avant" type="button" onclick="candSuite1()">Continuer</button></div>
+    </section>
+
+    <!-- ============ CANDIDATURE : TA PROPOSITION ============ -->
+    <section class="ecran" id="ecran-cand-2">
+      <p class="surtitre">Candidature · étape 3 sur 3</p>
+      <h2>Ta proposition</h2>
+      <div id="cand-specifique"></div>
+      <div class="champ">
+        <label class="etiquette obligatoire" id="cand-photos-label">Photos ou exemples de ta proposition (1 à 6)</label>
+        <div class="zone-depot" id="cand-depot">📷 <strong>Ajouter des photos</strong></div>
+        <input type="file" id="cand-fichier" accept="image/*" multiple hidden>
+        <div class="vignettes" id="cand-vignettes"></div>
+      </div>
+      <div class="consentement-boite">
+        <div class="consentement-interieur">
+          <div class="titre-consent">Utilisation de tes données</div>
+          <div class="conditions" id="cand-donnees-texte" style="margin:0 0 12px"></div>
+          <label class="consentement"><input type="checkbox" id="cand_data"><span>J’ai pris connaissance de cette information.</span></label>
+        </div>
+      </div>
+      <div class="cand-progress" id="cand-progress" role="status" aria-live="polite">
+        <div class="cp-titre">⏳ Envoi en cours : ne ferme pas cette page</div>
+        <div class="cp-barre"><div class="cp-remplissage" id="cp-rempl"></div></div>
+        <div class="cp-etape" id="cp-etape"></div>
+      </div>
+      <div class="message-erreur" id="erreur-cand-2"></div>
+      <div class="nav-etapes"><button class="btn btn-retour" type="button" onclick="aller('cand-1')">Retour</button><button class="btn btn-avant" type="button" id="btn-cand-envoyer" onclick="candEnvoyer()">Envoyer ma candidature 🕊️</button></div>
+    </section>
+
+    <!-- ============ ETAPE 1 : QUI ES-TU ============ -->
+    <section class="ecran" id="ecran-1">
+      <p class="surtitre">Étape 1 sur 7</p>
+      <h2>Qui es-tu ?</h2>
+
+      <div class="champ">
+        <label class="etiquette obligatoire">Ta catégorie</label>
+        <div class="puces" id="puces-categorie"></div>
+      </div>
+
+      <div class="champ" id="champ-type" style="display:none">
+        <label class="etiquette">Ton type</label>
+        <div class="puces" id="puces-type"></div>
+      </div>
+
+      <div class="champ" id="champ-membres" style="display:none">
+        <label class="etiquette" for="nombre-membres">Combien de personnes composent le groupe ? <span class="astuce">(1 à 4, toi compris·e si tu participes)</span></label>
+        <select id="nombre-membres" onchange="actualiserMembres()"><option value="1">1 personne</option><option value="2">2 personnes</option><option value="3">3 personnes</option><option value="4">4 personnes</option></select>
+        <p class="aide">Chacun·e aura sa bio et son portrait.</p><label class="consentement" id="option-contact-different" style="display:none"><input type="checkbox" id="contact-different" onchange="actualiserMembres()"> La personne à contacter est différente de la personne inscrite</label>
+      </div>
+
+      <div class="champ">
+        <label class="etiquette obligatoire" for="name">Le nom sous lequel on te présentera au public <span class="astuce">(il apparaîtra sur le site du festival et dans le programme : ton nom de scène, de marque, de stand, de ta pratique de bien-être ou de ton atelier. Si tu n'as pas de nom d'activité, écris ton prénom et ton nom)</span></label>
+        <input type="text" id="name">
+      </div>
+
+      <div class="champ" id="champ-identite">
+        <label class="etiquette obligatoire" id="etiquette-prenom" for="first_name">Ton prénom</label>
+        <input type="text" id="first_name" autocomplete="given-name">
+      </div>
+
+      <div class="champ">
+        <label class="etiquette obligatoire" id="etiquette-nom" for="last_name">Ton nom de famille</label>
+        <input type="text" id="last_name" autocomplete="family-name">
+      </div>
+
+      <div class="champ" id="membres-details" style="display:none">
+        <label class="etiquette">Prénoms, noms et bios <span class="astuce">(les portraits seront ajoutés à l'étape photos)</span></label>
+        <div id="liste-membres"></div>
+      </div>
+
+      <div class="champ" id="champ-title-pro">
+        <label class="etiquette" id="etiquette-title-pro" for="title_pro">Ton titre ou ton activité <span class="astuce">(ex : « Céramiste », « Facilitatrice de cercles de femmes », « Cuisine vivante »)</span></label>
+        <input type="text" id="title_pro">
+      </div>
+
+      <div class="champ">
+        <label class="etiquette obligatoire" for="email">Ton email <span class="astuce">(jamais publié, juste pour te joindre si besoin)</span></label>
+        <input type="email" id="email" autocomplete="email">
+      </div>
+
+      <div class="champ">
+        <label class="etiquette obligatoire" for="phone">Ton téléphone <span class="astuce">(jamais publié)</span></label>
+        <input type="tel" id="phone" autocomplete="tel" placeholder="06 12 34 56 78">
+        <p class="aide">Ajoute l'indicatif uniquement si ton numéro est étranger.</p>
+      </div>
+      <div class="message-erreur" id="erreur-1"></div>
+      <div class="nav-etapes">
+        <button class="btn btn-retour" onclick="aller(0)">Retour</button>
+        <button class="btn btn-avant" onclick="valider1()">Continuer</button>
+      </div>
+    </section>
+
+    <!-- ============ ETAPE 2 : TES MOTS ============ -->
+    <section class="ecran" id="ecran-2">
+      <p class="surtitre">Étape 2 sur 7</p>
+      <h2>Tes mots</h2>
+
+      <div class="champ">
+        <label class="etiquette" for="subtitle">Ton sous-titre ou ton inspiration <span class="astuce">(une petite phrase poétique qui apparaîtra sous ton nom sur le site du festival. Par exemple : « Des chants qui ouvrent le coeur » ou « Le souffle comme un voyage intérieur »)</span></label>
+        <input type="text" id="subtitle" placeholder="Ex. : Des chants qui ouvrent le coeur">
+      </div>
+
+      <div class="champ">
+        <label class="etiquette obligatoire" for="snippet">Ta phrase courte</label>
+        <p class="aide">C'est elle qui peut apparaître dans les résultats de recherche Google sous ta page. Une ou deux phrases qui donnent envie de cliquer. Astuce : garde les mêmes mots que ton titre (les boutons ci-dessous les insèrent d'un clic), c'est ce qui aide ta page à être trouvée.</p>
+        <div class="inserer">
+          <button type="button" class="btn-inserer" onclick="inserer('snippet', nomEtTitre())">+ Nom et titre</button>
+          <button type="button" class="btn-inserer" onclick="inserer('snippet', valeur('subtitle'))">+ Sous-titre</button>
+        </div>
+        <textarea id="snippet" rows="2"></textarea>
+        <div class="jauge"><div class="niveau" id="jauge-snippet"></div><div class="repere" style="left:41%"></div></div>
+        <div class="jauge-texte" id="jauge-snippet-texte">0 caractère · minimum 70 pour que Google puisse l'utiliser</div>
+      </div>
+
+      <div class="champ">
+        <label class="etiquette obligatoire" for="presentation">Ton texte de présentation</label>
+        <p class="aide">Raconte qui tu es et ce que tu apportes. Au moins 300 caractères conseillés, et plus long est très bien aussi. Glisser les mots de ton titre une ou deux fois dans le texte aide ta page à être trouvée.</p>
+        <div class="inserer">
+          <button type="button" class="btn-inserer" onclick="inserer('presentation', nomEtTitre())">+ Nom et titre</button>
+          <button type="button" class="btn-inserer" onclick="inserer('presentation', valeur('subtitle'))">+ Sous-titre</button>
+        </div>
+        <textarea id="presentation" rows="5"></textarea>
+        <div class="jauge"><div class="niveau" id="jauge-presentation"></div><div class="repere" style="left:50%"></div></div>
+        <div class="jauge-texte" id="jauge-presentation-texte">0 caractère · le trait marque le minimum conseillé de 300</div>
+        <div class="jauge-texte" id="mots-cles-texte"></div>
+      </div>
+
+      <div class="champ" id="champ-bio-generale">
+        <label class="etiquette" id="etiquette-bio" for="bio">Ta bio <span class="astuce">(optionnel : ton parcours, en quelques lignes)</span></label>
+        <textarea id="bio" rows="3"></textarea>
+      </div>
+
+      <div class="message-erreur" id="erreur-2"></div>
+      <div class="nav-etapes">
+        <button class="btn btn-retour" onclick="aller(1)">Retour</button>
+        <button class="btn btn-avant" onclick="valider2()">Continuer</button>
+      </div>
+    </section>
+
+    <!-- ============ ETAPE 3 : PHOTOS ============ -->
+    <section class="ecran" id="ecran-3">
+      <p class="surtitre">Étape 3 sur 7</p>
+      <h2>Tes photos</h2>
+
+      <div class="champ">
+        <label class="etiquette obligatoire">Ta photo principale <span class="astuce">(elle sera aussi l'image de partage WhatsApp et Facebook)</span></label>
+        <div class="zone-depot" id="depot-principal">
+          📷 <strong>Choisis ta plus belle photo</strong><br>puis recadre-la comme tu veux
+        </div>
+        <input type="file" id="fichier-principal" accept="image/*" hidden>
+
+        <div class="recadreur" id="recadreur-principal">
+          <div class="cadre" id="cadre-principal"><img id="img-principal" alt=""><div class="indication">✋ Clique et déplace la photo</div></div>
+          <div class="zoom-ligne">
+            <span class="zoom-mot">Zoom</span>
+            <button type="button" class="btn-zoom" id="zoom-moins-principal" aria-label="Zoom arrière">−</button>
+            <button type="button" class="btn-zoom" id="zoom-plus-principal" aria-label="Zoom avant">+</button>
+          </div>
+          <div class="nav-etapes" style="margin-top:12px">
+            <button class="btn btn-retour" onclick="annulerPrincipal()">Changer de photo</button>
+            <button class="btn btn-avant" onclick="garderPrincipal()">Valider la photo principale</button>
+          </div>
+        </div>
+
+        <div class="apercu-principal" id="apercu-principal">
+          <img id="image-apercu" alt="Aperçu de ta photo principale">
+          <div class="etat-photo">Parfait, elle est prête ✨ <button class="puce" style="margin-left:8px" onclick="refairePrincipal()">Changer</button></div>
+        </div>
+      </div>
+
+      <div class="champ">
+        <label class="etiquette">Jusqu'à 6 photos en plus <span class="astuce">(optionnel : tu choisis le format de chacune)</span></label>
+        <div class="zone-depot" id="depot-galerie">➕ <strong>Ajouter une photo</strong></div>
+        <input type="file" id="fichier-galerie" accept="image/*" hidden>
+
+        <div class="recadreur" id="recadreur-galerie">
+          <div class="puces formats-galerie" id="puces-formats"></div>
+          <div class="cadre" id="cadre-galerie"><img id="img-galerie" alt=""><div class="indication">✋ Clique et déplace la photo</div></div>
+          <div class="zoom-ligne">
+            <span class="zoom-mot">Zoom</span>
+            <button type="button" class="btn-zoom" id="zoom-moins-galerie" aria-label="Zoom arrière">−</button>
+            <button type="button" class="btn-zoom" id="zoom-plus-galerie" aria-label="Zoom avant">+</button>
+          </div>
+          <div class="nav-etapes" style="margin-top:12px">
+            <button class="btn btn-retour" onclick="annulerGalerie()">Annuler</button>
+            <button class="btn btn-avant" onclick="garderGalerie()">Valider cette photo</button>
+          </div>
+        </div>
+
+        <div class="vignettes" id="vignettes"></div>
+      </div>
+
+      <div class="champ" id="portraits-participants" style="display:none"><h2>Portraits des personnes</h2><div id="liste-portraits"></div></div>
+
+      <div class="message-erreur" id="erreur-3"></div>
+      <div class="nav-etapes">
+        <button class="btn btn-retour" onclick="aller(2)">Retour</button>
+        <button class="btn btn-avant" onclick="valider3()">Continuer</button>
+      </div>
+    </section>
+
+    <!-- ============ ETAPE 4 : RESEAUX ============ -->
+    <section class="ecran" id="ecran-4">
+      <p class="surtitre">Étape 4 sur 7</p>
+      <h2>Tes liens</h2>
+      <p>Tout est optionnel : mets ce que tu veux qu'on relie à ta page.</p>
+
+      <div class="champ">
+        <label class="etiquette" for="instagram">Instagram</label>
+        <input type="text" id="instagram" placeholder="@toncompte ou le lien">
+      </div>
+      <div class="champ">
+        <label class="etiquette" for="facebook">Facebook</label>
+        <input type="text" id="facebook" placeholder="Le lien de ta page">
+      </div>
+      <div class="champ">
+        <label class="etiquette" for="website">Site web</label>
+        <input type="text" id="website" placeholder="tonsite.fr">
+      </div>
+      <div class="champ">
+        <label class="etiquette" for="other_link">Autre lien <span class="astuce">(SoundCloud, Spotify, Bandcamp…)</span></label>
+        <input type="text" id="other_link">
+      </div>
+
+      <div class="champ">
+        <button type="button" class="btn-inserer" onclick="testerLiens()">🔍 Tester mes liens</button>
+        <div class="liste-test-liens" id="liste-test-liens"></div>
+      </div>
+
+      <div class="champ">
+        <label class="etiquette">Une vidéo sur ta page ? <span class="astuce">(facultatif)</span></label>
+        <div class="duo" id="duo-video">
+          <button class="puce" data-valeur="oui">Oui 🎬</button>
+          <button class="puce choisie" data-valeur="non">Non merci</button>
+        </div>
+      </div>
+
+      <div class="champ" id="champ-video" style="display:none">
+        <label class="etiquette" for="video_url">Le lien YouTube ou Vimeo</label>
+        <input type="url" id="video_url" placeholder="https://…">
+        <div id="apercu-video"></div>
+      </div>
+
+      <div class="message-erreur" id="erreur-4"></div>
+      <div class="nav-etapes">
+        <button class="btn btn-retour" onclick="aller(3)">Retour</button>
+        <button class="btn btn-avant" onclick="valider4()">Continuer</button>
+      </div>
+    </section>
+
+    <section class="ecran" id="ecran-tech">
+      <p class="surtitre">Étape 5 sur 7</p><h2>Besoins techniques</h2>
+      <div class="champ" id="questions-techniques">
+        <div id="tech-artiste" style="display:none">
+          <label class="etiquette" for="tech_duration">Durée de la prestation (en min)</label><input id="tech_duration" type="text" placeholder="Ex. 45 minutes">
+          <label class="etiquette" for="tech_people">Nombre de personnes sur scène</label><input id="tech_people" type="number" min="1">
+          <label class="etiquette" for="tech_sound">Instruments, micros ou appareils à brancher à la sonorisation</label><textarea id="tech_sound" rows="3"></textarea>
+          <label class="etiquette" for="tech_sheet">Fiche technique existante <span class="astuce">(facultatif, PDF, 5 Mo maximum)</span></label><input id="tech_sheet" type="file" accept="application/pdf">
+        </div>
+        <div id="tech-atelier" style="display:none">
+          <label class="etiquette" for="workshop_duration">Durée de l’atelier (en min)</label><input id="workshop_duration" type="text">
+          <label class="etiquette" for="workshop_capacity">Nombre maximum de participant·es</label><input id="workshop_capacity" type="number" min="1">
+          <label class="etiquette" for="workshop_audio">Besoin d’un micro ou d’une enceinte fournie par le festival ?</label><select id="workshop_audio"><option value="">Choisir</option><option>Non</option><option>Micro</option><option>Enceinte</option><option>Micro et enceinte</option></select>
+          <label class="etiquette" for="workshop_electricity">Besoin d’électricité ? Si oui, pour quels appareils ?</label><textarea id="workshop_electricity" rows="2"></textarea>
+          <label class="etiquette" for="workshop_kw">Puissance électrique totale nécessaire (en kW) <span class="astuce">(additionne la puissance de tous tes appareils, indiquée en W sur leur étiquette : 1 000 W = 1 kW. Exemple : une bouilloire de 2 000 W et une lampe de 20 W font environ 2 kW. Si l'étiquette indique des ampères (A), multiplie par 230 pour obtenir des W. Laisse vide si tu n'as pas besoin d'électricité)</span></label><input id="workshop_kw" type="number" min="0" step="0.1" placeholder="Ex. : 1,5">
+        </div>
+        <div id="tech-stand" style="display:none">
+          <label class="etiquette">Surface nécessaire, tente personnelle comprise</label>
+          <div class="duo"><input id="stand_width" type="number" min="0" step="0.1" placeholder="Largeur (m)" aria-label="Largeur en mètres"><input id="stand_depth" type="number" min="0" step="0.1" placeholder="Profondeur (m)" aria-label="Profondeur en mètres"></div>
+          <label class="etiquette" for="stand_electricity">Besoin d’électricité ? Si oui, pour quels appareils ?</label><textarea id="stand_electricity" rows="2"></textarea>
+          <label class="etiquette" for="stand_kw">Puissance électrique totale nécessaire (en kW) <span class="astuce">(additionne la puissance de tous tes appareils, indiquée en W sur leur étiquette : 1 000 W = 1 kW. Exemple : une bouilloire de 2 000 W et une lampe de 20 W font environ 2 kW. Si l'étiquette indique des ampères (A), multiplie par 230 pour obtenir des W. Laisse vide si tu n'as pas besoin d'électricité)</span></label><input id="stand_kw" type="number" min="0" step="0.1" placeholder="Ex. : 1,5">
+        </div>
+        <label class="etiquette" for="other_needs">Autres besoins ou contraintes à signaler ?</label><textarea id="other_needs" rows="2"></textarea>
+      </div>
+      <div class="message-erreur" id="erreur-tech"></div>
+      <div class="nav-etapes"><button class="btn btn-retour" onclick="aller(4)">Retour</button><button class="btn btn-avant" onclick="valider5()">Continuer</button></div>
+    </section>
+
+    <!-- ============ ETAPE 7 : DOCUMENTS ============ -->
+    <section class="ecran" id="ecran-docs">
+      <p class="surtitre">Étape 6 sur 7</p>
+      <h2>Tes documents 📎</h2>
+      <p>Ajoute ton contrat signé<span id="docs-et-paiement"> et la preuve de ton paiement</span>. PDF ou image (JPG, PNG, WebP).</p>
+      <div class="champ" id="boite-contrat-modele" style="display:none">
+        <a class="btn btn-retour" id="lien-contrat" href="#" target="_blank" rel="noopener">📄 Télécharger le contrat à signer</a>
+      </div>
+      <div class="champ" id="boite-contrat">
+        <label class="etiquette obligatoire" for="contract_file">Ton contrat signé <span class="astuce">(PDF ou image, 10 Mo maximum)</span></label>
+        <input type="file" id="contract_file" accept="application/pdf,image/jpeg,image/png,image/webp">
+      </div>
+      <div class="champ" id="boite-paiement" style="display:none">
+        <label class="etiquette obligatoire" for="payment_proof">Preuve de ton paiement <span class="astuce">(capture d'écran ou PDF de ta confirmation HelloAsso ou de ton virement, 5 Mo maximum)</span></label>
+        <input type="file" id="payment_proof" accept="application/pdf,image/jpeg,image/png,image/webp">
+        <p class="aide" id="paiement-info"></p>
+      </div>
+      <div class="message-erreur" id="erreur-docs"></div>
+      <div class="nav-etapes"><button class="btn btn-retour" onclick="aller('tech')">Retour</button><button class="btn btn-avant" onclick="validerDocs()">Continuer</button></div>
+    </section>
+
+    <!-- ============ ETAPE 6 : RECAP ============ -->
+    <section class="ecran" id="ecran-7">
+      <p class="surtitre">Étape 7 sur 7</p>
+      <h2>Ton récapitulatif 👀</h2>
+      <p>Vérifie tes informations pour préparer ta participation et nos supports de communication.</p>
+
+      <div id="recap"></div>
+
+      <div class="consentement-boite" id="boite-consent">
+        <div class="consentement-interieur">
+          <div class="titre-consent">⚠️ Avant d'envoyer, une chose importante</div>
+          <label class="consentement">
+            <input type="checkbox" id="consent">
+            <span>J'autorise le festival à utiliser ces textes et photos pour sa communication (site web, réseaux sociaux, supports imprimés) et je confirme avoir les droits sur ces contenus.</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="message-erreur" id="erreur-7"></div>
+
+      <div class="envoi-progression" id="envoi-progression" role="status" aria-live="polite">
+        <div class="ep-titre">⏳ Envoi en cours : ne ferme pas cette page</div>
+        <div class="rail"><div class="remplissage" id="remplissage"></div></div>
+        <div class="texte-envoi" id="texte-envoi">Envoi en cours… Merci de garder cette page ouverte pendant le traitement de tes informations.</div>
+      </div>
+
+      <div class="nav-etapes" id="nav-7">
+        <button class="btn btn-retour" onclick="aller('docs')">Retour</button>
+        <button class="btn btn-avant" id="btn-envoyer" onclick="envoyer()">Envoyer ma page 🕊️</button>
+      </div>
+    </section>
+
+    <!-- ============ MERCI ============ -->
+    <section class="ecran" id="ecran-merci">
+      <img class="colibri-final" src="colibri-droit.png" alt="">
+      <h1 id="titre-merci">Merci ! 🎉</h1>
+      <p class="intro">Tes informations ont bien été reçues. Elles nous aideront à préparer ta participation et les supports de communication du festival : site, réseaux sociaux, affiches…</p>
+      <p class="intro" style="margin-top:10px"><strong>À très vite au festival ! 🌈</strong></p>
+    </section>
+
+  </main>
+
+  <div class="pied">Festival Mantra Joie · Tes infos servent à préparer ta participation et à te contacter. · <span id="version-form"></span></div>
+  <div class="pied" style="margin-top:6px">Créé par <a href="https://holly-berridge.netlify.app" target="_blank" rel="noopener" style="color:inherit">Holly Berridge</a> <a class="porte" href="equipe.html" rel="nofollow">portail</a></div>
+</div>
+
+<script>document.addEventListener('DOMContentLoaded', () => { document.getElementById('version-form').textContent = CONFIG.version; });</script>
+
+<script>
+/* ================================================================
+   BLOC CONFIG - c'est ici qu'on rhabille pour un autre festival
+   Les cles JSON suivent le schema partage (schema-partage.md) :
+   ne jamais les renommer sans changer le script Apps Script aussi.
+   ================================================================ */
+const CONFIG = {
+  version:   'v3.19-2027',   // affiche en bas de page, doit correspondre au script
+  festival:  'Festival Mantra Joie',
+  code:      'MANTRA2027',
+  scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
+  categories: ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'],
+  typesArtiste: ['DJ ecstatic', 'Cercle de chants', 'Sieste musicale', 'Spectacle', 'Concert', 'Musicien accompagnant'],
+  couleursConfettis: ['#A44FC4', '#6E5BD0', '#2BB8C4', '#F0663C', '#E0A93B']
+};
+
+// Formats de la galerie (pixels du rendu final)
+const FORMATS = {
+  square:     { w: 1080, h: 1080, label: 'Carré' },
+  vertical:   { w: 1080, h: 1350, label: 'Vertical' },
+  horizontal: { w: 1620, h: 1080, label: 'Horizontal' }
+};
+/* ================================================================ */
+
+const etat = {
+  category: '', artist_type: '',
+  featured_image: null,          // dataURL JPEG 1200x630
+  featured_original: null,       // copie sociale non recadree, max 2048 px
+  gallery: [],                   // [{ data, format, original }]
+  video: 'non'
+};
+let etapeCourante = 0;
+
+const $ = id => document.getElementById(id);
+const valeur = id => $(id).value.trim();
+
+// ------------------ Navigation + colibri ------------------
+// Les étapes du formulaire final, dans l'ordre. « docs » : contrat signé et preuve de paiement.
+const ETAPES = [1, 2, 3, 4, 'tech', 'docs', 7];
+const NOMS_ETAPES = { 1: 'Qui es-tu', 2: 'Tes mots', 3: 'Photos', 4: 'Liens', tech: 'Technique', docs: 'Documents', 7: 'Récap' };
+let etapeMax = -1;   // la plus lointaine étape déjà atteinte : on peut revenir sur toutes celles-là, pas sauter en avant
+
+function construireOnglets() {
+  const zone = $('onglets-inscription');
+  if (zone.childElementCount) return;
+  ETAPES.forEach((e, k) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.etape = String(e);
+    b.title = (k + 1) + '. ' + NOMS_ETAPES[e]; b.setAttribute('aria-label', 'Étape ' + (k + 1) + ' : ' + NOMS_ETAPES[e]);
+    const num = document.createElement('span'); num.className = 'num'; num.textContent = String(k + 1);
+    const nom = document.createElement('span'); nom.className = 'nom'; nom.textContent = NOMS_ETAPES[e];
+    b.appendChild(num); b.appendChild(nom);
+    b.addEventListener('click', () => allerOnglet(e));
+    zone.appendChild(b);
+  });
+}
+function majFil(n) {
+  const k = ETAPES.indexOf(n);
+  $('fil-inscription').hidden = k < 0;
+  if (k < 0) return;
+  construireOnglets();
+  etapeMax = Math.max(etapeMax, k);
+  document.querySelectorAll('#onglets-inscription button').forEach((b, idx) => {
+    b.setAttribute('aria-selected', String(idx === k));
+    b.disabled = idx > etapeMax;
+  });
+  const cat = $('fil-categorie');
+  if (etat.category) { cat.textContent = 'Ma catégorie : ' + etat.category + (etat.artist_type ? ' · ' + etat.artist_type : ''); cat.hidden = false; }
+  else cat.hidden = true;
+}
+function allerOnglet(e) {
+  if (ETAPES.indexOf(e) > etapeMax) return;     // pas de saut en avant : chaque étape se valide avec « Continuer »
+  if (e === 7) construireRecap();
+  aller(e);
+}
+
+function aller(n) {
+  document.querySelectorAll('.ecran').forEach(e => e.classList.remove('actif'));
+  $(n === 'merci' ? 'ecran-merci' : 'ecran-' + n).classList.add('actif');
+  etapeCourante = n;
+  majColibri(n);
+  majFil(n);
+  if (n === 'docs') afficherDocuments();
+  if (n === 7) setTimeout(() => $('boite-consent').scrollIntoView({ behavior: 'smooth', block: 'center' }), 700);
+  else window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function majColibri(n) {
+  const sentier = $('sentier');
+  if (n === 0 || n === 'benevole' || n === 'acces' || String(n).indexOf('cand') === 0) { sentier.hidden = true; return; }
+  sentier.hidden = false;
+  const etape = n === 'merci' ? ETAPES.length : ETAPES.indexOf(n) + 1;
+  const largeur = sentier.offsetWidth - 76;
+  $('colibri').style.left = (12 + largeur * (etape - 1) / (ETAPES.length - 1)) + 'px';
+  document.querySelectorAll('.fleur').forEach(f => {
+    f.classList.toggle('eclose', Number(f.dataset.etape) < etape || n === 'merci');
+  });
+}
+window.addEventListener('resize', () => majColibri(etapeCourante));
+
+function erreur(n, msg) {
+  const e = $('erreur-' + n);
+  e.textContent = msg; e.classList.add('visible');
+  clearTimeout(e._t);
+  e._t = setTimeout(() => e.classList.remove('visible'), 8000);
+}
+// Le message d'erreur disparaît dès que la personne corrige quelque chose.
+function effacerErreur(n) {
+  const e = $('erreur-' + n);
+  if (!e) return;
+  clearTimeout(e._t);
+  e.classList.remove('visible');
+}
+
+// ------------------ Ecran 0 ------------------
+function verifierCode() {
+  const code = valeur('access_code').toUpperCase();
+  if (!code) return erreur('acces', 'Il te faut le code d\u2019acc\u00e8s du festival pour continuer.');
+  if (code !== CONFIG.code) return erreur('acces', 'Ce code ne correspond pas. V\u00e9rifie le message que tu as re\u00e7u.');
+  aller(1);
+}
+
+// ------------------ Etape 1 ------------------
+function creerPuces(conteneur, valeurs, auClic) {
+  const c = $(conteneur);
+  valeurs.forEach(v => {
+    const b = document.createElement('button');
+    b.className = 'puce'; b.type = 'button'; b.textContent = v;
+    b.onclick = () => {
+      c.querySelectorAll('.puce').forEach(p => p.classList.remove('choisie'));
+      b.classList.add('choisie');
+      auClic(v);
+    };
+    c.appendChild(b);
+  });
+}
+creerPuces('puces-categorie', CONFIG.categories, v => {
+  etat.category = v;
+  const artiste = (v === 'Artiste');
+  $('champ-type').style.display = artiste ? 'block' : 'none';
+  // Artiste : prenom et nom optionnels. Toutes les autres categories : requis.
+  $('etiquette-prenom').classList.toggle('obligatoire', !artiste);
+  $('etiquette-nom').classList.toggle('obligatoire', !artiste);
+  // Titre / activite : cache pour les artistes, libelle adapte aux ateliers
+  $('champ-title-pro').style.display = artiste ? 'none' : 'block';
+  $('etiquette-title-pro').innerHTML = (v === 'Atelier')
+    ? 'Le titre de ton atelier <span class="astuce">(ex : \u00ab Danse intuitive \u00bb, \u00ab Cercle de parole \u00bb, \u00ab Yoga du rire \u00bb)</span>'
+    : 'Ton titre ou ton activit\u00e9 <span class="astuce">(ex : \u00ab C\u00e9ramiste \u00bb, \u00ab Facilitatrice de cercles de femmes \u00bb, \u00ab Cuisine vivante \u00bb)</span>';
+  $('champ-membres').style.display = groupeActif() ? 'block' : 'none';
+  $('membres-details').style.display = groupeActif() ? 'block' : 'none';
+  $('portraits-participants').style.display = groupeActif() ? 'block' : 'none';
+  actualiserMembres();
+  ['tech-artiste','tech-atelier','tech-stand'].forEach(id => $(id).style.display = 'none');
+  if (artiste || v === 'Atelier' || v === 'Bien-être' || v === 'Artisan')
+    $(artiste ? 'tech-artiste' : v === 'Atelier' ? 'tech-atelier' : 'tech-stand').style.display = 'block';
+  if (!artiste) etat.artist_type = '';
+});
+creerPuces('puces-type', CONFIG.typesArtiste, v => { etat.artist_type = v; });
+
+function valider1() {
+  if (!etat.category) return erreur(1, 'Choisis ta cat\u00e9gorie.');
+  if (etat.category === 'Artiste' && !etat.artist_type)
+    return erreur(1, 'Choisis ton type d\u2019artiste.');
+  if (!valeur('name')) return erreur(1, 'Le nom sous lequel on te pr\u00e9sentera au public est indispensable.');
+  if (etat.category !== 'Artiste' && (!valeur('first_name') || !valeur('last_name')))
+    return erreur(1, 'Ton pr\u00e9nom et ton nom de famille sont n\u00e9cessaires.');
+  if (!valeur('phone')) return erreur(1, 'Ajoute ton numéro de téléphone.');
+  if (!valeur('email') || !/^\S+@\S+\.\S+$/.test(valeur('email')))
+    return erreur(1, 'Un email valide nous permet de te joindre si besoin.');
+  if (groupeActif() && Array.from(document.querySelectorAll('.membre')).some(el => !el.querySelector('.membre-prenom').value.trim() || !el.querySelector('.membre-nom').value.trim() || !el.querySelector('.membre-bio').value.trim())) return erreur(1, 'Ajoute le nom et la bio de chaque personne.');
+  majMotsCles();
+  aller(2);
+}
+
+// ------------------ Etape 2 : insertion + jauges ------------------
+function nomEtTitre() {
+  const n = valeur('name'), t = valeur('title_pro');
+  return t ? n + ', ' + t : n;
+}
+function inserer(idChamp, texte) {
+  if (!texte) return;
+  const el = $(idChamp);
+  const debut = el.selectionStart ?? el.value.length;
+  const fin = el.selectionEnd ?? el.value.length;
+  const avant = el.value.slice(0, debut), apres = el.value.slice(fin);
+  const espace = avant && !avant.endsWith(' ') && !avant.endsWith('\n') ? ' ' : '';
+  el.value = avant + espace + texte + apres;
+  el.focus();
+  el.dispatchEvent(new Event('input'));
+}
+
+function autoGrow(el) { el.style.height = 'auto'; el.style.height = (el.scrollHeight + 2) + 'px'; }
+
+// Jauge snippet : minimum 70 caracteres (en dessous, Google ignore la
+// description), zone verte 70 a 170. Le repere sur la barre marque le minimum.
+$('snippet').addEventListener('input', function () {
+  autoGrow(this);
+  const n = this.value.length;
+  const niveau = $('jauge-snippet'), texte = $('jauge-snippet-texte');
+  niveau.style.width = Math.min(100, n / 170 * 100) + '%';
+  const vert = n >= 70 && n <= 170;
+  niveau.classList.toggle('vert', vert);
+  texte.classList.toggle('vert', vert);
+  texte.textContent = n + ' caract\u00e8res' +
+    (vert ? ' \u00b7 pile la bonne longueur pour Google \u2728'
+          : n > 170 ? ' \u00b7 Google coupera sans doute la fin, mais rien de grave'
+          : ' \u00b7 minimum 70 pour que Google puisse l\u2019utiliser');
+});
+
+// Jauge presentation : 300 = minimum conseille (le repere au milieu de la
+// barre), et plus long est encore mieux. Jamais de plafond.
+$('presentation').addEventListener('input', function () {
+  autoGrow(this);
+  const n = this.value.length;
+  const niveau = $('jauge-presentation'), texte = $('jauge-presentation-texte');
+  niveau.style.width = Math.min(100, n / 600 * 100) + '%';
+  const vert = n >= 300;
+  niveau.classList.toggle('vert', vert);
+  texte.classList.toggle('vert', vert);
+  texte.textContent = n + ' caract\u00e8res' +
+    (vert ? ' \u00b7 minimum atteint, et plus long est encore mieux \u2728'
+          : ' \u00b7 le trait marque le minimum conseill\u00e9 de 300');
+  majMotsCles();
+});
+$('bio').addEventListener('input', function () { autoGrow(this); });
+
+// Indicateur de repetition des mots-cles : encourage, ne bloque jamais.
+// Les memes mots dans le titre, la phrase courte et le texte (repetes une
+// ou deux fois) aident la page a etre trouvee.
+function motsCles() { return valeur('title_pro') || etat.artist_type || ''; }
+const normaliser = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+function majMotsCles() {
+  const el = $('mots-cles-texte');
+  const kw = motsCles();
+  if (!kw) { el.textContent = ''; return; }
+  const n = normaliser(valeur('presentation')).split(normaliser(kw)).length - 1;
+  el.classList.toggle('vert', n >= 1);
+  if (n === 0) el.textContent = `Astuce : \u00ab ${kw} \u00bb n'appara\u00eet pas encore dans ton texte. L'ajouter une ou deux fois aidera ta page \u00e0 \u00eatre trouv\u00e9e.`;
+  else if (n === 1) el.textContent = `\u00ab ${kw} \u00bb appara\u00eet 1 fois dans ton texte. Une deuxi\u00e8me fois, c'est encore mieux \u2728`;
+  else el.textContent = `\u00ab ${kw} \u00bb appara\u00eet ${n} fois dans ton texte, parfait \u2728`;
+}
+$('title_pro').addEventListener('input', majMotsCles);
+
+function valider2() {
+  if (!valeur('snippet')) return erreur(2, 'Ta phrase courte donne envie de te d\u00e9couvrir, ne la saute pas.');
+  if (valeur('snippet').length < 70)
+    return erreur(2, 'Ta phrase courte fait moins de 70 caract\u00e8res : Google ne pourrait pas l\u2019utiliser. Ajoute quelques mots.');
+  if (!valeur('presentation')) return erreur(2, 'Quelques lignes de pr\u00e9sentation et ta page prend vie.');
+  afficherPortraits();
+  aller(3);
+}
+
+// ------------------ Recadreur reutilisable ------------------
+function creerRecadreur(idCadre, idImage, idMoins, idPlus) {
+  const cadre = $(idCadre), img = $(idImage);
+  const indication = cadre.querySelector('.indication');
+  const r = { cadre, img, actif: null, facteur: 1 };
+
+  r.demarrer = (ratioLargeurHauteur) => {
+    cadre.style.aspectRatio = ratioLargeurHauteur;
+    // Attendre que le navigateur applique le nouveau ratio avant de mesurer
+    requestAnimationFrame(() => {
+      const cw = cadre.clientWidth, ch = cadre.clientHeight;
+      const iw = img.naturalWidth, ih = img.naturalHeight;
+      const echelleMin = Math.max(cw / iw, ch / ih);
+      r.facteur = 1;
+      r.actif = { iw, ih, cw, ch, echelleMin, echelle: echelleMin,
+                  x: (cw - iw * echelleMin) / 2, y: (ch - ih * echelleMin) / 2 };
+      if (indication) indication.classList.remove('cachee');
+      r.dessiner();
     });
+  };
+
+  r.dessiner = () => {
+    const a = r.actif;
+    const w = a.iw * a.echelle, h = a.ih * a.echelle;
+    a.x = Math.min(0, Math.max(a.cw - w, a.x));
+    a.y = Math.min(0, Math.max(a.ch - h, a.y));
+    img.style.transform = `translate(${a.x}px, ${a.y}px) scale(${a.echelle})`;
+  };
+
+  // Zoom par boutons - / + , centre sur le milieu du cadre
+  function zoomer(delta) {
+    const a = r.actif; if (!a) return;
+    r.facteur = Math.min(3, Math.max(1, r.facteur + delta));
+    const nouvelle = a.echelleMin * r.facteur;
+    const cx = a.cw / 2, cy = a.ch / 2;
+    a.x = cx - (cx - a.x) * (nouvelle / a.echelle);
+    a.y = cy - (cy - a.y) * (nouvelle / a.echelle);
+    a.echelle = nouvelle;
+    r.dessiner();
   }
-  const enAttente = {};
-  emailsEnAttente_().forEach(function (m) { enAttente[m.id] = true; });
-  const H = CANDIDATURES_HEADERS;
-  const items = [];
-  if (cand && cand.getLastRow() >= 2) {
-    cand.getRange(2, 1, cand.getLastRow() - 1, H.length).getValues().forEach(function (v) {
-      if (!v[H.indexOf('id')]) return;
-      const id = v[H.indexOf('id')];
-      const s = statuts[id] || {};
-      items.push({
-        id: id,
-        date: eqDate_(v[H.indexOf('Date')]),
-        pole: v[H.indexOf('Pôle')], projet: v[H.indexOf('Projet')], formule: v[H.indexOf('Formule')],
-        prenom: v[H.indexOf('Prénom')], nom: v[H.indexOf('Nom')], email: v[H.indexOf('Email')], telephone: String(v[H.indexOf('Téléphone')] || ''),
-        dossier: String(v[H.indexOf('Dossier Drive')] || ''), fiche: String(v[H.indexOf('Fiche')] || ''),
-        selection: s['Sélection'] || '', dossier_final: s['Dossier final'] || '', paiement: s['Paiement'] || '', confirmation: s['Confirmation'] || '',
-        alerte: String(s['Alerte'] || ''), email_a_envoyer: !!enAttente[id]
-      });
-    });
-  }
-  items.reverse();
-  return { ok: true, items: items, config: eqConfig_(), version: VERSION };
+  $(idMoins).onclick = () => zoomer(-0.25);
+  $(idPlus).onclick = () => zoomer(0.25);
+
+  let saisi = false, dx = 0, dy = 0;
+  cadre.addEventListener('pointerdown', e => {
+    if (!r.actif) return;
+    if (indication) indication.classList.add('cachee');
+    saisi = true; dx = e.clientX; dy = e.clientY;
+    cadre.classList.add('saisi'); cadre.setPointerCapture(e.pointerId);
+  });
+  cadre.addEventListener('pointermove', e => {
+    if (!saisi || !r.actif) return;
+    r.actif.x += e.clientX - dx; r.actif.y += e.clientY - dy;
+    dx = e.clientX; dy = e.clientY;
+    r.dessiner();
+  });
+  cadre.addEventListener('pointerup', () => { saisi = false; cadre.classList.remove('saisi'); });
+
+  // Rendu final : reporte le cadrage sur un canvas aux dimensions cibles,
+  // puis baisse la qualite JPEG jusqu'a passer sous le poids maxi
+  r.exporter = (largeur, hauteur, maxKo) => {
+    const a = r.actif;
+    const canvas = document.createElement('canvas');
+    canvas.width = largeur; canvas.height = hauteur;
+    const ctx = canvas.getContext('2d');
+    const facteur = largeur / a.cw;
+    ctx.drawImage(img, a.x * facteur, a.y * facteur, a.iw * a.echelle * facteur, a.ih * a.echelle * facteur);
+    let qualite = 0.85, dataUrl = canvas.toDataURL('image/jpeg', qualite);
+    while (dataUrl.length * 0.75 > maxKo * 1024 && qualite > 0.5) {
+      qualite -= 0.07;
+      dataUrl = canvas.toDataURL('image/jpeg', qualite);
+    }
+    return dataUrl;
+  };
+
+  return r;
 }
 
-// Réglages du Portail : logo, grande image, nom de l'édition, dossier Drive principal.
-// Une image est soit une adresse https, soit un nom de fichier du dépôt (ex. logo.png).
-function eqImageSure_(valeur) {
-  const v = String(valeur || '').trim();
-  if (/^https:\/\/[^\s"'<>()]+$/i.test(v)) return v;
-  if (/^[\w.\-\/]+\.(png|jpe?g|webp|svg|gif)$/i.test(v)) return v;
+function chargerImage(input, img, ensuite) {
+  const f = input.files[0];
+  if (!f) return;
+  const url = URL.createObjectURL(f);
+  img.onload = () => { URL.revokeObjectURL(url); ensuite(); };
+  img.src = url;
+}
+
+// ------------------ Photo principale ------------------
+const recPrincipal = creerRecadreur('cadre-principal', 'img-principal', 'zoom-moins-principal', 'zoom-plus-principal');
+
+$('depot-principal').onclick = () => $('fichier-principal').click();
+$('fichier-principal').onchange = e => {
+  chargerImage(e.target, $('img-principal'), () => {
+    $('depot-principal').style.display = 'none';
+    $('apercu-principal').style.display = 'none';
+    $('recadreur-principal').style.display = 'block';
+    recPrincipal.demarrer('1200 / 630');
+  });
+};
+function annulerPrincipal() {
+  $('recadreur-principal').style.display = 'none';
+  $('depot-principal').style.display = 'block';
+  $('fichier-principal').value = '';
+}
+// Copie sociale : la photo d'origine, non recadree, max 2048 px sur le grand
+// cote, JPEG haute qualite plafonne a ~1 Mo. Assez grand pour Instagram et
+// Facebook, assez leger pour l'envoi. Les HEIC iPhone deviennent des JPEG.
+function copieSociale(img) {
+  const ratio = Math.min(1, 2048 / Math.max(img.naturalWidth, img.naturalHeight));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(img.naturalWidth * ratio);
+  canvas.height = Math.round(img.naturalHeight * ratio);
+  canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+  let qualite = 0.85, dataUrl = canvas.toDataURL('image/jpeg', qualite);
+  while (dataUrl.length * 0.75 > 1024 * 1024 && qualite > 0.6) {
+    qualite -= 0.07;
+    dataUrl = canvas.toDataURL('image/jpeg', qualite);
+  }
+  return dataUrl;
+}
+
+function garderPrincipal() {
+  etat.featured_image = recPrincipal.exporter(1200, 630, 200);
+  etat.featured_original = copieSociale($('img-principal'));
+  $('image-apercu').src = etat.featured_image;
+  $('recadreur-principal').style.display = 'none';
+  $('apercu-principal').style.display = 'block';
+}
+function refairePrincipal() {
+  etat.featured_image = null;
+  etat.featured_original = null;
+  $('apercu-principal').style.display = 'none';
+  $('depot-principal').style.display = 'block';
+  $('fichier-principal').value = '';
+}
+
+// ------------------ Galerie : un recadreur par photo ------------------
+const recGalerie = creerRecadreur('cadre-galerie', 'img-galerie', 'zoom-moins-galerie', 'zoom-plus-galerie');
+let formatCourant = 'square';
+
+// Puces de format : changer de format relance le cadrage sur la meme photo
+creerPuces('puces-formats', Object.keys(FORMATS).map(k => FORMATS[k].label), label => {
+  formatCourant = Object.keys(FORMATS).find(k => FORMATS[k].label === label);
+  const f = FORMATS[formatCourant];
+  $('cadre-galerie').classList.toggle('vertical', formatCourant === 'vertical');
+  recGalerie.demarrer(f.w + ' / ' + f.h);
+});
+
+$('depot-galerie').onclick = () => {
+  if (etat.gallery.length >= 6) return erreur(3, '6 photos en plus, c\u2019est d\u00e9j\u00e0 un bel album !');
+  $('fichier-galerie').click();
+};
+$('fichier-galerie').onchange = e => {
+  chargerImage(e.target, $('img-galerie'), () => {
+    $('depot-galerie').style.display = 'none';
+    $('recadreur-galerie').style.display = 'block';
+    formatCourant = 'square';
+    const puces = document.querySelectorAll('#puces-formats .puce');
+    puces.forEach((p, i) => p.classList.toggle('choisie', i === 0));
+    $('cadre-galerie').classList.remove('vertical');
+    recGalerie.demarrer('1080 / 1080');
+  });
+};
+function annulerGalerie() {
+  $('recadreur-galerie').style.display = 'none';
+  $('depot-galerie').style.display = 'block';
+  $('fichier-galerie').value = '';
+}
+function garderGalerie() {
+  const f = FORMATS[formatCourant];
+  etat.gallery.push({
+    data: recGalerie.exporter(f.w, f.h, 350),
+    format: formatCourant,
+    original: copieSociale($('img-galerie'))
+  });
+  annulerGalerie();
+  afficherVignettes();
+}
+function afficherVignettes() {
+  const c = $('vignettes');
+  c.innerHTML = '';
+  etat.gallery.forEach((g, i) => {
+    const v = document.createElement('div');
+    v.className = 'vignette';
+    v.innerHTML = `<img src="${g.data}" alt="Photo ${i + 2}">
+      <button class="retirer" aria-label="Retirer cette photo">✕</button>
+      <div class="badge">${FORMATS[g.format].label}</div>`;
+    v.querySelector('.retirer').onclick = () => { etat.gallery.splice(i, 1); afficherVignettes(); };
+    c.appendChild(v);
+  });
+}
+function valider3() {
+  if (!etat.featured_image) {
+    const enCours = $('recadreur-principal').style.display === 'block';
+    return erreur(3, enCours
+      ? 'Ta photo est presque pr\u00eate : clique sur \u00ab Valider la photo principale \u00bb pour la garder.'
+      : 'Ajoute et valide ta photo principale avant de continuer : c\u2019est elle qui fait briller ta page.');
+  }
+  if (groupeActif() && Array.from(document.querySelectorAll('.membre')).some(el => !el.portraitData)) return erreur(3, 'Ajoute et valide le portrait de chaque personne.');
+  aller(4);
+}
+
+// ------------------ Etape 4 : normalisation des liens ------------------
+function normaliserLien(id) {
+  const el = $(id);
+  let v = el.value.trim();
+  if (!v) return;
+  if (id === 'instagram' && v.startsWith('@')) v = 'https://instagram.com/' + v.slice(1);
+  if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
+  try { new URL(v); el.value = v; el.style.borderColor = ''; }
+  catch (e) { el.style.borderColor = 'var(--erreur)'; }
+}
+['instagram', 'facebook', 'website', 'other_link'].forEach(id => {
+  $(id).addEventListener('blur', () => normaliserLien(id));
+});
+function valider4() {
+  let ok = true;
+  ['instagram', 'facebook', 'website', 'other_link'].forEach(id => {
+    normaliserLien(id);
+    const v = valeur(id);
+    if (v) { try { new URL(v); } catch (e) { ok = false; } }
+  });
+  if (!ok) return erreur(4, 'Un des liens semble incomplet. V\u00e9rifie celui qui est encadr\u00e9 en rouge.');
+  if (etat.video === 'oui' && !valeur('video_url')) return erreur(4, 'Colle le lien de ta vid\u00e9o, ou choisis \u00ab Non merci \u00bb.');
+  aller('tech');
+}
+
+// Tester mes liens : affiche chaque lien rempli en cliquable, pour verifier
+// qu'il mene au bon endroit avant de continuer
+function testerLiens() {
+  const zone = $('liste-test-liens');
+  ['instagram', 'facebook', 'website', 'other_link'].forEach(id => normaliserLien(id));
+  const liens = ['instagram', 'facebook', 'website', 'other_link'].map(id => valeur(id)).filter(Boolean);
+  if (!liens.length) { zone.innerHTML = '<div class="aide">Aucun lien \u00e0 tester pour l\u2019instant.</div>'; return; }
+  zone.innerHTML = '<div class="aide">Clique sur chaque lien pour v\u00e9rifier qu\u2019il m\u00e8ne au bon endroit :</div>' +
+    liens.map(v => `<a href="${echapper(v)}" target="_blank" rel="noopener">${echapper(v)} \u2197</a>`).join('');
+}
+
+// Apercu video : vignette YouTube cliquable (image publique, aucun code
+// externe), simple lien cliquable pour Vimeo et le reste
+function idYoutube(url) {
+  const m = (url || '').match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+  return m ? m[1] : null;
+}
+function apercuVideoHtml(url) {
+  const id = idYoutube(url);
+  if (id) return `<a class="video-lien" href="${echapper(url)}" target="_blank" rel="noopener"><img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" alt="Aper\u00e7u de la vid\u00e9o"><span class="jouer">\u25b6</span></a>`;
+  if (url) return `<div class="liste-test-liens"><a href="${echapper(url)}" target="_blank" rel="noopener">${echapper(url)} \u2197</a></div>`;
   return '';
 }
+function majApercuVideo() {
+  const v = valeur('video_url');
+  $('apercu-video').innerHTML = apercuVideoHtml(v) +
+    (v ? '<div class="aide">Clique pour v\u00e9rifier que c\u2019est la bonne vid\u00e9o.</div>' : '');
+}
+$('video_url').addEventListener('input', majApercuVideo);
 
-function eqConfig_() {
-  const r = lireReglages_();
+// ------------------ Etape 5 ------------------
+document.querySelectorAll('#duo-video .puce').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('#duo-video .puce').forEach(p => p.classList.remove('choisie'));
+    b.classList.add('choisie');
+    etat.video = b.dataset.valeur;
+    $('champ-video').style.display = etat.video === 'oui' ? 'block' : 'none';
+  };
+});
+// Pôle payant : une preuve de paiement est demandée. On regarde la configuration du serveur (onglet Pôles, colonne Payant).
+async function poleEstPayant() {
+  try {
+    if (!derniereConfig && CONFIG.scriptUrl.startsWith('https://script.google.com/')) {
+      const r = await fetch(CONFIG.scriptUrl + '?action=config');
+      const c = await r.json();
+      if (c && c.ok) derniereConfig = c;
+    }
+  } catch (e) { /* configuration indisponible : on traite le champ comme facultatif */ }
+  const p = derniereConfig && (derniereConfig.poles || []).find(x => x.nom === etat.category);
+  return p ? !!p.payant : null;   // null : on ne sait pas
+}
+async function afficherDocuments() {
+  const payant = await poleEstPayant();
+  const cfg = derniereConfig || {};
+  $('boite-paiement').style.display = payant === false ? 'none' : 'block';
+  $('boite-paiement').querySelector('label').classList.toggle('obligatoire', payant === true);
+  $('paiement-info').textContent = payant === null ? 'Si ta participation est payante, ajoute ici ta preuve de paiement.' : '';
+  $('docs-et-paiement').style.display = payant === false ? 'none' : 'inline';
+  const modele = /^https:\/\//.test(cfg.lien_contrat || '');
+  $('boite-contrat-modele').style.display = modele ? 'block' : 'none';
+  if (modele) $('lien-contrat').href = cfg.lien_contrat;
+  $('boite-contrat').querySelector('label').classList.toggle('obligatoire', cfg.contrat_obligatoire !== false);
+  return payant;
+}
+function verifierFichierDoc(file, maxMo, nom) {
+  if (!file) return '';
+  if (!/^(application\/pdf|image\/(jpeg|png|webp))$/.test(file.type)) return nom + ' doit être un PDF ou une image (JPG, PNG, WebP).';
+  if (file.size > maxMo * 1024 * 1024) return nom + ' doit faire moins de ' + maxMo + ' Mo.';
+  return '';
+}
+// Retourne le message à montrer, ou '' si les documents sont en ordre.
+function problemeDocuments(payant) {
+  const contrat = $('contract_file').files[0], preuve = $('payment_proof').files[0];
+  const contratObligatoire = !derniereConfig || derniereConfig.contrat_obligatoire !== false;
+  if (contratObligatoire && !contrat) return 'Ajoute ton contrat signé (PDF ou image).';
+  if (payant === true && !preuve) return 'Ajoute la preuve de ton paiement (capture d’écran ou PDF).';
+  return verifierFichierDoc(contrat, 10, 'Le contrat') || verifierFichierDoc(preuve, 5, 'La preuve de paiement');
+}
+async function validerDocs() {
+  const payant = await afficherDocuments();
+  const probleme = problemeDocuments(payant);
+  if (probleme) return erreur('docs', probleme);
+  construireRecap();
+  aller(7);
+}
+function valider5() {
+  if (etat.category === 'Artiste' && $('tech_sheet').files[0] && $('tech_sheet').files[0].size > 5 * 1024 * 1024)
+    return erreur('tech', 'La fiche technique doit faire moins de 5 Mo.');
+  aller('docs');
+}
+
+// ------------------ Etape 6 : recap facon page finale ------------------
+function echapper(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+// Les deux titres, memes regles que le script (schema partage)
+function titres() {
+  const name = valeur('name'), titlePro = valeur('title_pro');
+  if (etat.category === 'Artiste') {
+    return {
+      postTitle: name,
+      seoTitle: name + (etat.artist_type ? ' - ' + etat.artist_type : '')
+    };
+  }
   return {
-    logo: eqImageSure_(r.logo_portail),
-    image: eqImageSure_(r.image_accueil),
-    edition: String(r.edition || FESTIVAL),
-    mode: String(r.mode_envoi || 'TEST').trim().toUpperCase() === 'REEL' ? 'REEL' : 'TEST',
-    drive: 'https://drive.google.com/drive/folders/' + ROOT_FOLDER_ID
+    postTitle: titlePro || name,
+    seoTitle: (titlePro ? titlePro + ' - ' : '') + name
   };
 }
 
-// Date lisible : 09/10/2026 15:26 (Google Sheets renvoie un objet Date, pas du texte).
-function eqDate_(valeur) {
-  if (!valeur) return '';
-  if (typeof valeur.getTime === 'function') return Utilities.formatDate(valeur, 'Europe/Paris', 'dd/MM/yyyy HH:mm');
-  const s = String(valeur);
-  const m = s.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2})$/);
-  return m ? m[3] + '/' + m[2] + '/' + m[1] + ' ' + m[4] : s;
+function construireRecap() {
+  const t = titres();
+  const surtitre = etat.category + (etat.artist_type ? ' \u00b7 ' + etat.artist_type : '');
+  const liens = ['instagram', 'facebook', 'website', 'other_link']
+    .map(id => valeur(id)).filter(Boolean)
+    .map(v => `<a href="${echapper(v)}" target="_blank" rel="noopener">${echapper(v)}</a>`)
+    .join('<br>');
+  const galerie = etat.gallery.map((g, i) =>
+    `<div class="mini"><img src="${g.data}" alt=""><span>${FORMATS[g.format].label}</span></div>`).join('');
+
+  $('recap').innerHTML = `
+    <div class="apercu-page">
+      <img class="une" src="${etat.featured_image}" alt="">
+      <div class="corps">
+        <p class="surtitre">${echapper(surtitre)}</p>
+        <h3>${echapper(t.postTitle)}</h3>
+        ${valeur('subtitle') ? `<p class="sous-titre">${echapper(valeur('subtitle'))}</p>` : ''}
+        <div class="apercu-google">
+          <div class="legende">Ce que Google pourra afficher</div>
+          <div class="g-ligne">
+            <div class="g-texte">
+              <div class="g-titre">${echapper(t.seoTitle)} - ${echapper(CONFIG.festival)}</div>
+              <div class="g-snippet">${echapper(valeur('snippet'))}</div>
+            </div>
+            <img class="g-thumb" src="${etat.featured_image}" alt="">
+          </div>
+        </div>
+        <p class="texte-page">${echapper(valeur('presentation'))}</p>
+        ${valeur('bio') ? `<p class="surtitre" style="margin-top:12px">Bio</p><p class="bio-page" style="margin-top:2px">${echapper(valeur('bio'))}</p>` : ''}
+        ${(groupeActif() ? Array.from(document.querySelectorAll('.membre')) : []).map(el => `<div class="portrait-bloc"><img src="${el.portraitData}" alt="Portrait" style="width:90px;border-radius:10px;float:left;margin:0 12px 8px 0"><strong>${echapper(el.querySelector('.membre-prenom').value + ' ' + el.querySelector('.membre-nom').value)}</strong><p class="bio-page">${echapper(el.querySelector('.membre-bio').value)}</p><div style="clear:both"></div></div>`).join('')}
+        ${galerie ? `<div class="galerie-page">${galerie}</div>` : ''}
+        ${liens ? `<div class="liens-page">${liens}</div>` : ''}
+        ${etat.video === 'oui' ? apercuVideoHtml(valeur('video_url')) : ''}
+      </div>
+    </div>`;
 }
 
-
-// =====================================================================
-// FICHE D'UNE CANDIDATURE : détail, changement de statut, envoi d'email
-// Le mode TEST/REEL se lit ici, il ne se change jamais depuis le Portail.
-// =====================================================================
-// Questions déjà affichées ailleurs (titre, bloc Contact) : inutile de les répéter dans les réponses.
-const EQ_DOUBLON = /^(Nom du projet|Ton prénom|Ton nom de famille|Ton email|Ton téléphone|As-tu déjà participé|Quelle\(s\) année\(s\))/;
-const EQ_PISTES = ['Sélection', 'Dossier final', 'Paiement', 'Confirmation'];
-const EQ_LIBELLES_EMAIL = {
-  recue: 'Accusé de réception', acceptee: 'Candidature acceptée', attente: "Liste d'attente",
-  refusee: 'Candidature refusée', final_recu: 'Dossier final reçu', confirmee: 'Participation confirmée'
+// ------------------ Envoi ------------------
+const NOMS_ETAPES_SERVEUR = {
+  deployment: 'version du script Google',
+  parse:    'lecture des donn\u00e9es',
+  security: 'v\u00e9rification du code',
+  validate: 'v\u00e9rification des champs',
+  folders:  'cr\u00e9ation du dossier Drive',
+  featured: 'enregistrement de la photo principale',
+  gallery:  'enregistrement de la galerie',
+  technical: 'enregistrement de la fiche technique',
+  sheet:    '\u00e9criture dans le tableau',
+  document: 'cr\u00e9ation de la fiche r\u00e9capitulative',
+  'participant-document': 'cr\u00e9ation de la fiche r\u00e9capitulative',
+  'volunteer-document': 'cr\u00e9ation de la fiche b\u00e9n\u00e9vole',
+  'volunteer-repair': 'r\u00e9paration du dossier b\u00e9n\u00e9vole'
 };
 
-function eqVerrouille_(travail) {
-  const verrou = LockService.getScriptLock();
-  if (!verrou.tryLock(30000)) return { ok: false, error: 'Un autre changement est en cours. Réessaie dans un instant.' };
-  try { return travail(); } finally { verrou.releaseLock(); }
-}
+let envoiEnCours = false;
+const submissionIds = { participant: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2)), volunteer: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2)) };
+async function envoyer() {
+  if (envoiEnCours) return;
+  if (!$('consent').checked) {
+    $('boite-consent').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return erreur(7, 'Coche la case dans l\u2019encadr\u00e9 color\u00e9 pour nous autoriser \u00e0 publier tes contenus.');
+  }
 
-function eqIdValide_(id) { return /^[a-zA-Z0-9-]{8,100}$/.test(id || ''); }
+  if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur(7, 'Le nouveau script doit être déployé avant le premier envoi.');
+  const payant = await afficherDocuments();
+  const preuve = $('payment_proof').files[0], contrat = $('contract_file').files[0];
+  const probleme = problemeDocuments(payant);
+  if (probleme) { aller('docs'); return erreur('docs', probleme); }
+  envoiEnCours = true;
+  let membres, technique;
+  let preuveData = '', contratData = '';
+  try { membres = await lireMembres(); technique = await lireTechnique(); if (preuve) preuveData = await lireFichier(preuve); if (contrat) contratData = await lireFichier(contrat); }
+  catch(e) { envoiEnCours = false; return erreur(7, 'Pièce jointe : ' + (e && e.message ? e.message : String(e))); }
+  // Cles identiques au schema partage, copiees telles quelles
+  const donnees = {
+    submission_id: submissionIds.participant,
+    access_code: valeur('access_code').toUpperCase(),
+    honeypot: $('honeypot').value,
+    category: etat.category,
+    artist_type: etat.artist_type,
+    name: valeur('name'),
+    first_name: valeur('first_name'),
+    last_name: valeur('last_name'),
+    title_pro: valeur('title_pro'),
+    email: valeur('email'),
+    phone: valeur('phone'),
+    members: membres,
+    technical: technique,
+    subtitle: valeur('subtitle'),
+    snippet: valeur('snippet'),
+    presentation: valeur('presentation'),
+    bio: valeur('bio'),
+    instagram: valeur('instagram'),
+    facebook: valeur('facebook'),
+    website: valeur('website'),
+    other_link: valeur('other_link'),
+    video_url: etat.video === 'oui' ? valeur('video_url') : '',
+    consent: true,
+    featured_image: etat.featured_image,
+    featured_original: etat.featured_original,
+    gallery: etat.gallery,
+    payment_proof: preuveData,
+    contract: contratData
+  };
 
-function eqCandidature_(id) {
-  const cand = SpreadsheetApp.openById(SHEET_ID).getSheetByName(P_TABS.CANDIDATURES);
-  if (!cand || cand.getLastRow() < 2) return null;
-  const H = CANDIDATURES_HEADERS;
-  const largeur = Math.max(cand.getLastColumn(), H.length);
-  const entetes = cand.getRange(1, 1, 1, largeur).getValues()[0];
-  const lignes = cand.getRange(2, 1, cand.getLastRow() - 1, largeur).getValues();
-  for (let i = 0; i < lignes.length; i++) {
-    const v = lignes[i];
-    if (v[H.indexOf('id')] !== id) continue;
-    const texte = String(v[H.indexOf('Réponses')] || '');
-    // Une colonne par question : on les remet dans l'ordre du formulaire (celui du texte de secours).
-    const champs = [];
-    for (let k = H.length; k < largeur; k++) {
-      const valeur = String(v[k] == null ? '' : v[k]).trim();
-      if (entetes[k] && valeur !== '' && !EQ_DOUBLON.test(String(entetes[k]))) champs.push({ label: String(entetes[k]), value: valeur });
+  $('nav-7').style.display = 'none';
+  $('envoi-progression').style.display = 'block';
+  try { $('envoi-progression').scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { /* facultatif */ }
+
+  // Barre animee : fetch ne donne pas de progression d'envoi,
+  // on avance doucement jusqu'a 90% puis 100% a la reponse
+  let pct = 0;
+  const minuteur = setInterval(() => {
+    if (pct < 90) { pct += 2; $('remplissage').style.width = pct + '%'; }
+  }, 350);
+  $('texte-envoi').textContent = 'Envoi en cours… Merci de garder cette page ouverte pendant le traitement de tes informations.';
+
+  // fetch et non XHR : les POST vers Apps Script passent par une
+  // redirection Google que fetch suit proprement (XHR echoue parfois
+  // avec un statut 0)
+  fetch(CONFIG.scriptUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(donnees),
+    redirect: 'follow'
+  })
+  .then(async res => {
+    clearInterval(minuteur);
+    $('remplissage').style.width = '100%';
+    const texte = await res.text();
+    let rep = {};
+    try { rep = JSON.parse(texte); } catch (e) {}
+    if (res.ok && rep.ok && (rep.version !== CONFIG.version || !rep.folder_url || !rep.document_url)) {
+      return echecEnvoi({ stage: 'deployment', error: 'Mets à jour et redéploie Code.gs avant de réessayer.' }, { status: res.status, statusText: res.statusText, responseText: texte });
     }
-    champs.sort(function (a, b) {
-      const ia = texte.indexOf(a.label + ' : '), ib = texte.indexOf(b.label + ' : ');
-      return (ia < 0 ? 1e9 : ia) - (ib < 0 ? 1e9 : ib);
+    if (res.ok && rep.ok) {
+      const prenom = valeur('first_name') || valeur('name');
+      $('titre-merci').textContent = `Merci ${prenom} ! \ud83c\udf89`;
+      aller('merci');
+      confettis();
+    } else {
+      echecEnvoi(rep, { status: res.status, statusText: res.statusText, responseText: texte });
+    }
+  })
+  .catch(err => {
+    clearInterval(minuteur);
+    echecEnvoi(null, { status: 0, statusText: err.message, responseText: '' });
+  });
+}
+
+function echecEnvoi(rep, xhr) {
+  envoiEnCours = false;
+  $('envoi-progression').style.display = 'none';
+  $('nav-7').style.display = 'flex';
+  if (rep && (rep.stage || rep.error)) {
+    // Diagnostic precis : etape serveur + message exact
+    const etapeFr = NOMS_ETAPES_SERVEUR[rep.stage] || rep.stage || 'traitement de la fiche';
+    erreur(7, `L\u2019envoi a \u00e9chou\u00e9 pendant : ${etapeFr}.\nD\u00e9tail technique : ${rep.error || 'inconnu'}\nRien n\u2019est perdu, tu peux r\u00e9essayer.`);
+  } else if (xhr) {
+    // Pas de reponse structuree : on montre TOUT ce qu'on a pour diagnostiquer
+    const debut = (xhr.responseText || '').substring(0, 300);
+    erreur(7, `\u00c9chec de l\u2019envoi.\nStatut HTTP : ${xhr.status} ${xhr.statusText || ''}\nR\u00e9ponse re\u00e7ue : ${debut || '(vide)'}\n\nCela veut souvent dire que le script n\u2019a pas \u00e9t\u00e9 red\u00e9ploy\u00e9 en \u00ab Nouvelle version \u00bb apr\u00e8s la mise \u00e0 jour du code.`);
+  } else {
+    erreur(7, 'L\u2019envoi n\u2019est pas pass\u00e9 (connexion capricieuse ?). R\u00e9essaie simplement.');
+  }
+}
+
+
+// Portraits de groupe et inscription des bénévoles.
+const POLES = ['INSTALLATION/DÉSINSTALLATION', 'ACCUEIL + Gardien·nes du temps le dimanche', 'PARKING/CAMPING', 'INFIRMERIE + Gardien·nes du temps le vendredi', 'CATERING', 'BUVETTE (sans alcool)', 'SNACK (incluant le petit-déjeuner)/CRÊPES', 'GREENTEAM'];
+$('vol-teams').innerHTML = POLES.map((p, i) => `<label class="consentement" style="margin:8px 0"><input type="checkbox" class="vol-team" value="${p}"> <span>${p}</span></label>`).join('');
+document.querySelectorAll('.vol-team').forEach(el => el.addEventListener('change', () => {
+  const checked = document.querySelectorAll('.vol-team:checked');
+  if (checked.length > 2) { el.checked = false; erreur('benevole', 'Choisis exactement deux pôles.'); }
+}));
+function groupeActif() { return ['Artiste','Atelier',"L'Antre deux mondes"].includes(etat.category); }
+function actualiserMembres() {
+  const count = groupeActif() ? Number(valeur('nombre-membres')) : 0;
+  $('champ-bio-generale').style.display = groupeActif() && count === 1 ? 'none' : 'block';
+  $('option-contact-different').style.display = count === 1 ? 'block' : 'none';
+  $('etiquette-bio').innerHTML = groupeActif() ? 'Bio du groupe <span class="astuce">(optionnel, pour présenter le groupe dans son ensemble)</span>' : 'Ta bio <span class="astuce">(optionnel : ton parcours, en quelques lignes)</span>';
+  if (groupeActif() && count === 1) $('bio').value = '';
+  const list = $('liste-membres');
+  while (list.children.length > count) list.lastElementChild.remove();
+  while (list.children.length < count) {
+    const item = document.createElement('div'); item.className = 'membre champ portrait-bloc';
+    item.innerHTML = '<strong>Personne ' + (list.children.length+1) + '</strong><label class="etiquette">Prénom</label><input class="membre-prenom" autocomplete="off"><label class="etiquette">Nom</label><input class="membre-nom" autocomplete="off"><label class="etiquette">Bio courte</label><textarea class="membre-bio" rows="3"></textarea>';
+    list.appendChild(item);
+  }
+  if (count === 1) {
+    const first = list.firstElementChild;
+    const different = $('contact-different').checked;
+    ['prenom', 'nom'].forEach((part, index) => {
+      const input = first.querySelector('.membre-' + part);
+      input.previousElementSibling.style.display = different ? '' : 'none';
+      input.style.display = different ? '' : 'none';
+      if (!different) input.value = valeur(index ? 'last_name' : 'first_name');
     });
-    return {
-      id: id, date: eqDate_(v[H.indexOf('Date')]), pole: v[H.indexOf('Pôle')], projet: v[H.indexOf('Projet')], formule: v[H.indexOf('Formule')],
-      prenom: v[H.indexOf('Prénom')], nom: v[H.indexOf('Nom')], email: v[H.indexOf('Email')], telephone: String(v[H.indexOf('Téléphone')] || ''),
-      passe: String(v[H.indexOf('Déjà participé')] || ''), dossier: String(v[H.indexOf('Dossier Drive')] || ''), fiche: String(v[H.indexOf('Fiche')] || ''),
-      champs: champs, reponses: texte
-    };
   }
-  return null;
+  afficherPortraits();
 }
-
-// Photos : on charge d'abord la liste (rapide), puis chaque photo à part, pour les afficher au fur et à mesure.
-// Les petites copies restent 6 h en mémoire : la 2e ouverture est instantanée.
-// type : 'candidature' (par défaut), 'participant' (dossier final) ou 'benevole' (portrait).
-function eqDossierUrl_(id, type, tab) {
-  if (type === 'benevole') {
-    const b = eqLireOnglet_('Bénévoles').filter(function (o) { return String(o.submission_id) === id; })[0];
-    return b ? String(b.drive_folder || '') : '';
+$('first_name').addEventListener('input', actualiserMembres);
+$('last_name').addEventListener('input', actualiserMembres);
+function afficherPortraits() {
+  const c=$('liste-portraits'); c.innerHTML='';
+  Array.from(document.querySelectorAll('.membre')).forEach((m,i)=>{
+    const name=[m.querySelector('.membre-prenom').value,m.querySelector('.membre-nom').value].filter(Boolean).join(' ') || 'personne '+(i+1);
+    const div=document.createElement('div');div.className='portrait-bloc';
+    const label=document.createElement('label');label.className='etiquette obligatoire';label.textContent='Portrait de '+name;
+    const input=document.createElement('input');input.type='file';input.accept='image/*';input.hidden=true;
+    const button=document.createElement('button');button.type='button';button.className='zone-depot';button.textContent=m.portraitData?'Changer le portrait':'📷 Choisir et recadrer le portrait';
+    const preview=document.createElement('div');preview.className='etat-photo';
+    if(m.portraitData){const img=document.createElement('img');img.src=m.portraitData;img.alt='Portrait de '+name;img.style.cssText='width:110px;border-radius:12px;display:block';preview.appendChild(img);}
+    button.onclick=()=>input.click();input.onchange=()=>ouvrirPortrait(input,m,'portrait de '+name);
+    div.append(label,button,input,preview);c.appendChild(div);
+  });
+}
+const recPortrait=creerRecadreur('cadre-portrait','img-portrait','zoom-moins-portrait','zoom-plus-portrait');
+let ciblePortrait=null;
+function ouvrirPortrait(input,target,label){
+  if(!input.files[0])return;
+  ciblePortrait=target;$('titre-portrait').textContent='Recadrer le '+label;
+  if(target===volunteerPortrait) $('champ-vol-portrait').after($('recadreur-portrait'));
+  else $('portraits-participants').after($('recadreur-portrait'));
+  chargerImage(input,$('img-portrait'),()=>{
+    $('recadreur-portrait').style.display='block';
+    recPortrait.demarrer('1 / 1');
+    $('recadreur-portrait').scrollIntoView({behavior:'smooth',block:'center'});
+  });
+}
+function annulerPortrait(){$('recadreur-portrait').style.display='none';ciblePortrait=null;}
+function garderPortrait(){
+  if(!ciblePortrait||!recPortrait.actif)return;
+  const volunteer=ciblePortrait===volunteerPortrait;
+  ciblePortrait.portraitData=recPortrait.exporter(900,900,320);
+  ciblePortrait.portraitOriginal=copieSociale($('img-portrait'));
+  annulerPortrait();
+  if(volunteer)$('vol-portrait-etat').textContent='Portrait prêt ✨';
+  else afficherPortraits();
+}
+const volunteerPortrait={portraitData:null};
+$('vol-portrait').onchange=()=>ouvrirPortrait($('vol-portrait'),volunteerPortrait,'portrait bénévole');
+async function lireMembres(){
+  if(!groupeActif())return [];
+  return Array.from(document.querySelectorAll('.membre')).map(el=>({
+    first_name:el.querySelector('.membre-prenom').value.trim(),
+    last_name:el.querySelector('.membre-nom').value.trim(),
+    bio:el.querySelector('.membre-bio').value.trim(),photo:el.portraitData,original:el.portraitOriginal
+  }));
+}
+function lireFichier(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+async function lireTechnique() {
+  const t = {other_needs:valeur('other_needs')};
+  if (etat.category === 'Artiste') {
+    Object.assign(t, {duration:valeur('tech_duration'), people:valeur('tech_people'), sound:valeur('tech_sound')});
+    const file = $('tech_sheet').files[0];
+    if (file && (file.size > 5 * 1024 * 1024 || !/\.pdf$/i.test(file.name))) throw new Error('PDF de 5 Mo maximum.');
+    t.sheet = file ? await lireFichier(file) : '';
+  } else if (etat.category === 'Atelier') {
+    ['workshop_duration','workshop_capacity','workshop_audio','workshop_electricity','workshop_kw'].forEach(key => t[key] = valeur(key));
+  } else {
+    // Toutes les autres catégories voient le bloc « surface et électricité » : on enregistre ce qu'elles répondent.
+    ['stand_width','stand_depth','stand_electricity','stand_kw'].forEach(key => t[key] = valeur(key));
   }
-  if (type === 'participant') {
-    if (eqOngletsParticipants_().indexOf(tab) < 0) return '';
-    const p = eqLireOnglet_(tab).filter(function (o) { return String(o.submission_id) === id; })[0];
-    return p ? String(p.drive_folder || '') : '';
-  }
-  const c = eqCandidature_(id);
-  return c ? String(c.dossier || '') : '';
+  return t;
 }
-
-function eqFichiersImages_(dossier, motif) {
-  const sortie = [];
-  const it = dossier.getFiles();
-  while (it.hasNext()) {
-    const f = it.next();
-    if (motif.test(f.getName())) sortie.push(f);
-  }
-  sortie.sort(function (a, b) { return a.getName() < b.getName() ? -1 : 1; });
-  return sortie;
+let volTimer = null;
+function volProgres(actif) {
+  const boite = $('vol-progress'), rempl = $('vp-rempl'), etape = $('vp-etape');
+  clearInterval(volTimer);
+  if (!actif) { boite.style.display = 'none'; return; }
+  boite.style.display = 'block'; rempl.style.width = '4%'; etape.textContent = 'Envoi de ton portrait et de tes réponses…';
+  boite.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const debut = Date.now();
+  volTimer = setInterval(() => {
+    const t = (Date.now() - debut) / 1000;
+    const pct = Math.round(92 * (1 - Math.exp(-t / 14)));
+    rempl.style.width = pct + '%';
+    etape.textContent = pct < 25 ? 'Envoi de ton portrait et de tes réponses…' : pct < 60 ? 'Enregistrement de ta candidature…' : 'Création de ta fiche… (cela peut prendre une minute)';
+  }, 500);
 }
-
-function eqSousDossier_(dossier, nom) {
-  const it = dossier.getFoldersByName(nom);
-  return it.hasNext() ? it.next() : null;
-}
-
-function eqPhotosListe_(id, type, tab) {
-  if (!eqIdValide_(id)) return { ok: false, error: 'Candidature inconnue.' };
-  type = type === 'benevole' || type === 'participant' ? type : 'candidature';
-  const cache = CacheService.getScriptCache();
-  const memo = cache.get('eq_phl_' + id);
-  if (memo) return { ok: true, photos: JSON.parse(memo) };
-  const url = eqDossierUrl_(id, type, tab);
-  if (!url) return { ok: false, error: 'Dossier introuvable.' };
-  const photos = [];
+async function envoyerBenevole() {
+  const v = id => valeur(id), teams = Array.from(document.querySelectorAll('.vol-team:checked')).map(e => e.value);
+  if ($('vol-portrait').files[0] && !volunteerPortrait.portraitData)
+    return erreur('benevole', 'Valide le recadrage du portrait avant d’envoyer.');
+  if (!/^\S+@\S+\.\S+$/.test(v('vol_email')) || !v('vol_last_name') || !v('vol_first_name') || !v('vol_phone') || !v('vol_motivation') || teams.length !== 2)
+    return erreur('benevole', 'Remplis tous les champs et choisis exactement deux pôles.');
+  if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur('benevole', 'Le nouveau script doit être déployé avant le premier envoi.');
+  const btn = $('btn-benevole'); btn.disabled = true; btn.textContent = 'Envoi en cours… Garde cette page ouverte.'; volProgres(true);
   try {
-    const m = url.match(/folders\/([-\w]{20,})/);
-    if (m) {
-      const racine = DriveApp.getFolderById(m[1]);
-      let fichiers = [];
-      if (type === 'benevole') {
-        fichiers = eqFichiersImages_(racine, /-portrait\.jpe?g$/i);
-      } else if (type === 'participant') {
-        const dossierPhotos = eqSousDossier_(racine, 'Photos');
-        if (dossierPhotos) {
-          fichiers = eqFichiersImages_(dossierPhotos, /\.(jpe?g|png|webp)$/i);
-          const galerie = eqSousDossier_(dossierPhotos, 'Galerie');
-          if (galerie) fichiers = fichiers.concat(eqFichiersImages_(galerie, /\.(jpe?g|png|webp)$/i));
+    const res = await fetch(CONFIG.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({
+      kind:'volunteer', submission_id:submissionIds.volunteer, access_code:CONFIG.code, honeypot:$('honeypot').value, email:v('vol_email'),
+      first_name:v('vol_first_name'), last_name:v('vol_last_name'), phone:v('vol_phone'),
+      teams:teams, motivation:v('vol_motivation'), portrait:volunteerPortrait.portraitData, portrait_original:volunteerPortrait.portraitOriginal
+    }) });
+    const rep = await res.json();
+    if (!rep.ok) throw new Error(rep.error || 'Envoi refusé');
+    if (rep.version !== CONFIG.version || !rep.folder_url || !rep.document_url) throw new Error('Ancienne version du script Google : mets à jour et redéploie Code.gs, puis réessaie.');
+    clearInterval(volTimer); $('vp-rempl').style.width = '100%'; $('vp-etape').textContent = 'Terminé ✔';
+    $('titre-merci').textContent = `Merci ${v('vol_first_name')} ! 🎉`;
+    document.querySelector('#ecran-merci .intro').textContent = 'Ta candidature bénévole a bien été reçue. Elle nous aidera à préparer l’équipe et le festival.';
+    aller('merci'); confettis();
+  } catch(e) { erreur('benevole', 'Envoi impossible : ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = 'Envoyer ma candidature 💛'; volProgres(false); }
+}
+
+// ------------------ Confettis (vanilla, zero librairie) ------------------
+function confettis() {
+  const canvas = $('canvas-confettis');
+  const ctx = canvas.getContext('2d');
+  canvas.width = innerWidth; canvas.height = innerHeight;
+  const pieces = Array.from({ length: 140 }, () => ({
+    x: Math.random() * canvas.width,
+    y: -20 - Math.random() * canvas.height * 0.5,
+    taille: 5 + Math.random() * 7,
+    vitesse: 2 + Math.random() * 3.5,
+    derive: (Math.random() - 0.5) * 2,
+    angle: Math.random() * Math.PI * 2,
+    rotation: (Math.random() - 0.5) * 0.2,
+    couleur: CONFIG.couleursConfettis[Math.floor(Math.random() * CONFIG.couleursConfettis.length)]
+  }));
+  let debut = performance.now();
+  (function tomber(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      p.y += p.vitesse; p.x += p.derive; p.angle += p.rotation;
+      ctx.save();
+      ctx.translate(p.x, p.y); ctx.rotate(p.angle);
+      ctx.fillStyle = p.couleur;
+      ctx.fillRect(-p.taille / 2, -p.taille / 2, p.taille, p.taille * 0.6);
+      ctx.restore();
+    });
+    if (t - debut < 5000) requestAnimationFrame(tomber);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  })(debut);
+}
+</script>
+<script>
+/* ================================================================
+   CANDIDATURE PUBLIQUE (sans code d'accès)
+   Les conditions, tarifs et l'ouverture viennent du Google Sheet
+   (onglets Pôles et Réglages) via ?action=config.
+   ================================================================ */
+const cand = { pole: '', vals: {}, photos: [], config: null,
+  id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2)) };
+
+const CAND_ELEC = [
+  { k: 'elec', l: 'As-tu besoin d’électricité ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
+  { k: 'elec_devices', l: 'Quels appareils, et leur puissance en watts si tu la connais ?', t: 'a', r: 1, si: ['elec', 'Oui'] },
+  { k: 'elec_kw', l: 'Puissance électrique totale nécessaire (en kW)', t: 'n', n: 'Additionne la puissance de tes appareils, indiquée en W sur leur étiquette : 1 000 W = 1 kW. Si tu ne la connais pas, laisse vide.', si: ['elec', 'Oui'] }
+];
+const CAND_SURFACE = [
+  { k: 'width', l: 'Largeur nécessaire, tente comprise (en mètres)', t: 'n', r: 1 },
+  { k: 'depth', l: 'Profondeur nécessaire, tente comprise (en mètres)', t: 'n', r: 1 }
+];
+const CAND_COMMUN = [
+  { k: 'name', l: 'Nom du projet, du groupe, de l’activité ou du stand', t: 't', r: 1, n: 'Le nom sous lequel le festival te présentera au public : ton nom de scène, de marque, de stand ou de ta pratique.' },
+  { k: 'first_name', l: 'Ton prénom', t: 't', r: 1 },
+  { k: 'last_name', l: 'Ton nom de famille', t: 't', r: 1 },
+  { k: 'email', l: 'Ton email', t: 't', type: 'email', r: 1, n: 'Jamais publié. C’est à cette adresse que nous te répondrons.' },
+  { k: 'phone', l: 'Ton téléphone', t: 't', type: 'tel', r: 1, n: 'Jamais publié.' },
+  { k: 'past', l: 'As-tu déjà participé au Festival Mantra Joie / Ecstatic Fest ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
+  { k: 'past_years', l: 'Quelle(s) année(s) ?', t: 't', r: 1, si: ['past', 'Oui'] },
+  { k: 'presentation', l: 'Ton activité en une phrase', t: 't', r: 1, n: 'Par exemple : « bijoux en argent faits main », « duo chant et handpan », « massages assis ». Tu pourras détailler juste après.' },
+  { k: 'links', l: 'Liens pour découvrir ton travail (site, réseaux, vidéo)', t: 'a' }
+];
+const CAND_FIN = [{ k: 'other_needs', l: 'Autres besoins ou contraintes à signaler ?', t: 'a' }];
+const CAND_POLE = {
+  'Artiste': [
+    { k: 'artist_type', l: 'Type de proposition', t: 'chips', o: CONFIG.typesArtiste, r: 1 },
+    { k: 'members', l: 'Les personnes du groupe (une ligne par personne : prénom, nom, rôle)', t: 'a', r: 1 },
+    { k: 'duration', l: 'Durée proposée (en minutes)', t: 'n', r: 1 },
+    { k: 'instruments', l: 'Instruments utilisés', t: 't', r: 1, n: 'Écris « Aucun » si besoin.' },
+    { k: 'sound', l: 'Micros et appareils à brancher', t: 't', r: 1, n: 'Écris « Aucun » si besoin.' },
+    { k: 'tech_sheet', l: 'As-tu une fiche technique ?', t: 'chips', o: ['Oui', 'Non'], r: 1, n: 'Tu pourras la déposer à l’inscription finale.' },
+    { k: 'media_link', l: 'Lien vidéo ou audio', t: 't', r: 1 }
+  ],
+  'Atelier': [
+    { k: 'workshop_title', l: 'Titre de l’atelier', t: 't', r: 1 },
+    { k: 'workshop_content', l: 'Que vont vivre ou faire les participants ?', t: 'a', r: 1 },
+    { k: 'animators', l: 'Les animateurs (une ligne par personne : prénom, nom, rôle)', t: 'a', r: 1 },
+    { k: 'duration', l: 'Durée (en minutes)', t: 'n', r: 1 },
+    { k: 'capacity', l: 'Nombre maximum de participant·es', t: 'n', r: 1 },
+    { k: 'public', l: 'Public visé et prérequis', t: 't', r: 1, n: '« Tous publics » ou « Aucun » possible.' },
+    { k: 'audio', l: 'Besoin d’un micro ou d’une enceinte fournie par le festival ?', t: 'chips', o: ['Non', 'Micro', 'Enceinte', 'Micro et enceinte'], r: 1 }
+  ].concat(CAND_ELEC),
+  'Artisan': [
+    { k: 'sells', l: 'Que proposes-tu précisément à la vente sur ton stand ?', t: 'a', r: 1 },
+    { k: 'origin', l: 'Ces produits sont…', t: 'chips', multi: 1, o: ['Conçus par moi', 'Fabriqués par moi', 'Fabriqués par des artisans ou ateliers partenaires', 'Issus en partie d’achat-revente'], r: 1, n: 'Plusieurs choix possibles.' },
+    { k: 'process', l: 'Ta démarche de conception et de fabrication', t: 'a', n: 'Précise l’origine de ce qui est acheté pour la revente, si c’est le cas.' },
+    { k: 'stand', l: 'Combien de personnes seront sur le stand ?', t: 'chips', o: ['Individuel (1 personne)', 'Duo (2 personnes)'], r: 1 },
+    { k: 'duo1', l: 'Exposant 1 : nom', t: 't', r: 1, si: ['stand', 'Duo (2 personnes)'] },
+    { k: 'duo2', l: 'Exposant 2 : nom', t: 't', r: 1, si: ['stand', 'Duo (2 personnes)'] }
+  ].concat(CAND_SURFACE, CAND_ELEC),
+  'Bien-être': [
+    { k: 'practices', l: 'Pratiques ou prestations proposées', t: 'a', r: 1 },
+    { k: 'session', l: 'Déroulement d’une séance et durée (en minutes)', t: 'a', r: 1 },
+    { k: 'session_type', l: 'Séances individuelles ou collectives ?', t: 'chips', o: ['Individuelles', 'Collectives'], r: 1 },
+    { k: 'capacity', l: 'Nombre de personnes par séance collective', t: 'n', r: 1, si: ['session_type', 'Collectives'] },
+    { k: 'experience', l: 'Expérience ou formation dans cette pratique', t: 'a' },
+    { k: 'prices', l: 'Tarifs prévus pour les festivaliers', t: 't', n: '« Gratuit » possible.' },
+    { k: 'practitioners', l: 'Praticiens présents : nombre, noms et pratiques', t: 't', r: 1 }
+  ].concat(CAND_SURFACE, CAND_ELEC),
+  'Stand / Miam Miam': [
+    { k: 'offer', l: 'Nom de l’activité et ce que tu proposes à manger ou à boire', t: 't', r: 1 },
+    { k: 'menu', l: 'Menus, produits et prix envisagés', t: 'a', r: 1, n: 'Tu peux aussi joindre ta carte avec les photos.' },
+    { k: 'diet', l: 'Options alimentaires', t: 'chips', multi: 1, o: ['Végétarien', 'Vegan', 'Sans gluten', 'Autres', 'Aucune'], r: 1 },
+    { k: 'install', l: 'Installation', t: 'chips', o: ['Food truck', 'Stand', 'Autre'], r: 1 },
+    { k: 'footprint', l: 'Emprise totale, véhicule et espace de travail compris (en mètres)', t: 't', r: 1 },
+    { k: 'team', l: 'Nombre de personnes dans l’équipe', t: 'n', r: 1 }
+  ].concat(CAND_ELEC, [
+    { k: 'water', l: 'As-tu besoin d’un accès à l’eau ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
+    { k: 'water_details', l: 'Précise ton besoin en eau', t: 'a', r: 1, si: ['water', 'Oui'] },
+    { k: 'gas', l: 'Utilises-tu du gaz ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
+    { k: 'gas_details', l: 'Précise ton installation au gaz', t: 'a', r: 1, si: ['gas', 'Oui'] },
+    { k: 'cold_waste', l: 'Besoins pour le froid, les eaux usées et les déchets', t: 'a', r: 1, n: 'Écris « Aucun » si besoin.' }
+  ]),
+  'L\'Antre deux mondes': [
+    { k: 'activity', l: 'Quelle activité proposes-tu ?', t: 't', r: 1 },
+    { k: 'flow', l: 'Comment se déroule ton activité ?', t: 'a', r: 1 },
+    { k: 'people', l: 'Intervenants : nombre, noms et rôles', t: 't', r: 1 },
+    { k: 'mode', l: 'Activité individuelle, collective ou en accès libre ?', t: 'chips', o: ['Individuelle', 'Collective', 'Accès libre'], r: 1 },
+    { k: 'capacity', l: 'Nombre de personnes par séance', t: 'n', r: 1, si: ['mode', 'Collective'] },
+    { k: 'duration_price', l: 'Durée et tarifs envisagés pour le public', t: 't', r: 1, n: '« Gratuit » ou « accès libre » possibles.' },
+    { k: 'surface', l: 'Surface et configuration souhaitées (en mètres)', t: 't', r: 1 }
+  ].concat(CAND_ELEC),
+  'Autre': [{ k: 'other_what', l: 'Dis-nous ce que tu proposes et ce dont tu as besoin', t: 'a', r: 1 }]
+};
+function candChamps() { return (CAND_POLE[cand.pole] || CAND_POLE['Autre']).concat(CAND_FIN); }
+
+function candVisible(f) {
+  if (!f.si) return true;
+  const v = cand.vals[f.si[0]];
+  return Array.isArray(v) ? v.indexOf(f.si[1]) >= 0 : v === f.si[1];
+}
+function candActualiserVisibilite() {
+  document.querySelectorAll('#cand-commun [data-k], #cand-specifique [data-k]').forEach(el => {
+    if (el._f) el.style.display = candVisible(el._f) ? '' : 'none';
+  });
+}
+function candChamp(f) {
+  const div = document.createElement('div'); div.className = 'champ'; div.dataset.k = f.k; div._f = f;
+  const lab = document.createElement('label'); lab.className = 'etiquette' + (f.r ? ' obligatoire' : ''); lab.textContent = f.l; div.appendChild(lab);
+  if (f.n) { const n = document.createElement('p'); n.className = 'aide'; n.textContent = f.n; div.appendChild(n); }
+  if (f.t === 'chips') {
+    const box = document.createElement('div'); box.className = 'puces';
+    f.o.forEach(o => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'puce'; b.textContent = o;
+      const actuel = cand.vals[f.k];
+      if (f.multi ? (actuel || []).indexOf(o) >= 0 : actuel === o) b.classList.add('choisie');
+      b.onclick = () => {
+        if (f.multi) {
+          const cur = cand.vals[f.k] || []; const i = cur.indexOf(o);
+          if (i >= 0) cur.splice(i, 1); else cur.push(o);
+          cand.vals[f.k] = cur; b.classList.toggle('choisie', i < 0);
+        } else {
+          box.querySelectorAll('.puce').forEach(p => p.classList.remove('choisie'));
+          b.classList.add('choisie'); cand.vals[f.k] = o;
         }
-      } else {
-        fichiers = eqFichiersImages_(racine, /^photo-\d+\.jpg$/);
-      }
-      fichiers.slice(0, 12).forEach(function (f) { photos.push({ fid: f.getId(), url: 'https://drive.google.com/file/d/' + f.getId() + '/view' }); });
-    }
-  } catch (err) {
-    console.log('Photos non listées : ' + (err && err.message ? err.message : err));
-  }
-  if (photos.length) cache.put('eq_phl_' + id, JSON.stringify(photos), 3600);
-  return { ok: true, photos: photos };
-}
-
-// hd = true : la grande image de la fiche. On envoie la vraie photo si elle n'est pas trop lourde, sinon la petite copie.
-function eqPhoto_(id, fid, hd, type, tab) {
-  if (!eqIdValide_(id) || !/^[-\w]{20,}$/.test(fid || '')) return { ok: false, error: 'Photo inconnue.' };
-  const liste = eqPhotosListe_(id, type, tab);
-  if (!liste.ok || !liste.photos.some(function (p) { return p.fid === fid; })) return { ok: false, error: 'Photo inconnue.' };
-  const cache = CacheService.getScriptCache();
-  if (hd) {
-    try {
-      const grand = DriveApp.getFileById(fid).getBlob();
-      const octets = grand.getBytes();
-      if (octets.length <= 1200000) return { ok: true, src: 'data:' + (grand.getContentType() || 'image/jpeg') + ';base64,' + Utilities.base64Encode(octets), hd: true };
-    } catch (errHd) { /* on retombe sur la petite copie */ }
-  }
-  const memo = cache.get('eq_ph_' + fid);
-  if (memo) return { ok: true, src: memo };
-  try {
-    const f = DriveApp.getFileById(fid);
-    const blob = f.getThumbnail() || f.getBlob();
-    const src = 'data:' + (blob.getContentType() || 'image/jpeg') + ';base64,' + Utilities.base64Encode(blob.getBytes());
-    if (src.length < 95000) cache.put('eq_ph_' + fid, src, 21600);
-    return { ok: true, src: src };
-  } catch (err) {
-    return { ok: false, error: 'Photo illisible.' };
-  }
-}
-
-function eqStatuts_(ligne) {
-  const s = {};
-  EQ_PISTES.forEach(function (p) { s[p] = ligne ? (ligne[p] || '') : ''; });
-  if (!s['Sélection']) s['Sélection'] = 'À étudier';
-  s.alerte = ligne ? String(ligne['Alerte'] || '') : '';
-  s.dernier_email = ligne ? String(ligne['Dernier email'] || '') : '';
-  return s;
-}
-
-// Email préparé pour cette personne (prêt à partir), avec son destinataire réel dans le mode actuel.
-function eqEmailPret_(id) {
-  const prets = emailsEnAttente_().filter(function (e) { return e.id === id; });
-  if (!prets.length) return null;
-  const cle = prets[prets.length - 1].cle;
-  const ligne = trouverSuivi_(id);
-  const email = ligne ? construireEmail_(cle, ligne) : { erreur: 'Ligne introuvable dans Suivi.' };
-  if (email.erreur) return { cle: cle, libelle: EQ_LIBELLES_EMAIL[cle] || cle, erreur: email.erreur };
-  return {
-    cle: cle, libelle: EQ_LIBELLES_EMAIL[cle] || cle, objet: email.options.subject,
-    objet_modifiable: email.options.subject.replace(/^\[TEST pour [^\]]*\]\s*/, ''), corps: email.options.body,
-    destinataire: email.options.to, reel: email.reel
-  };
-}
-
-// Tous les emails de cette candidature (accusé de réception compris), du plus récent au plus ancien.
-function eqHistorique_(id) {
-  const journal = SpreadsheetApp.openById(SHEET_ID).getSheetByName(P_TABS.JOURNAL);
-  const liste = [];
-  if (!journal || journal.getLastRow() < 2) return liste;
-  journal.getRange(2, 1, journal.getLastRow() - 1, JOURNAL_HEADERS.length).getValues().forEach(function (l) {
-    if (l[1] !== id || l[6] === 'Annulé') return;
-    liste.push({ date: eqDate_(l[0]), libelle: EQ_LIBELLES_EMAIL[l[4]] || String(l[4]), statut: String(l[6]), mode: String(l[5] || ''), detail: String(l[7] || '') });
-  });
-  return liste.reverse().slice(0, 30);
-}
-
-function eqDetail_(id) {
-  if (!eqIdValide_(id)) return { ok: false, error: 'Candidature inconnue.' };
-  const c = eqCandidature_(id);
-  if (!c) return { ok: false, error: 'Candidature introuvable.' };
-  const ligne = trouverSuivi_(id);
-  c.statuts = eqStatuts_(ligne);
-  c.email_pret = eqEmailPret_(id);
-  c.emails = eqHistorique_(id);
-  return { ok: true, detail: c, listes: SUIVI_LISTES, mode: eqConfig_().mode };
-}
-
-// Change un statut du Suivi (les emails se préparent comme dans le Sheet, rien ne part).
-function eqStatut_(id, piste, valeur) {
-  if (!eqIdValide_(id)) return { ok: false, error: 'Candidature inconnue.' };
-  if (EQ_PISTES.indexOf(piste) < 0 || (SUIVI_LISTES[piste] || []).indexOf(valeur) < 0) return { ok: false, error: 'Statut inconnu.' };
-  const feuille = feuilleSuivi_();
-  const ligne = trouverSuivi_(id);
-  if (!ligne) return { ok: false, error: 'Cette candidature est absente de Suivi. Menu Portail du Sheet : Créer les lignes Suivi manquantes.' };
-  const r = changerStatut_(feuille, ligne._row, piste, valeur);
-  const apres = trouverSuivi_(id);
-  return { ok: r.ok !== false, message: r.message, statuts: eqStatuts_(apres), email_pret: eqEmailPret_(id), emails: eqHistorique_(id) };
-}
-
-// Envoie l'email préparé. En mode TEST il part vers l'adresse de test, jamais vers le candidat.
-// edit (facultatif) : { objet, corps, base } = texte modifié pour cet envoi seulement, le modèle ne change pas.
-function eqEnvoyer_(id, edit) {
-  if (!eqIdValide_(id)) return { ok: false, error: 'Candidature inconnue.' };
-  const ligne = trouverSuivi_(id);
-  if (!ligne) return { ok: false, error: 'Cette candidature est absente de Suivi.' };
-  let surcharge = null;
-  if (edit && typeof edit === 'object') {
-    const objet = String(edit.objet || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 200);
-    const corps = String(edit.corps || '').replace(/\r\n/g, '\n').trim().slice(0, 20000);
-    if (!objet || !corps) return { ok: false, error: "L'objet et le texte de l'email ne peuvent pas être vides." };
-    surcharge = { objet: objet, corps: corps, base: String(edit.base || '') };
-  }
-  const r = envoyerPourLigne_(ligne, surcharge);
-  if (!r) return { ok: false, error: "Aucun email prêt pour cette candidature. Change d'abord un statut." };
-  const apres = trouverSuivi_(id);
-  return { ok: r.statut === 'Envoyé', statut: r.statut, detail: r.detail, statuts: eqStatuts_(apres), email_pret: eqEmailPret_(id), emails: eqHistorique_(id) };
-}
-
-
-// =====================================================================
-// PARTICIPANTS (dossiers finaux) et BÉNÉVOLES
-// Les lignes viennent des onglets de la base ; les statuts, des lignes Suivi.
-// Participants : rapprochés de leur candidature par email + projet + pôle.
-// Bénévoles : la ligne Suivi porte la même référence d'inscription.
-// =====================================================================
-// Calculé à l'appel (et non au chargement du fichier) : TABS est défini dans Code.gs, dont l'ordre de chargement n'est pas garanti.
-function eqOngletsParticipants_() { return Object.keys(TABS).filter(function (c) { return c !== 'Bénévole'; }).map(function (c) { return TABS[c]; }); }
-
-// Lit un onglet de la base (Artistes, Bénévoles...) : une liste d'objets { clé: valeur }.
-function eqLireOnglet_(tab) {
-  const feuille = SpreadsheetApp.openById(SHEET_ID).getSheetByName(tab);
-  if (!feuille || feuille.getLastRow() < 2) return [];
-  const colonnes = columnsFor_(tab);
-  const largeur = Math.max(feuille.getLastColumn(), colonnes.length);
-  const valeurs = feuille.getRange(1, 1, feuille.getLastRow(), largeur).getValues();
-  const indices = colonnes.map(function (c) { return valeurs[0].indexOf(c.label); });
-  return valeurs.slice(1).map(function (v) {
-    const o = {};
-    colonnes.forEach(function (c, k) { if (indices[k] >= 0) o[c.key] = v[indices[k]]; });
-    return o;
-  }).filter(function (o) { return o.submission_id; });
-}
-
-function eqSuiviLignes_() {
-  const feuille = feuilleSuivi_();
-  const lignes = [];
-  if (feuille.getLastRow() < 2) return lignes;
-  feuille.getRange(2, 1, feuille.getLastRow() - 1, SUIVI_HEADERS.length).getValues().forEach(function (v) {
-    if (!v[0]) return;
-    const l = {};
-    SUIVI_HEADERS.forEach(function (h, k) { l[h] = v[k]; });
-    lignes.push(l);
-  });
-  return lignes;
-}
-
-function eqDateTri_(valeur) { const d = dateCellule_(valeur); return d ? d.getTime() : 0; }
-
-function eqListeParticipants_() {
-  const parId = {};
-  eqSuiviLignes_().forEach(function (l) { parId[String(l.id)] = l; });
-  const enAttente = {};
-  emailsEnAttente_().forEach(function (m) { enAttente[m.id] = true; });
-  const items = [];
-  Object.keys(TABS).forEach(function (categorie) {
-    if (categorie === 'Bénévole') return;
-    eqLireOnglet_(TABS[categorie]).forEach(function (o) {
-      const pole = String(o.category || categorie);
-      const s = parId[String(o.submission_id)] || null;
-      items.push({
-        id: String(o.submission_id), tab: TABS[categorie], pole: pole, nom: String(o.name || ''),
-        sous_titre: String(o.subtitle || o.title_pro || o.artist_type || ''), email: String(o.email || ''),
-        date: eqDate_(o.timestamp), _t: eqDateTri_(o.timestamp), dossier: String(o.drive_folder || ''), fiche: String(o.document_url || ''),
-        suivi_id: s ? String(s.id) : '', sans_suivi: !s, selection: s ? (s['Sélection'] || '') : '', dossier_final: s ? (s['Dossier final'] || '') : '',
-        paiement: s ? (s['Paiement'] || '') : '', confirmation: s ? (s['Confirmation'] || '') : '', alerte: s ? String(s['Alerte'] || '') : '',
-        email_a_envoyer: !!enAttente[String(o.submission_id)]
-      });
+        candActualiserVisibilite();
+      };
+      box.appendChild(b);
     });
-  });
-  items.sort(function (a, b) { return b._t - a._t; });
-  items.forEach(function (i) { delete i._t; });
-  return { ok: true, items: items };
+    div.appendChild(box);
+  } else {
+    const el = document.createElement(f.t === 'a' ? 'textarea' : 'input');
+    el.id = 'cand-champ-' + f.k; el.name = f.k; lab.htmlFor = el.id;
+    el.autocomplete = ({ first_name: 'given-name', last_name: 'family-name', email: 'email', phone: 'tel' })[f.k] || 'off';
+    if (f.t === 'a') { el.rows = 3; el.maxLength = 2000; } else { el.type = f.t === 'n' ? 'number' : (f.type || 'text'); if (f.t !== 'n') el.maxLength = 300; }
+    if (f.t === 'n') { el.min = '0'; el.step = 'any'; }
+    el.value = cand.vals[f.k] || '';
+    el.addEventListener('input', () => { cand.vals[f.k] = el.value.trim(); if (f.t === 'a') autoGrow(el); });
+    div.appendChild(el);
+  }
+  return div;
 }
+function candRendre(idConteneur, champs) {
+  const c = $(idConteneur); c.innerHTML = '';
+  champs.forEach(f => c.appendChild(candChamp(f)));
+  candActualiserVisibilite();
+}
+function candValider(champs) {
+  for (const f of champs) {
+    if (!f.r || !candVisible(f)) continue;
+    const v = cand.vals[f.k];
+    if (v === undefined || v === '' || (Array.isArray(v) && !v.length)) return 'À compléter : ' + f.l;
+  }
+  return '';
+}
+function candMontant(m) { return /^[0-9][0-9\s.,]*$/.test(String(m).trim()) ? String(m).trim() + ' €' : String(m); }
 
-const EQ_GROUPES = {
-  presentation: 'Présentation', members: 'Membres', second: 'Deuxième personne', links: 'Liens',
-  artisttech: 'Infos techniques', workshoptech: 'Infos techniques', standtech: 'Infos techniques', technical: 'Infos techniques', seo: 'Pour le site (SEO)'
+// La configuration (pôles, conditions, ouvert ou fermé) se charge dès l'ouverture de la page :
+// quand la personne clique sur Candidater, elle est déjà là ou presque.
+let candPrefetch = null;
+let derniereConfig = null;   // dernière configuration reçue du serveur (pôles, payant ou gratuit)
+function candPreCharger() {
+  if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return;
+  candPrefetch = fetch(CONFIG.scriptUrl + '?action=config').then(r => r.json()).then(c => { derniereConfig = c; return c; }).catch(() => null);
+}
+const CAND_COULEURS = {
+  'Artiste': ['#FFE3F2', '#E58BC4'], 'Atelier': ['#D6F4F6', '#6CC6D1'], 'Bien-être': ['#DDF2E4', '#7CC79A'],
+  'Artisan': ['#FBEFD2', '#E3BE63'], "L'Antre deux mondes": ['#E9DDF5', '#B596D8'], 'Stand / Miam Miam': ['#FFE1D6', '#EE9C7E']
 };
-const EQ_ORDRE_GROUPES = ['Présentation', 'Membres', 'Deuxième personne', 'Infos techniques', 'Liens', 'Pour le site (SEO)'];
-// Déjà montrés ailleurs (titre, contact, boutons) ou purement techniques : pas répétés dans les cartes.
-const EQ_EXCLUS = ['category', 'name', 'phone', 'email', 'first_name', 'last_name', 'drive_folder', 'document_url', 'submission_id', 'timestamp', 'consent',
-  'featured_image', 'gallery_folder', 'gallery_formats', 'technical_sheet', 'contract_file', 'payment_proof', 'volunteer_portrait', 'volunteer_team_1', 'volunteer_team_2', 'volunteer_motivation'];
-
-// Toutes les informations du dossier final, regroupées en cartes (rien d'oublié : on suit les colonnes de l'onglet).
-function eqGroupes_(tab, o) {
-  const groupes = {};
-  const ajouter = function (titre, champ) { (groupes[titre] = groupes[titre] || []).push(champ); };
-  const vus = {};
-  columnsFor_(tab).forEach(function (c) {
-    if (EQ_EXCLUS.indexOf(c.key) >= 0) return;
-    const valeur = String(o[c.key] == null ? '' : o[c.key]).trim();
-    if (valeur === '') return;
-    const titre = EQ_GROUPES[c.group] || 'Autres informations';
-    const membre = c.key.match(/^member_(\d)_(name|bio)$/);
-    if (membre) {
-      if (vus[membre[1]]) return;
-      vus[membre[1]] = true;
-      const nom = String(o['member_' + membre[1] + '_name'] || '').trim();
-      const bio = String(o['member_' + membre[1] + '_bio'] || '').trim();
-      if (nom || bio) ajouter('Membres', { cle: 'member_' + membre[1], label: nom || ('Membre ' + membre[1]), value: bio || '-' });
-      return;
-    }
-    ajouter(titre, { cle: c.key, label: c.label, value: valeur, lien: c.group === 'links' });
+function candEtatChargement(actif) {
+  cand.chargement = actif;
+  const bouton = $('btn-cand-suite0');
+  if (bouton) { bouton.disabled = actif; bouton.style.opacity = actif ? '.55' : ''; }
+  if (!actif) return;
+  $('cand-conditions').style.display = 'none';
+  $('cand-etat').innerHTML = '<div class="chargement-poles" role="status" aria-live="polite"><span class="tourne"></span><span>Chargement des pôles… Cela peut prendre quelques secondes, merci de patienter.</span></div>';
+  $('cand-poles').innerHTML = '<div class="squelette"></div>'.repeat(6);
+}
+async function ouvrirCandidature() {
+  aller('cand-0');
+  candEtatChargement(true);
+  const deja = candPrefetch; candPrefetch = null;   // utilisé une seule fois, ensuite on recharge pour être à jour
+  cand.config = null;
+  try {
+    if (deja) cand.config = await deja;
+    if (!cand.config) { const r = await fetch(CONFIG.scriptUrl + '?action=config'); cand.config = await r.json(); }
+    if (cand.config && cand.config.ok) derniereConfig = cand.config;
+  } catch (e) { cand.config = null; }
+  candEtatChargement(false);
+  candAfficherPoles();
+}
+function candAfficherPoles() {
+  const etat = $('cand-etat'), c = cand.config;
+  $('cand-poles').innerHTML = ''; $('cand-conditions').style.display = 'none';
+  if (!c || !c.ok) {
+    etat.innerHTML = '<div class="message-erreur visible">Impossible de charger le formulaire pour le moment. Vérifie ta connexion et réessaie.</div><div class="nav-etapes"><button class="btn btn-retour" type="button" onclick="ouvrirCandidature()">Réessayer</button></div>';
+    return;
+  }
+  if (!c.ouvert.candidatures) { etat.innerHTML = '<div class="message-erreur visible">Les candidatures sont fermées pour le moment.</div>'; return; }
+  etat.innerHTML = '';
+  if (!c.poles.some(p => p.ouvert)) { etat.innerHTML = '<div class="message-erreur visible">Toutes les candidatures sont fermées pour le moment.</div>'; }
+  c.poles.forEach(p => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'puce'; b.dataset.pole = p.nom;
+    const coul = CAND_COULEURS[p.nom] || ['#E6E6EE', '#A5A5BD']; b.style.setProperty('--pole-fond', coul[0]); b.style.setProperty('--pole-bord', coul[1]);
+    b.textContent = p.ouvert ? p.nom : p.nom + ' (fermé)';
+    const icone = iconePole(p.nom); if (icone) b.insertBefore(icone, b.firstChild);
+    if (!p.ouvert) { b.disabled = true; b.style.opacity = '.5'; b.style.cursor = 'not-allowed'; }
+    else b.onclick = () => { $('cand-poles').querySelectorAll('.puce').forEach(x => x.classList.remove('choisie')); b.classList.add('choisie'); candChoisirPole(p.nom); };
+    $('cand-poles').appendChild(b);
   });
-  return EQ_ORDRE_GROUPES.concat(Object.keys(groupes).filter(function (t) { return EQ_ORDRE_GROUPES.indexOf(t) < 0; }))
-    .filter(function (t) { return groupes[t]; }).map(function (t) { return { titre: t, champs: groupes[t] }; });
+}
+// Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
+// Pour changer une icône : modifie seulement le nom du fichier ici. Si le fichier manque, l'icône disparaît sans casser la page.
+const ICONES_POLES = {
+  'Artiste': 'ICON ARTISTE.png',
+  'Atelier': 'ICON ATELIER.png',
+  'Bien-être': 'ICON BIEN-ETRE.png',
+  'Artisan': 'ICON ARTISAN.png',
+  "L'Antre deux mondes": 'ICON MOON AND START - ENTRE DEUX MONDES.png',
+  'Stand / Miam Miam': 'ICON FOOD TRUCK.png',
+  'Autre': 'ICON STAND.png'
+};
+function iconePole(pole) {
+  const fichier = ICONES_POLES[pole];
+  if (!fichier) return null;
+  const img = document.createElement('img');
+  img.className = 'icone-pole'; img.alt = ''; img.src = 'assets/' + encodeURIComponent(fichier);
+  img.addEventListener('error', () => img.remove());
+  return img;
+}
+function candChoisirPole(nom) {
+  cand.pole = nom; $('cand_terms').checked = false;
+  const p = cand.config.poles.find(x => x.nom === nom);
+  let tarif = '';
+  if (p.payant && p.montant) tarif = 'Participation : ' + candMontant(p.montant) + (p.montant_duo ? ' en individuel, ' + candMontant(p.montant_duo) + ' en duo' : '') + '.\n\n';
+  const texte = (p.conditions || '').trim();
+  $('cand-conditions-texte').textContent = texte ? tarif + texte : '';
+  $('cand-conditions-texte').style.display = texte ? 'block' : 'none';
+  $('cand-conditions-vide').style.display = texte ? 'none' : 'block';
+  $('cand-conditions-vide').classList.add('visible');
+  $('cand-terms-boite').style.display = texte ? 'block' : 'none';
+  $('cand-pdf-boite').style.display = texte ? 'flex' : 'none';
+  $('cand-conditions').style.display = 'block';
+}
+async function candPdf() {
+  const btn = $('cand-pdf'), avant = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Préparation du PDF… quelques secondes';
+  try {
+    const r = await fetch(CONFIG.scriptUrl + '?action=conditions_pdf&pole=' + encodeURIComponent(cand.pole));
+    const rep = await r.json();
+    if (!rep.ok) throw new Error(rep.error || 'PDF indisponible');
+    const octets = Uint8Array.from(atob(rep.data), c => c.charCodeAt(0));
+    const url = URL.createObjectURL(new Blob([octets], { type: 'application/pdf' }));
+    const a = document.createElement('a'); a.href = url; a.download = rep.filename || 'conditions.pdf';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  } catch (e) { erreur('cand-0', 'Le PDF n’a pas pu être préparé : ' + e.message + '\nLes conditions restent lisibles ci-dessus.'); }
+  finally { btn.disabled = false; btn.textContent = avant; }
+}
+function candSuite0() {
+  // « Fermé » ne s'affiche que si la page a vraiment lu que c'est fermé. Pendant le chargement ou en cas d'échec, on le dit autrement.
+  if (cand.chargement) return erreur('cand-0', 'Les pôles sont encore en chargement. Patiente quelques secondes, puis clique à nouveau sur Continuer.');
+  if (!cand.config || !cand.config.ok) return erreur('cand-0', 'Le formulaire n’a pas pu se charger. Clique sur Retour puis sur Candidater pour réessayer.');
+  if (!cand.config.ouvert.candidatures) return erreur('cand-0', 'Les candidatures sont fermées pour le moment.');
+  if (!cand.pole) return erreur('cand-0', 'Choisis ton pôle.');
+  const p = cand.config.poles.find(x => x.nom === cand.pole);
+  if (!p.ouvert) return erreur('cand-0', 'Les candidatures sont fermées pour ce pôle.');
+  if (!(p.conditions || '').trim()) return erreur('cand-0', 'Les conditions de ce pôle ne sont pas encore publiées. Reviens bientôt.');
+  if (!$('cand_terms').checked) return erreur('cand-0', 'Coche la case pour accepter les conditions et les critères de sélection.');
+  candRendre('cand-commun', CAND_COMMUN);
+  aller('cand-1');
+}
+function candSuite1() {
+  const m = candValider(CAND_COMMUN);
+  if (m) return erreur('cand-1', m);
+  if (!/^\S+@\S+\.\S+$/.test(cand.vals.email)) return erreur('cand-1', 'Écris une adresse email valide.');
+  candRendre('cand-specifique', candChamps());
+  $('cand-photos-label').textContent = cand.pole === 'Artisan' ? 'Photos montrant clairement tes créations (1 à 6)' : 'Photos ou exemples de ta proposition (1 à 6)';
+  $('cand-donnees-texte').textContent = (cand.config.texte_donnees || '').trim();
+  candVignettes();
+  aller('cand-2');
 }
 
-function eqDetailParticipant_(id, tab) {
-  if (!eqIdValide_(id) || eqOngletsParticipants_().indexOf(tab) < 0) return { ok: false, error: 'Participant inconnu.' };
-  const o = eqLireOnglet_(tab).filter(function (x) { return String(x.submission_id) === id; })[0];
-  if (!o) return { ok: false, error: 'Participant introuvable.' };
-  const pole = String(o.category || '');
-  const s = trouverSuivi_(id);
-  const suiviId = s ? id : '';
-  const detail = {
-    genre: 'participant', id: id, tab: tab, pole: pole, projet: String(o.name || ''),
-    sous_titre: String(o.subtitle || o.title_pro || o.artist_type || ''),
-    prenom: String(o.first_name || ''), nom: String(o.last_name || ''), email: String(o.email || ''), telephone: String(o.phone || ''),
-    date: eqDate_(o.timestamp), dossier: String(o.drive_folder || ''), fiche: String(o.document_url || ''),
-    contrat: String(o.contract_file || ''), preuve: String(o.payment_proof || ''), payant: String(lirePole_(pole).payant || '').trim().toUpperCase() === 'OUI',
-    groupes: eqGroupes_(tab, o), suivi_id: suiviId, statuts: eqStatuts_(s),
-    email_pret: suiviId ? eqEmailPret_(suiviId) : null, emails: suiviId ? eqHistorique_(suiviId) : []
-  };
-  return { ok: true, detail: detail, listes: SUIVI_LISTES, mode: eqConfig_().mode };
-}
-
-function eqListeBenevoles_() {
-  const parId = {};
-  eqSuiviLignes_().forEach(function (l) { parId[String(l.id)] = l; });
-  const enAttente = {};
-  emailsEnAttente_().forEach(function (m) { enAttente[m.id] = true; });
-  const items = eqLireOnglet_('Bénévoles').map(function (o) {
-    const id = String(o.submission_id);
-    const s = parId[id] || null;
-    const motivation = String(o.volunteer_motivation || '');
-    return {
-      id: id, nom: String(o.name || ''), email: String(o.email || ''), telephone: String(o.phone || ''), date: eqDate_(o.timestamp), _t: eqDateTri_(o.timestamp),
-      equipes: [o.volunteer_team_1, o.volunteer_team_2].map(function (t) { return String(t || ''); }).filter(Boolean),
-      motivation: motivation.length > 160 ? motivation.slice(0, 160) + '...' : motivation,
-      dossier: String(o.drive_folder || ''), fiche: String(o.document_url || ''),
-      selection: s ? (s['Sélection'] || '') : '', alerte: s ? String(s['Alerte'] || '') : '', email_a_envoyer: !!enAttente[id], sans_suivi: !s
+function candRedimensionner(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const r = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * r); c.height = Math.round(img.naturalHeight * r);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      let q = 0.82, d = c.toDataURL('image/jpeg', q);
+      while (d.length * 0.75 > 900 * 1024 && q > 0.5) { q -= 0.07; d = c.toDataURL('image/jpeg', q); }
+      URL.revokeObjectURL(url); resolve(d);
     };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Photo illisible. Essaie un fichier JPG ou PNG.')); };
+    img.src = url;
   });
-  items.sort(function (a, b) { return b._t - a._t; });
-  items.forEach(function (i) { delete i._t; });
-  return { ok: true, items: items };
 }
-
-function eqDetailBenevole_(id) {
-  if (!eqIdValide_(id)) return { ok: false, error: 'Bénévole inconnu.' };
-  const o = eqLireOnglet_('Bénévoles').filter(function (x) { return String(x.submission_id) === id; })[0];
-  if (!o) return { ok: false, error: 'Bénévole introuvable.' };
-  const s = trouverSuivi_(id);
-  const detail = {
-    genre: 'benevole', id: id, projet: String(o.name || ''), prenom: String(o.first_name || ''), nom: String(o.last_name || ''),
-    email: String(o.email || ''), telephone: String(o.phone || ''), date: eqDate_(o.timestamp),
-    equipes: [o.volunteer_team_1, o.volunteer_team_2].map(function (t) { return String(t || ''); }).filter(Boolean),
-    motivation: String(o.volunteer_motivation || ''), dossier: String(o.drive_folder || ''), fiche: String(o.document_url || ''),
-    suivi_id: s ? id : '', statuts: eqStatuts_(s), email_pret: s ? eqEmailPret_(id) : null, emails: s ? eqHistorique_(id) : []
-  };
-  return { ok: true, detail: detail, listes: SUIVI_LISTES, mode: eqConfig_().mode };
-}
-
-// Chiffres de l'accueil (comptés sans tout relire : rapide).
-function eqStats_() {
-  const classeur = SpreadsheetApp.openById(SHEET_ID);
-  const compter = function (tab) { const f = classeur.getSheetByName(tab); return f && f.getLastRow() > 1 ? f.getLastRow() - 1 : 0; };
-  let participants = 0;
-  eqOngletsParticipants_().forEach(function (tab) { participants += compter(tab); });
-  const parPole = {};
-  Object.keys(TABS).forEach(function (categorie) { if (categorie !== 'Bénévole') parPole[categorie] = compter(TABS[categorie]); });
-  return { ok: true, participants: participants, participants_par_pole: parPole, benevoles: compter('Bénévoles'), emails_a_envoyer: emailsEnAttente_().length };
-}
-
-// Crée à la demande la ligne Suivi d'un bénévole ou d'un participant qui n'en a pas encore (arrivé avant la mise à jour). Aucun email n'est envoyé.
-function eqCreerSuivi_(genre, id, tab) {
-  if (!eqIdValide_(id)) return { ok: false, error: 'Référence inconnue.' };
-  if (trouverSuivi_(id)) return { ok: true, deja: true };
-  if (genre === 'benevole') {
-    const b = eqLireOnglet_('Bénévoles').filter(function (o) { return String(o.submission_id) === id; })[0];
-    if (!b) return { ok: false, error: 'Bénévole introuvable.' };
-    ajouterSuivi_({ id: id, pole: POLE_BENEVOLE, projet: b.name, formule: 'Individuel', prenom: b.first_name, nom: b.last_name, email: b.email, notes: b.drive_folder }, false);
-    return { ok: true };
+$('cand-depot').onclick = () => $('cand-fichier').click();
+$('cand-fichier').onchange = async e => {
+  for (const f of Array.from(e.target.files)) {
+    if (cand.photos.length >= 6) { erreur('cand-2', '6 photos maximum.'); break; }
+    try { cand.photos.push(await candRedimensionner(f)); } catch (err) { erreur('cand-2', err.message); }
   }
-  if (genre === 'participant' && eqOngletsParticipants_().indexOf(tab) >= 0) {
-    const o = eqLireOnglet_(tab).filter(function (x) { return String(x.submission_id) === id; })[0];
-    if (!o) return { ok: false, error: 'Participant introuvable.' };
-    ajouterSuiviParticipant_({ id: id, categorie: String(o.category || ''), projet: o.name, prenom: o.first_name, nom: o.last_name, email: o.email, dossier: o.drive_folder }, false);
-    return { ok: true };
-  }
-  return { ok: false, error: 'Type inconnu.' };
+  e.target.value = ''; candVignettes();
+};
+function candVignettes() {
+  const c = $('cand-vignettes'); c.innerHTML = '';
+  cand.photos.forEach((d, i) => {
+    const v = document.createElement('div'); v.className = 'vignette';
+    v.innerHTML = '<img src="' + d + '" alt="Photo ' + (i + 1) + '"><button class="retirer" type="button" aria-label="Retirer cette photo">✕</button>';
+    v.querySelector('.retirer').onclick = () => { cand.photos.splice(i, 1); candVignettes(); };
+    c.appendChild(v);
+  });
 }
 
-
-// =====================================================================
-// 12. UTILISATION DU PORTAIL ET STATISTIQUES
-// Un seul mot de passe pour toute l'équipe : on compte les connexions et le temps d'utilisation, pas les personnes.
-// =====================================================================
-const EQ_TAB_ACTIVITE = 'Activité Portail';
-const EQ_ACTIVITE_ENTETES = ['Début', 'Dernière activité', 'Temps actif (min)', 'Session'];
-const EQ_PAUSE_MAX_MS = 30 * 60 * 1000;      // une pause plus longue n'est pas comptée comme du temps d'utilisation
-const EQ_ECRITURE_MS = 5 * 60 * 1000;        // la feuille est mise à jour au plus toutes les 5 minutes par session
-
-function eqFeuilleActivite_() {
-  const classeur = SpreadsheetApp.openById(SHEET_ID);
-  let feuille = classeur.getSheetByName(EQ_TAB_ACTIVITE);
-  if (!feuille) {
-    feuille = classeur.insertSheet(EQ_TAB_ACTIVITE);
-    feuille.getRange(1, 1, 1, EQ_ACTIVITE_ENTETES.length).setValues([EQ_ACTIVITE_ENTETES]);
-    feuille.getRange(1, 1, 1, EQ_ACTIVITE_ENTETES.length).setFontWeight('bold');
-    feuille.setFrozenRows(1);
-  }
-  return feuille;
+let candTimer = null;
+function candProgres(actif) {
+  const boite = $('cand-progress'), rempl = $('cp-rempl'), etape = $('cp-etape');
+  clearInterval(candTimer);
+  if (!actif) { boite.style.display = 'none'; return; }
+  boite.style.display = 'block'; rempl.style.width = '4%'; etape.textContent = 'Envoi de tes photos et de tes réponses…';
+  boite.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const debut = Date.now();
+  candTimer = setInterval(() => {
+    const t = (Date.now() - debut) / 1000;
+    const pct = Math.round(92 * (1 - Math.exp(-t / 14)));
+    rempl.style.width = pct + '%';
+    etape.textContent = pct < 25 ? 'Envoi de tes photos et de tes réponses…' : pct < 60 ? 'Enregistrement de ta candidature…' : 'Création de ta fiche et de ton email de confirmation… (cela peut prendre une vingtaine de secondes)';
+  }, 500);
 }
-
-function eqJournaliserConnexion_(jeton) {
+['cand-0', 'cand-1', 'cand-2'].forEach(n => {
+  const ecran = $('ecran-' + n);
+  ['input', 'change', 'click'].forEach(ev => ecran.addEventListener(ev, e => {
+    if (e.target.closest && e.target.closest('.nav-etapes')) return;   // le bouton Continuer lui-même ne l'efface pas
+    effacerErreur(n);
+  }));
+});
+candPreCharger();
+async function candEnvoyer() {
+  const champs = candChamps();
+  const m = candValider(champs);
+  if (m) return erreur('cand-2', m);
+  if (!cand.photos.length) return erreur('cand-2', 'Ajoute au moins une photo.');
+  if (!$('cand_data').checked) return erreur('cand-2', 'Coche la case pour confirmer que tu as pris connaissance de l’information sur tes données.');
+  const btn = $('btn-cand-envoyer'); btn.disabled = true; btn.textContent = 'Envoi en cours…'; candProgres(true);
+  const reponses = [];
+  CAND_COMMUN.concat(champs).forEach(f => {
+    if (!candVisible(f)) return;
+    const v = cand.vals[f.k];
+    if (v === undefined || v === '' || (Array.isArray(v) && !v.length)) return;
+    reponses.push({ k: f.k, label: f.l, value: Array.isArray(v) ? v.join(', ') : String(v) });
+  });
+  const v = cand.vals;
   try {
-    const feuille = eqFeuilleActivite_();
-    const maintenant = Date.now();
-    feuille.appendRow([new Date(maintenant), new Date(maintenant), 0, String(jeton).substring(0, 8)]);
-    const etat = { ligne: feuille.getLastRow(), derniere: maintenant, actif: 0, ecrit: maintenant };
-    CacheService.getScriptCache().put('eq_act_' + jeton, JSON.stringify(etat), EQ_SESSION_SECONDES);
-  } catch (err) { Logger.log('Journal de connexion : ' + err.message); }
+    const res = await fetch(CONFIG.scriptUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow',
+      body: JSON.stringify({ kind: 'application', submission_id: cand.id, honeypot: $('honeypot').value, pole: cand.pole,
+        formule: v.stand === 'Duo (2 personnes)' ? 'Duo' : 'Individuel', name: v.name, first_name: v.first_name, last_name: v.last_name,
+        email: v.email, phone: v.phone, past: v.past, past_years: v.past_years || '',
+        consent_terms: $('cand_terms').checked, consent_data: $('cand_data').checked, photos: cand.photos, answers: reponses }) });
+    const rep = await res.json();
+    if (!rep.ok) throw new Error(rep.error || 'Envoi refusé');
+    clearInterval(candTimer); $('cp-rempl').style.width = '100%'; $('cp-etape').textContent = 'Terminé ✔';
+    $('titre-merci').textContent = 'Merci ' + v.first_name + ' ! 🎉';
+    document.querySelector('#ecran-merci .intro').textContent = 'Ta candidature est bien reçue. Tu vas recevoir un email de confirmation.' +
+      (cand.config.date_reponses ? ' Les réponses sont prévues à partir du ' + cand.config.date_reponses + '.' : '') +
+      ' Cet accusé de réception ne confirme pas encore ta participation.';
+    aller('merci'); confettis();
+  } catch (e) {
+    erreur('cand-2', 'Envoi impossible : ' + e.message + '\nRien n’est perdu, tu peux réessayer.');
+  } finally { btn.disabled = false; btn.textContent = 'Envoyer ma candidature 🕊️'; candProgres(false); }
 }
+</script>
 
-// Appelée à chaque action de l'équipe : fait avancer le temps actif de la session, et met la feuille à jour de temps en temps.
-function eqToucherSession_(jeton) {
-  try {
-    const cache = CacheService.getScriptCache();
-    const brut = cache.get('eq_act_' + jeton);
-    if (!brut) return;
-    const etat = JSON.parse(brut);
-    const maintenant = Date.now();
-    etat.actif += Math.min(Math.max(maintenant - etat.derniere, 0), EQ_PAUSE_MAX_MS);
-    etat.derniere = maintenant;
-    if (maintenant - etat.ecrit >= EQ_ECRITURE_MS) {
-      eqFeuilleActivite_().getRange(etat.ligne, 2, 1, 2).setValues([[new Date(maintenant), Math.round(etat.actif / 60000)]]);
-      etat.ecrit = maintenant;
-    }
-    cache.put('eq_act_' + jeton, JSON.stringify(etat), EQ_SESSION_SECONDES);
-  } catch (err) { Logger.log('Suivi de session : ' + err.message); }
-}
-
-function eqJourParis_(valeur) {
-  const d = valeur instanceof Date ? valeur : new Date(valeur);
-  if (isNaN(d.getTime())) return '';
-  return Utilities.formatDate(d, 'Europe/Paris', 'yyyy-MM-dd');
-}
-function eqDerniersJours_(nombre) {
-  const jours = [];
-  const base = Date.now();
-  for (let i = nombre - 1; i >= 0; i--) jours.push(eqJourParis_(new Date(base - i * 86400000)));
-  return jours;
-}
-function eqCompterParJour_(dates, jours) {
-  const compte = {};
-  dates.forEach(function (d) { const j = eqJourParis_(d); if (j) compte[j] = (compte[j] || 0) + 1; });
-  return jours.map(function (j) { return { jour: j, n: compte[j] || 0 }; });
-}
-function eqIncrementer_(objet, cle, pas) { if (cle === undefined || cle === null || String(cle).trim() === '') return; objet[cle] = (objet[cle] || 0) + (pas || 1); }
-
-// Chiffres de la page Statistiques. Mis en mémoire 5 minutes (le bouton Actualiser force le recalcul).
-function eqStatsDetail_(frais) {
-  const cache = CacheService.getScriptCache();
-  if (!frais) { const brut = cache.get('eq_stats_detail'); if (brut) { try { return JSON.parse(brut); } catch (err) { /* recalcul */ } } }
-  const classeur = SpreadsheetApp.openById(SHEET_ID);
-  const jours = eqDerniersJours_(30);
-  const suiviParId = {};
-  eqSuiviLignes_().forEach(function (l) { suiviParId[String(l.id)] = l; });
-  const estDemo = function (id) { return String(id).indexOf('demo-') === 0; };
-  let demo = 0; Object.keys(suiviParId).forEach(function (id) { if (estDemo(id)) demo++; });
-
-  // ---- candidatures ----
-  const cand = { total: 0, par_pole: {}, par_statut: {}, par_jour: [] };
-  const feuilleC = classeur.getSheetByName(P_TABS.CANDIDATURES);
-  const datesC = [];
-  if (feuilleC && feuilleC.getLastRow() > 1) {
-    const iDate = CANDIDATURES_HEADERS.indexOf('Date'), iId = CANDIDATURES_HEADERS.indexOf('id'), iPole = CANDIDATURES_HEADERS.indexOf('Pôle');
-    feuilleC.getRange(2, 1, feuilleC.getLastRow() - 1, CANDIDATURES_HEADERS.length).getValues().forEach(function (l) {
-      if (!l[iId]) return;
-      cand.total++; datesC.push(l[iDate]);
-      eqIncrementer_(cand.par_pole, l[iPole]);
-      const s = suiviParId[String(l[iId])];
-      eqIncrementer_(cand.par_statut, s && s['Sélection'] ? s['Sélection'] : 'À étudier');
-    });
-  }
-  cand.par_jour = eqCompterParJour_(datesC, jours);
-
-  // ---- participants (dossiers finaux) ----
-  const part = { total: 0, par_pole: {}, contrats: 0, preuves: 0, dossier_final: {}, paiement: {}, confirmation: {} };
-  Object.keys(TABS).forEach(function (categorie) {
-    if (categorie === 'Bénévole') return;
-    eqLireOnglet_(TABS[categorie]).forEach(function (o) {
-      if (!o.submission_id) return;
-      part.total++; eqIncrementer_(part.par_pole, categorie);
-      if (String(o.contract_file || '').trim()) part.contrats++;
-      if (String(o.payment_proof || '').trim()) part.preuves++;
-      const s = suiviParId[String(o.submission_id)];
-      if (s) { eqIncrementer_(part.dossier_final, s['Dossier final']); eqIncrementer_(part.paiement, s['Paiement']); eqIncrementer_(part.confirmation, s['Confirmation']); }
-    });
-  });
-
-  // ---- bénévoles ----
-  const ben = { total: 0, par_equipe: {}, par_statut: {} };
-  eqLireOnglet_('Bénévoles').forEach(function (o) {
-    if (!o.submission_id) return;
-    ben.total++; eqIncrementer_(ben.par_equipe, o.volunteer_team_1); if (o.volunteer_team_2 && o.volunteer_team_2 !== o.volunteer_team_1) eqIncrementer_(ben.par_equipe, o.volunteer_team_2);
-    const s = suiviParId[String(o.submission_id)];
-    eqIncrementer_(ben.par_statut, s && s['Sélection'] ? s['Sélection'] : 'À étudier');
-  });
-
-  // ---- emails ----
-  const mails = { envoyes: 0, envoyes_reel: 0, envoyes_test: 0, erreurs: 0, a_envoyer: 0, par_type: {}, par_jour: [], quota_restant: null };
-  const feuilleJ = classeur.getSheetByName(P_TABS.JOURNAL);
-  const datesEnvoi = [];
-  if (feuilleJ && feuilleJ.getLastRow() > 1) {
-    feuilleJ.getRange(2, 1, feuilleJ.getLastRow() - 1, JOURNAL_HEADERS.length).getValues().forEach(function (l) {
-      if (!l[1]) return;
-      const statut = String(l[6]);
-      if (statut === 'Envoyé') { mails.envoyes++; if (String(l[5]) === 'REEL') mails.envoyes_reel++; else mails.envoyes_test++; datesEnvoi.push(l[0]); eqIncrementer_(mails.par_type, l[4]); }
-      else if (statut === 'Erreur') mails.erreurs++;
-      else if (statut === 'À envoyer') mails.a_envoyer++;
-    });
-  }
-  mails.par_jour = eqCompterParJour_(datesEnvoi, jours);
-  try { mails.quota_restant = MailApp.getRemainingDailyQuota(); } catch (err) { mails.quota_restant = null; }
-
-  // ---- utilisation du Portail ----
-  const portail = { connexions: 0, connexions_7j: 0, heures_actives: 0, derniere_connexion: '', par_jour: [] };
-  const feuilleA = classeur.getSheetByName(EQ_TAB_ACTIVITE);
-  if (feuilleA && feuilleA.getLastRow() > 1) {
-    const lignes = feuilleA.getRange(2, 1, feuilleA.getLastRow() - 1, EQ_ACTIVITE_ENTETES.length).getValues().filter(function (l) { return l[0]; });
-    const sept = jours.slice(-7);
-    let minutes = 0, derniere = 0;
-    lignes.forEach(function (l) {
-      portail.connexions++;
-      if (sept.indexOf(eqJourParis_(l[0])) >= 0) portail.connexions_7j++;
-      minutes += Number(l[2]) || 0;
-      const t = new Date(l[0]).getTime(); if (t > derniere) derniere = t;
-    });
-    portail.heures_actives = Math.round(minutes / 6) / 10;
-    portail.derniere_connexion = derniere ? Utilities.formatDate(new Date(derniere), 'Europe/Paris', 'dd/MM/yyyy HH:mm') : '';
-    portail.par_jour = eqCompterParJour_(lignes.map(function (l) { return l[0]; }), jours);
-  } else portail.par_jour = eqCompterParJour_([], jours);
-
-  const resultat = { ok: true, calcule: Utilities.formatDate(new Date(), 'Europe/Paris', 'dd/MM/yyyy HH:mm'), demo: demo, candidatures: cand, participants: part, benevoles: ben, emails: mails, portail: portail };
-  try { cache.put('eq_stats_detail', JSON.stringify(resultat), 300); } catch (err) { /* trop gros pour la mémoire : pas grave */ }
-  return resultat;
-}
+</body>
+</html>
