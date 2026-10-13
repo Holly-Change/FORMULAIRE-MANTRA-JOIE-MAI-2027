@@ -63,7 +63,7 @@ button, input { font: inherit; color: inherit; }
 .btn-doux:hover { background: rgba(11, 42, 71, 0.07); filter: none; }
 
 /* ---------- Structure : menu à gauche, contenu à droite ---------- */
-.app { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100vh; padding-top: env(safe-area-inset-top, 0px); }
+.app { display: grid; grid-template-columns: 292px minmax(0, 1fr); min-height: 100vh; padding-top: env(safe-area-inset-top, 0px); }
 .menu {
   position: sticky; top: 0; align-self: start; height: 100vh; display: flex; flex-direction: column;
   padding: 22px 14px 16px; background: linear-gradient(180deg, rgba(36, 62, 104, 0.94) 0%, rgba(58, 72, 126, 0.92) 55%, rgba(92, 78, 148, 0.9) 100%); color: #fff; overflow: hidden;
@@ -437,6 +437,36 @@ li .ico-btn img { width: 24px; height: 24px; }
 .a-lien-img .liens-champ a::before, .a-lien-img .copie-texte a::before { width: 18px; height: 18px; vertical-align: -4px; background-image: url("assets/LINK.png"); }
 .a-contrat-img .doc-contrat strong::before { width: 28px; height: 28px; vertical-align: -9px; background-image: url("assets/CONTRACT.png"); }
 .a-preuve-img .doc-preuve strong::before { width: 28px; height: 28px; vertical-align: -9px; background-image: url("assets/PAYMENT-PROOF.png"); }
+
+/* ---------- v3.22 : menu plus large, icônes des boutons principaux, défilement joli, onglets mobiles ---------- */
+.ico-nav { width: 32px; height: 32px; flex: none; display: grid; place-items: center; }
+.ico-nav:empty { display: none; }
+.ico-nav img { width: 32px; height: 32px; object-fit: contain; }
+.menu nav button, .menu nav a { font-size: 1.02rem; }
+.menu { scrollbar-width: thin; scrollbar-color: rgba(143, 123, 219, 0.55) transparent; }
+.menu::-webkit-scrollbar { width: 9px; }
+.menu::-webkit-scrollbar-track { background: transparent; }
+.menu::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #D8C6F3, #A9BDEF); border-radius: 9px; border: 2px solid transparent; background-clip: padding-box; }
+.menu::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #C7B0EE, #8FA9EA); background-clip: padding-box; }
+.cat-avec-icone { display: inline-flex; align-items: center; gap: 10px; }
+.cat-avec-icone img.icone-pole { width: 48px; height: 48px; }
+.menu nav .sous-menu .cat-nom img { display: none; }
+.ligne-info a, li a[href^="tel:"] { color: inherit; font-weight: 700; text-decoration: none; }
+@media (max-width: 900px) {
+  .onglets { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; }
+  .onglets::-webkit-scrollbar { display: none; }
+  .onglets button { flex: none; white-space: nowrap; padding: 10px 16px; scroll-snap-align: center; }
+  .onglets-emails button { padding: 8px 12px; font-size: .9rem; }
+  .cat-avec-icone img.icone-pole { width: 40px; height: 40px; }
+}
+
+/* Signature : le lien est un bouton pastel qui s'illumine au survol */
+.signature .btn-univers { display: inline-block; margin-top: 8px; padding: 9px 18px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(100deg, #F1C6E2, #D9C4F2 50%, #BFD9F2); color: #43296F; font-weight: 800; font-size: .84rem; text-decoration: none;
+  box-shadow: 0 2px 10px rgba(110, 91, 208, 0.2); transition: transform .2s ease, box-shadow .2s ease; }
+.signature .btn-univers::after { content: " \2192"; }
+.signature .btn-univers:hover, .signature .btn-univers:focus-visible { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(110, 91, 208, 0.38); text-decoration: none; }
+@media (prefers-reduced-motion: reduce) { .signature .btn-univers { transition: none; } .signature .btn-univers:hover { transform: none; } }
 </style>
 </head>
 <body>
@@ -466,20 +496,20 @@ li .ico-btn img { width: 24px; height: 24px; }
     <img class="lotus" src="assets/LOTUS%20PORTAL%20LOGO.png" alt="" onerror="this.remove()">
     <div class="marque" id="marque"></div>
     <nav aria-label="Menu du Portail Festival">
-      <button type="button" data-vue="accueil">Accueil
+      <button type="button" data-vue="accueil"><span class="ico-nav" data-ico="HOME.png"></span>Accueil
       </button>
-      <button type="button" data-vue="candidatures">Candidatures
+      <button type="button" data-vue="candidatures"><span class="ico-nav" data-ico="DOC.png"></span>Candidatures
       </button>
       <div class="sous-menu" id="sous-menu" aria-label="Candidatures par catégorie"></div>
-      <button type="button" data-vue="participants">Participants
+      <button type="button" data-vue="participants"><span class="ico-nav" data-ico="PARTICIPANTS.png"></span>Participants
       </button>
       <div class="sous-menu" id="sous-menu-participants" aria-label="Participants par catégorie"></div>
-      <button type="button" data-vue="benevoles">Bénévoles
+      <button type="button" data-vue="benevoles"><span class="ico-nav" data-ico="BENEVOLES.png"></span>Bénévoles
       </button>
       <div class="sous-menu" id="sous-menu-benevoles" aria-label="Bénévoles par équipe"></div>
-      <button type="button" data-vue="stats">Statistiques
+      <button type="button" data-vue="stats"><span class="ico-nav" data-ico="STATS.png"></span>Statistiques
       </button>
-      <a id="lien-drive" href="#" target="_blank" rel="noopener noreferrer" hidden>Dossiers Drive
+      <a id="lien-drive" href="#" target="_blank" rel="noopener noreferrer" hidden><span class="ico-nav" data-ico="FILE.png"></span>Dossiers Drive
       </a>
     </nav>
     <div class="bas">
@@ -563,7 +593,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.21-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.24-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 // Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
@@ -605,18 +635,21 @@ function sondeAsset(fichier, classe) {
   sonde.onerror = () => {};
   sonde.src = cheminAsset(fichier);
 }
+const IMAGE_ENTETE = 'assets/Pastel-sunrise-panorama-250kb.png';
 const ICONES_ACCUEIL = { fichier: 'DOC.png', loupe: 'SEARCH.png', coche: 'ACCEPTED.png', groupe: 'PARTICIPANTS.png', coeur: 'BENEVOLES.png', courrier: 'EMAIL-NOTIFICATION.png' };
 const ICONES_FICHE = { doc: 'DOC.png', dossier: 'FILE.png', mail: 'EMAIL - CLOSED.png', image: 'PHOTOS.png', tel: 'PHONE.png', cal: 'CALENDAR.png', user: 'PERSON.png' };
 // Icônes ajoutées devant un texte (alerte, copier, envoyer, lien, contrat, preuve) : la page ne les affiche que si le fichier existe.
 const SONDES_ICONES = [['ALERT.png', 'a-alerte-img'], ['COPY.png', 'a-copie-img'], ['SEND.png', 'a-envoi-img'], ['LINK.png', 'a-lien-img'], ['CONTRACT.png', 'a-contrat-img'], ['PAYMENT-PROOF.png', 'a-preuve-img']];
-// Signature : à modifier ici (nom, métier, site).
-const SIGNATURE = { nom: 'Holly Berridge', metier: 'Mesh Agency · design et webmaster', site: 'https://holly-berridge.netlify.app', siteTexte: 'holly-berridge.netlify.app' };
+// Signature : à modifier ici (texte, bouton, site).
+const SIGNATURE = { accroche: 'Portail imaginé par', nom: 'Holly Berridge', metier: 'Univers 2D, 3D et web', bouton: '✨ Entrer dans mon univers', site: 'https://holly-berridge.netlify.app' };
 function remplirSignatures() {
   document.querySelectorAll('.signature').forEach((z) => {
     z.textContent = '';
-    const a = document.createElement('span'); a.className = 'qui-signe'; a.textContent = 'Portail créé par ' + SIGNATURE.nom; z.appendChild(a);
+    z.appendChild(document.createTextNode(SIGNATURE.accroche));
+    const qui = document.createElement('span'); qui.className = 'qui-signe'; qui.textContent = SIGNATURE.nom; z.appendChild(qui);
     z.appendChild(document.createTextNode(SIGNATURE.metier)); z.appendChild(document.createElement('br'));
-    const l = document.createElement('a'); l.href = SIGNATURE.site; l.target = '_blank'; l.rel = 'noopener'; l.textContent = SIGNATURE.siteTexte; z.appendChild(l);
+    const l = document.createElement('a'); l.className = 'btn-univers'; l.href = SIGNATURE.site; l.target = '_blank'; l.rel = 'noopener';
+    l.textContent = SIGNATURE.bouton; l.setAttribute('aria-label', "Découvrir l'univers de " + SIGNATURE.nom + ' (nouvel onglet)'); z.appendChild(l);
   });
 }
 const ORDRE_POLES = ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'];
@@ -786,16 +819,19 @@ function habiller() {
   v.textContent = !versionServeur ? "Serveur pas à jour : Deploy > Manage deployments > New version"
     : (memeVersion ? 'Serveur ' + versionServeur : 'Page ' + VERSION_PAGE + ' / serveur ' + versionServeur + ' : recharge la page avec Ctrl+Shift+R, ou redéploie le serveur');
   $('hero-titre').textContent = config.edition || 'Mantra Joie 2027';
-  const image = imageSure(config.image);
   const hero = $('hero');
   hero.style.backgroundImage = '';
-  if (image) {
-    // On charge l'image d'abord : si le fichier est introuvable, le dégradé reste en place.
+  // Grande image de l'en-tête : le panorama pastel d'abord, puis l'image des Réglages, sinon le dégradé reste en place.
+  const candidates = [IMAGE_ENTETE, imageSure(config.image)].filter(Boolean);
+  const essayer = () => {
+    const image = candidates.shift();
+    if (!image) return;
     const test = new Image();
-    test.onload = () => { hero.style.backgroundImage = 'url("' + image.replace(/"/g, '%22') + '")'; };
-    test.onerror = () => { hero.style.backgroundImage = ''; };
-    test.src = image;
-  }
+    test.onload = () => { hero.style.backgroundImage = 'url("' + (/^assets\//.test(image) ? cheminAsset(image.slice(7)) : image).replace(/"/g, '%22') + '")'; };
+    test.onerror = () => { hero.style.backgroundImage = ''; essayer(); };
+    test.src = /^assets\//.test(image) ? cheminAsset(image.slice(7)) : image;
+  };
+  essayer();
   const drive = $('lien-drive');
   if (/^https:\/\/drive\.google\.com\//.test(config.drive || '')) { drive.href = config.drive; drive.hidden = false; } else { drive.hidden = true; }
 }
@@ -988,7 +1024,6 @@ function remplirSousMenu(zoneId, noms, compter, actifSi, clic, legende) {
     const b = document.createElement('button');
     b.type = 'button';
     const libelle = document.createElement('span'); libelle.className = 'cat-nom';
-    const icone = iconePole(nom.valeur); if (icone) libelle.appendChild(icone);
     libelle.appendChild(document.createTextNode(nom.court || nom.valeur));
     b.appendChild(libelle);
     const compte = compter(nom.valeur);
@@ -1024,18 +1059,27 @@ function nombreParticipants(v) {
   return '…';
 }
 
+function categoriesCand() {
+  const presentes = Array.from(new Set(items.map((i) => i.pole).filter(Boolean)));
+  return ORDRE_POLES.filter((p) => presentes.indexOf(p) >= 0).concat(presentes.filter((p) => ORDRE_POLES.indexOf(p) < 0));
+}
+function categoriesPart() {
+  const noms = participants ? Array.from(new Set(participants.map((i) => i.pole).filter(Boolean)))
+    : Object.keys((statsServeur && statsServeur.participants_par_pole) || {}).filter((p) => statsServeur.participants_par_pole[p] > 0);
+  return ORDRE_POLES.filter((p) => noms.indexOf(p) >= 0).concat(noms.filter((p) => ORDRE_POLES.indexOf(p) < 0));
+}
+// Un seul compteur par section : le menu Candidatures compte les candidatures, le menu Participants compte les participants.
 function dessinerSousMenu() {
   const dansC = vue === 'candidatures' || (vue === 'detail' && detailGenre === 'candidature');
-  const compteurs = (v) => [v === 'Toutes' ? items.length : items.filter((i) => i.pole === v).length, nombreParticipants(v)];
-  remplirSousMenu('sous-menu', ['Toutes'].concat(categoriesMenu()).map((v) => ({ valeur: v })),
-    compteurs,
+  remplirSousMenu('sous-menu', ['Toutes'].concat(categoriesCand()).map((v) => ({ valeur: v })),
+    (v) => v === 'Toutes' ? items.length : items.filter((i) => i.pole === v).length,
     (v) => dansC && filtreCategorie === v,
-    (v) => { filtreCategorie = v; filtreStatut = 'Tous'; $('recherche').value = ''; naviguer('candidatures'); }, true);
+    (v) => { filtreCategorie = v; filtreStatut = 'Tous'; $('recherche').value = ''; naviguer('candidatures'); });
   const dansP = vue === 'participants' || (vue === 'detail' && detailGenre === 'participant');
-  remplirSousMenu('sous-menu-participants', ['Toutes'].concat(categoriesMenu()).map((v) => ({ valeur: v })),
-    compteurs,
+  remplirSousMenu('sous-menu-participants', ['Toutes'].concat(categoriesPart()).map((v) => ({ valeur: v })),
+    (v) => nombreParticipants(v),
     (v) => dansP && pCategorie === v,
-    (v) => { pCategorie = v; pFinal = 'Tous'; $('recherche-p').value = ''; naviguer('participants'); }, true);
+    (v) => { pCategorie = v; pFinal = 'Tous'; $('recherche-p').value = ''; naviguer('participants'); });
   const dansB = vue === 'benevoles' || (vue === 'detail' && detailGenre === 'benevole');
   remplirSousMenu('sous-menu-benevoles', benevoles ? [{ valeur: 'Toutes' }].concat(equipesBenevoles().map((v) => ({ valeur: v, court: equipeCourte(v) }))) : [],
     (v) => v === 'Toutes' ? (benevoles || []).length : (benevoles || []).filter((i) => i.equipes.indexOf(v) >= 0).length,
@@ -1104,6 +1148,10 @@ function grosBouton(couleur, nom, texte, url, action) {
 function ligneInfo(nomIcone, texte, copiable) {
   const li = document.createElement('li');
   const ic = document.createElement('span'); ic.className = 'ico-btn'; ic.innerHTML = svgIcone(nomIcone); li.appendChild(ic); habillerIcone(ic, ICONES_FICHE[nomIcone]);
+  if (nomIcone === 'tel' && window.matchMedia && window.matchMedia('(hover: none)').matches) {   // sur téléphone : un appui lance l'appel
+    const a = document.createElement('a'); a.href = 'tel:' + String(texte).replace(/[^\d+]/g, ''); a.textContent = texte; li.appendChild(a);
+    return li;
+  }
   const t = document.createElement('span'); t.textContent = texte; li.appendChild(t);
   if (copiable) {
     li.className = 'copiable'; li.title = 'Cliquer pour copier'; li.setAttribute('role', 'button'); li.tabIndex = 0;
@@ -1133,6 +1181,13 @@ function puceCategorie(pole) {
   const c = COULEURS_POLES[pole];
   if (c) { s.style.background = c[0]; s.style.color = c[1]; }
   return s;
+}
+// Étiquette de catégorie avec son icône aquarelle (pages individuelles).
+function puceCategorieIcone(pole) {
+  const w = document.createElement('span'); w.className = 'cat-avec-icone';
+  const ic = iconePole(pole); if (ic) w.appendChild(ic);
+  w.appendChild(puceCategorie(pole));
+  return w;
 }
 function categories() {
   const presentes = Array.from(new Set(items.map((i) => i.pole).filter(Boolean)));
@@ -1668,7 +1723,7 @@ function dessinerDetail(d, listes, mode) {
   entete.appendChild(el('h1', '', d.projet));
   const puces = el('div', 'puces');
   if (genre === 'benevole') (d.equipes || []).forEach((t) => puces.appendChild(puce(equipeCourte(t), 'equipe')));
-  else { puces.appendChild(puceCategorie(d.pole)); if (d.formule === 'Duo') puces.appendChild(puce('Duo')); }
+  else { puces.appendChild(puceCategorieIcone(d.pole)); if (d.formule === 'Duo') puces.appendChild(puce('Duo')); }
   entete.appendChild(puces);
   if (sousTexte) entete.appendChild(el('p', 'fiche-soustitre', sousTexte));
   const infos = el('ul', 'fiche-infos');
@@ -1921,6 +1976,7 @@ function dessinerDetail(d, listes, mode) {
   });
   const activerEmailOnglet = (nom) => {
     Object.keys(panE).forEach((k) => { panE[k].hidden = k !== nom; boutE[k].setAttribute('aria-selected', String(k === nom)); });
+    if (boutE[nom].scrollIntoView) boutE[nom].scrollIntoView({ inline: 'center', block: 'nearest' });
   };
   const redessinerEmailBase = redessinerEmail;
   redessinerEmail = function (pret) { redessinerEmailBase(pret); boutE.pret.classList.toggle('a-envoyer', !!pret); };
@@ -1945,17 +2001,23 @@ function dessinerDetail(d, listes, mode) {
     });
     activerOnglet = (nom) => {
       Object.keys(panneaux).forEach((k) => { panneaux[k].hidden = k !== nom; boutonsOnglets[k].setAttribute('aria-selected', String(k === nom)); });
+      if (boutonsOnglets[nom].scrollIntoView) boutonsOnglets[nom].scrollIntoView({ inline: 'center', block: 'nearest' });
     };
     zone.appendChild(barre);
     ['suivi', 'presentation', 'technique'].forEach((k) => { panneaux[k].setAttribute('role', 'tabpanel'); zone.appendChild(panneaux[k]); });
     activerOnglet('suivi');
   } else {
-    [cs, emailsBoite, carteReponses].concat(cartesExtra).concat([cartePhotos]).forEach((bloc) => { if (bloc) zone.appendChild(bloc); });
+    const ordre = [cs, emailsBoite, carteReponses].concat(cartesExtra).concat([cartePhotos]);
+    if (genre === 'benevole') {   // la motivation d'abord : c'est ce qui aide à décider
+      const motivation = cartesExtra.filter((c) => c.querySelector('h2') && c.querySelector('h2').textContent === 'Motivation et compétences')[0];
+      if (motivation) { ordre.splice(ordre.indexOf(motivation), 1); ordre.unshift(motivation); }
+    }
+    ordre.forEach((bloc) => { if (bloc) zone.appendChild(bloc); });
   }
 }
 
 remplirSignatures();
-document.querySelectorAll('.rond[data-ico]').forEach((r) => habillerIcone(r, r.dataset.ico));
+document.querySelectorAll('.rond[data-ico], .ico-nav[data-ico]').forEach((r) => habillerIcone(r, r.dataset.ico));
 sondeAsset('REFRESH LOADING.png', 'a-roue-img');
 sondeAsset('RIGHT ARROW.png', 'a-fleche');
 SONDES_ICONES.forEach((s) => sondeAsset(s[0], s[1]));
