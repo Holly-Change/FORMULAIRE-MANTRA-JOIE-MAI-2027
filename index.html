@@ -81,7 +81,7 @@ body {
 
 /* ---------- Carte / ecrans ---------- */
 .carte {
-  background: var(--carte); border: 1px solid var(--ligne);
+  background: rgba(255, 255, 255, 0.84); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 20px; padding: 28px 24px 30px;
   box-shadow: 0 10px 30px rgba(28, 27, 58, 0.06);
 }
@@ -378,15 +378,16 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
 .onglets-inscription button:disabled { opacity: .45; cursor: not-allowed; }
 
 /* ---------- Candidature publique ---------- */
-.choix-accueil article.candidature { border: 3px solid #B5207F; background: #FFF0F8; }
-.choix-accueil article.benevole { border: 3px solid #1FA8C3; background: #E9F9FB; }
-.choix-accueil article.participants { border: 3px solid #6B2C91; background: #F3ECFA; }
-.choix-accueil article.candidature h2 { color: #B5207F; }
-.choix-accueil article.benevole h2 { color: #0A7A8F; }
-.choix-accueil article.participants h2 { color: #6B2C91; }
-.choix-accueil article.candidature .btn-avant { background: linear-gradient(100deg, #B5207F, #C9308F); }
-.choix-accueil article.benevole .btn-avant { background: linear-gradient(100deg, #0A7A8F, #148FA8); }
-.choix-accueil article.participants .btn-avant { background: linear-gradient(100deg, #6B2C91, #8636A6); }
+.choix-accueil article { box-shadow: 0 6px 20px rgba(110, 91, 208, 0.08); }
+.choix-accueil article.candidature { border: 2px solid rgba(214, 160, 205, 0.7); background: rgba(250, 235, 246, 0.75); }
+.choix-accueil article.benevole { border: 2px solid rgba(130, 205, 218, 0.75); background: rgba(228, 245, 249, 0.75); }
+.choix-accueil article.participants { border: 2px solid rgba(175, 158, 228, 0.75); background: rgba(238, 233, 251, 0.75); }
+.choix-accueil article.candidature h2 { color: #8A3A78; }
+.choix-accueil article.benevole h2 { color: #1D6F82; }
+.choix-accueil article.participants h2 { color: #4F3B96; }
+.choix-accueil article.candidature .btn-avant { background: linear-gradient(100deg, #F1C6E2, #D9C4F2); color: #5A2A66; box-shadow: none; }
+.choix-accueil article.benevole .btn-avant { background: linear-gradient(100deg, #BEE6EE, #BFD9F2); color: #14566A; box-shadow: none; }
+.choix-accueil article.participants .btn-avant { background: linear-gradient(100deg, #D8CBF3, #C3CFF4); color: #43296F; box-shadow: none; }
 .conditions { background: #FFF7E8; border: 2px solid var(--or); border-radius: 14px; padding: 16px 18px; font-size: 15px; line-height: 1.6; white-space: pre-line; margin-top: 10px; }
 #ecran-cand-0 .puces, #ecran-cand-1 .champ .puces, #ecran-cand-2 .champ .puces { margin-top: 4px; }
 /* Choix du pôle : grands boutons colorés, bien lisibles */
@@ -394,7 +395,7 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
 #cand-poles .puce { min-height: 64px; font-size: 18px; font-weight: 700; padding: 14px 18px; border-radius: 16px; display: flex; align-items: center; justify-content: center; text-align: center;
   background: var(--pole-fond, #fff); border: 3px solid var(--pole-bord, #ddd); color: #1C1B3A; }
 #cand-poles .puce:hover:not(:disabled) { filter: brightness(.97); }
-#cand-poles .puce.choisie { background: linear-gradient(100deg, #B5207F, #6B2C91); border-color: transparent; color: #fff; transform: scale(1.03); box-shadow: 0 6px 16px rgba(107, 44, 145, .35); }
+#cand-poles .puce.choisie { background: linear-gradient(100deg, #A44FC4, #6E5BD0); border-color: transparent; color: #fff; transform: scale(1.03); box-shadow: 0 6px 16px rgba(107, 44, 145, .35); }
 #cand-poles .puce.choisie::before { content: "\2713  "; }
 #cand-poles .squelette { min-height: 64px; border-radius: 16px; background: linear-gradient(100deg, #EEE9F6 30%, #F8F5FC 50%, #EEE9F6 70%); background-size: 200% 100%; animation: brille 1.2s linear infinite; }
 @keyframes brille { to { background-position: -200% 0; } }
@@ -414,9 +415,9 @@ input[type="file"]:not([hidden])::file-selector-button { border:1px solid var(--
 /* ---------- Habillage aquarelle (v3.17) : images du dossier assets/ du dépôt GitHub ----------
    Étirées (100% 100%), jamais répétées, légèrement agrandies pour cacher la marge transparente des images. Si une image manque, on voit seulement les couleurs douces. */
 body::before { content: ""; position: fixed; left: -2.65%; top: -1.95%; width: 102.9%; height: 103.4%; z-index: -1; pointer-events: none; opacity: .45;
-  background: url("assets/background-left.png") 0 0 / 100% 100% no-repeat; }
+  background: url("assets/BACKGTOUND%20LEFT.png") 0 0 / 100% 100% no-repeat; }
 body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: min(220px, 34vw); aspect-ratio: 286 / 307; z-index: -1; pointer-events: none; opacity: .7;
-  background: url("assets/background-overlay-1.png") 0 0 / 100% 100% no-repeat; }
+  background: url("assets/BACKGROUND%20OVERLAY%201.png") 0 0 / 100% 100% no-repeat; }
 #cand-poles .puce .icone-pole { width: 38px; height: 38px; object-fit: contain; flex: none; margin-right: 12px; }
 </style>
 </head>
@@ -884,7 +885,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.19-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.21-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
