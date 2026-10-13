@@ -357,11 +357,11 @@ main { padding: 0 0 40px; min-width: 0; }
    Chaque image est ÉTIRÉE (100% 100%), jamais répétée. Si une image manque, on voit simplement les couleurs douces. */
 body { background: linear-gradient(160deg, #F3F0FC 0%, #EAF3FA 55%, #F1EEFB 100%) fixed; }
 body::before { content: ""; position: fixed; left: -2.65%; top: -1.95%; width: 102.9%; height: 103.4%; z-index: -1; pointer-events: none; opacity: .5;
-  background: url("assets/background-left.png") 0 0 / 100% 100% no-repeat; }
+  background: url("assets/BACKGTOUND%20LEFT.png") 0 0 / 100% 100% no-repeat; }
 body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: min(240px, 32vw); aspect-ratio: 286 / 307; z-index: -1; pointer-events: none; opacity: .75;
-  background: url("assets/background-overlay-1.png") 0 0 / 100% 100% no-repeat; }
+  background: url("assets/BACKGROUND%20OVERLAY%201.png") 0 0 / 100% 100% no-repeat; }
 /* Menu de gauche : aquarelle lilas étirée, voile blanc pour garder le texte lisible */
-.menu { background: linear-gradient(rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.38)), url("assets/left-menu-background.png") 0 0 / 100% 100% no-repeat, #ECE6FA; color: var(--navy); border-right: 1px solid rgba(110, 90, 170, 0.15); }
+.menu { background: linear-gradient(rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.38)), url("assets/LEFT%20MENU%20BACKGROUND.png") 0 0 / 100% 100% no-repeat, #ECE6FA; color: var(--navy); border-right: 1px solid rgba(110, 90, 170, 0.15); }
 .menu .lotus { display: block; width: 78%; max-width: 150px; height: auto; margin: 0 auto 6px; }
 .marque .nom { color: var(--violet); }
 .marque .edition { color: var(--turquoise); }
@@ -384,19 +384,74 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
 }
 .cat-nom { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
 .icone-pole { width: 24px; height: 24px; object-fit: contain; flex: none; }
+
+/* ---------- v3.20 : vrais onglets, icônes aquarelle, signature ---------- */
+.onglets { gap: 2px; margin: 18px 0 0; border-bottom: 2px solid rgba(110, 90, 170, 0.25); }
+.onglets button { border: 1px solid transparent; border-bottom: 0; background: rgba(255, 255, 255, 0.4); color: var(--doux); border-radius: 14px 14px 0 0; padding: 10px 22px; margin-bottom: -2px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+.onglets button:hover { background: rgba(255, 255, 255, 0.75); color: var(--navy); }
+.onglets button[aria-selected="true"] { background: rgba(255, 255, 255, 0.95); border-color: rgba(110, 90, 170, 0.25); border-bottom: 2px solid #fff; color: #43296F; }
+.onglet-contenu { border: 1px solid rgba(110, 90, 170, 0.2); border-top: 0; background: rgba(255, 255, 255, 0.35); border-radius: 0 0 16px 16px; padding: 16px; }
+.onglet-contenu > .carte:first-child { margin-top: 0; }
+.onglets-emails { margin-top: 6px; }
+.onglets-emails button { padding: 8px 16px; font-size: .95rem; }
+.onglets-emails button.a-envoyer::after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #E07A2F; display: inline-block; }
+.emails-boite { margin-top: 22px; }
+.titre-emails { font-family: var(--police-titres); font-size: 1.25rem; margin: 0 0 4px; color: var(--violet); }
+.ico-onglet:empty { display: none; }
+.ico-onglet img { width: 24px; height: 24px; object-fit: contain; display: block; }
+.libre-zone label { display: block; font-weight: 700; margin: 12px 0 6px; }
+.libre-zone input, .libre-zone textarea { width: 100%; padding: 10px 12px; border: 2px solid var(--ligne); border-radius: 12px; background: rgba(255, 255, 255, 0.9); font: inherit; }
+.libre-zone textarea { resize: vertical; min-height: 180px; }
+.libre-zone input:focus, .libre-zone textarea:focus { border-color: var(--turquoise-vif); outline: none; }
+.libre-zone .btn { margin-top: 12px; }
+/* Icônes aquarelle : elles remplacent les icônes dessinées seulement quand le fichier existe */
+.total .pastille.avec-image { width: 64px; height: 64px; background: transparent !important; }
+.total .pastille img { width: 56px; height: 56px; object-fit: contain; }
+.rond.avec-image { background: transparent !important; width: 62px; height: 62px; }
+.rond img { width: 100%; height: 100%; object-fit: contain; }
+.ico-btn { display: inline-grid; place-items: center; flex: none; }
+.ico-btn img { width: 34px; height: 34px; object-fit: contain; }
+li .ico-btn img { width: 24px; height: 24px; }
+.a-roue-img .roue { border: 0; background: url("assets/REFRESH%20LOADING.png") center / contain no-repeat; width: 20px; height: 20px; }
+.a-fleche .btn-ouvrir::after, .a-fleche .total .lien::after { content: ""; display: inline-block; width: 16px; height: 16px; margin-left: 6px; vertical-align: -3px; background: url("assets/RIGHT%20ARROW.png") center / contain no-repeat; }
+.signature { font-size: .78rem; line-height: 1.4; text-align: center; color: rgba(11, 42, 71, 0.7); }
+.signature a { color: var(--violet); font-weight: 700; text-decoration: none; }
+.signature a:hover { text-decoration: underline; }
+.signature .qui-signe { display: block; font-weight: 700; color: var(--navy); }
+.lien-formulaire-connexion { display: inline-block; margin-top: 14px; color: var(--violet); font-weight: 700; text-decoration: none; }
+.lien-formulaire-connexion:hover { text-decoration: underline; }
+.connexion .signature { margin-top: 26px; }
+.menu .bas .btn-doux { text-align: center; text-decoration: none; }
+.menu { overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
+.menu .lotus { max-width: 120px; }
+.menu nav button, .menu nav a { padding-top: 8px; padding-bottom: 8px; }
+.menu .bas { padding-top: 10px; flex: none; }
+@media (max-height: 820px) { .menu .lotus { max-width: 84px; } .menu .marque { padding-bottom: 8px; } }
+
+/* Icônes devant un texte : affichées seulement quand le fichier existe sur GitHub */
+.a-alerte-img .alerte::before, .a-copie-img .btn-copier::before, .a-envoi-img .btn-envoi::before, .a-lien-img .liens-champ a::before, .a-lien-img .copie-texte a::before,
+.a-contrat-img .doc-contrat strong::before, .a-preuve-img .doc-preuve strong::before { content: ""; display: inline-block; flex: none; vertical-align: -6px; margin-right: 6px; background-position: center; background-size: contain; background-repeat: no-repeat; }
+.a-alerte-img .alerte::before { width: 24px; height: 24px; background-image: url("assets/ALERT.png"); }
+.a-copie-img .btn-copier::before { width: 20px; height: 20px; vertical-align: -5px; background-image: url("assets/COPY.png"); }
+.a-envoi-img .btn-envoi::before { width: 22px; height: 22px; vertical-align: -6px; background-image: url("assets/SEND.png"); }
+.a-lien-img .liens-champ a::before, .a-lien-img .copie-texte a::before { width: 18px; height: 18px; vertical-align: -4px; background-image: url("assets/LINK.png"); }
+.a-contrat-img .doc-contrat strong::before { width: 28px; height: 28px; vertical-align: -9px; background-image: url("assets/CONTRACT.png"); }
+.a-preuve-img .doc-preuve strong::before { width: 28px; height: 28px; vertical-align: -9px; background-image: url("assets/PAYMENT-PROOF.png"); }
 </style>
 </head>
 <body>
 
 <section id="ecran-connexion">
   <form class="connexion" id="form-connexion" autocomplete="off">
-    <img class="lotus-connexion" src="assets/lotus-portal-logo.png" alt="" onerror="this.remove()">
+    <img class="lotus-connexion" src="assets/LOTUS%20PORTAL%20LOGO.png" alt="" onerror="this.remove()">
     <h1>Portail Festival</h1>
     <p>Mantra Joie 2027. Entre le mot de passe de l'équipe pour voir les candidatures.</p>
     <label for="mot-de-passe">Mot de passe</label>
     <input id="mot-de-passe" type="password" autocomplete="current-password" required>
     <button class="btn" type="submit" id="btn-connexion">Se connecter</button>
     <div class="message-erreur" id="erreur-connexion" role="alert"></div>
+    <a class="lien-formulaire-connexion" id="lien-formulaire-connexion" href="./" target="_blank" rel="noopener">Aller au formulaire public</a>
+    <div class="signature" id="signature-connexion"></div>
   </form>
 </section>
 
@@ -408,35 +463,31 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
     </button>
   </div>
   <aside class="menu" id="menu-principal">
-    <img class="lotus" src="assets/lotus-portal-logo.png" alt="" onerror="this.remove()">
+    <img class="lotus" src="assets/LOTUS%20PORTAL%20LOGO.png" alt="" onerror="this.remove()">
     <div class="marque" id="marque"></div>
     <nav aria-label="Menu du Portail Festival">
-      <button type="button" data-vue="accueil">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Accueil
+      <button type="button" data-vue="accueil">Accueil
       </button>
-      <button type="button" data-vue="candidatures">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>Candidatures
+      <button type="button" data-vue="candidatures">Candidatures
       </button>
       <div class="sous-menu" id="sous-menu" aria-label="Candidatures par catégorie"></div>
-      <button type="button" data-vue="participants">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 1.8 5 4.5"/></svg>Participants
+      <button type="button" data-vue="participants">Participants
       </button>
       <div class="sous-menu" id="sous-menu-participants" aria-label="Participants par catégorie"></div>
-      <button type="button" data-vue="benevoles">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/></svg>Bénévoles
+      <button type="button" data-vue="benevoles">Bénévoles
       </button>
       <div class="sous-menu" id="sous-menu-benevoles" aria-label="Bénévoles par équipe"></div>
-      <button type="button" data-vue="stats">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>Statistiques
+      <button type="button" data-vue="stats">Statistiques
       </button>
-      <a id="lien-drive" href="#" target="_blank" rel="noopener noreferrer" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Dossiers Drive
+      <a id="lien-drive" href="#" target="_blank" rel="noopener noreferrer" hidden>Dossiers Drive
       </a>
     </nav>
     <div class="bas">
       <div class="version" id="version"></div>
+      <a class="btn btn-doux" id="lien-formulaire" href="./" target="_blank" rel="noopener">Formulaire public</a>
       <button class="btn btn-doux" type="button" id="btn-actualiser">Actualiser</button>
       <button class="btn btn-doux" type="button" id="btn-deconnexion">Se déconnecter</button>
+      <div class="signature" id="signature-menu"></div>
     </div>
   </aside>
 
@@ -455,7 +506,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
     <section id="vue-candidatures" hidden>
       <div class="page">
         <div class="titre-page">
-          <div class="rond"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></div>
+          <div class="rond" data-ico="DOC.png"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></div>
           <div><h1>Candidatures</h1><p id="sous-titre">Toutes les candidatures reçues</p></div>
         </div>
         <div class="outils"><input class="recherche" id="recherche" type="search" placeholder="Chercher un projet, un nom, un email" aria-label="Chercher"></div>
@@ -469,7 +520,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
     <section id="vue-participants" hidden>
       <div class="page">
         <div class="titre-page">
-          <div class="rond"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 1.8 5 4.5"/></svg></div>
+          <div class="rond" data-ico="PARTICIPANTS.png"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 5 1.8 5 4.5"/></svg></div>
           <div><h1>Participants</h1><p>Dossiers finaux reçus</p></div>
         </div>
         <div class="outils"><input class="recherche" id="recherche-p" type="search" placeholder="Chercher un projet, un nom, un email" aria-label="Chercher un participant"></div>
@@ -483,7 +534,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
     <section id="vue-benevoles" hidden>
       <div class="page">
         <div class="titre-page">
-          <div class="rond"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/></svg></div>
+          <div class="rond" data-ico="BENEVOLES.png"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/></svg></div>
           <div><h1>Bénévoles</h1><p>Une équipe au coeur du festival</p></div>
         </div>
         <div class="outils"><input class="recherche" id="recherche-b" type="search" placeholder="Chercher un nom, un email" aria-label="Chercher un bénévole"></div>
@@ -497,7 +548,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
     <section id="vue-stats" hidden>
       <div class="page">
         <div class="titre-page">
-          <div class="rond"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></div>
+          <div class="rond" data-ico="STATS.png"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></div>
           <div><h1>Statistiques</h1><p>Candidatures, dossiers, emails et utilisation du Portail</p></div>
         </div>
         <div class="outils"><button class="btn btn-doux-clair" type="button" id="stats-actualiser">Actualiser les chiffres</button><span class="compte" id="stats-calcule"></span></div>
@@ -512,7 +563,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.19-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.21-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 // Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
@@ -533,6 +584,40 @@ function iconePole(pole) {
   img.className = 'icone-pole'; img.alt = ''; img.src = 'assets/' + encodeURIComponent(fichier);
   img.addEventListener('error', () => img.remove());
   return img;
+}
+// Dossier des images aquarelle (noms exacts des fichiers du Drive, espaces compris).
+function cheminAsset(nom) { return 'assets/' + encodeURIComponent(nom); }
+// Remplace une icône dessinée par l'image aquarelle, seulement si le fichier existe vraiment (sinon l'icône dessinée reste).
+function habillerIcone(conteneur, fichier, classe) {
+  if (!conteneur || !fichier) return;
+  const sonde = new Image();
+  sonde.onload = () => {
+    const img = document.createElement('img'); img.className = classe || 'ico-img'; img.alt = ''; img.src = cheminAsset(fichier);
+    conteneur.textContent = ''; conteneur.appendChild(img); conteneur.classList.add('avec-image');
+  };
+  sonde.onerror = () => { /* le fichier n'est pas encore sur GitHub : on garde l'icône dessinée */ };
+  sonde.src = cheminAsset(fichier);
+}
+// Marque la page quand un fichier existe (flèche et roue de chargement aquarelle).
+function sondeAsset(fichier, classe) {
+  const sonde = new Image();
+  sonde.onload = () => document.documentElement.classList.add(classe);
+  sonde.onerror = () => {};
+  sonde.src = cheminAsset(fichier);
+}
+const ICONES_ACCUEIL = { fichier: 'DOC.png', loupe: 'SEARCH.png', coche: 'ACCEPTED.png', groupe: 'PARTICIPANTS.png', coeur: 'BENEVOLES.png', courrier: 'EMAIL-NOTIFICATION.png' };
+const ICONES_FICHE = { doc: 'DOC.png', dossier: 'FILE.png', mail: 'EMAIL - CLOSED.png', image: 'PHOTOS.png', tel: 'PHONE.png', cal: 'CALENDAR.png', user: 'PERSON.png' };
+// Icônes ajoutées devant un texte (alerte, copier, envoyer, lien, contrat, preuve) : la page ne les affiche que si le fichier existe.
+const SONDES_ICONES = [['ALERT.png', 'a-alerte-img'], ['COPY.png', 'a-copie-img'], ['SEND.png', 'a-envoi-img'], ['LINK.png', 'a-lien-img'], ['CONTRACT.png', 'a-contrat-img'], ['PAYMENT-PROOF.png', 'a-preuve-img']];
+// Signature : à modifier ici (nom, métier, site).
+const SIGNATURE = { nom: 'Holly Berridge', metier: 'Mesh Agency · design et webmaster', site: 'https://holly-berridge.netlify.app', siteTexte: 'holly-berridge.netlify.app' };
+function remplirSignatures() {
+  document.querySelectorAll('.signature').forEach((z) => {
+    z.textContent = '';
+    const a = document.createElement('span'); a.className = 'qui-signe'; a.textContent = 'Portail créé par ' + SIGNATURE.nom; z.appendChild(a);
+    z.appendChild(document.createTextNode(SIGNATURE.metier)); z.appendChild(document.createElement('br'));
+    const l = document.createElement('a'); l.href = SIGNATURE.site; l.target = '_blank'; l.rel = 'noopener'; l.textContent = SIGNATURE.siteTexte; z.appendChild(l);
+  });
 }
 const ORDRE_POLES = ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'];
 const COULEURS_POLES = {
@@ -765,7 +850,7 @@ function naviguer(nom) {
 
 
 /* ---------- Page Statistiques ---------- */
-const LIBELLES_EMAILS = { recue: 'Candidature reçue', acceptee: 'Candidature acceptée', attente: "Liste d'attente", refusee: 'Candidature refusée', final_recu: 'Dossier final reçu', confirmee: 'Participation confirmée',
+const LIBELLES_EMAILS = { libre: 'Email libre', recue: 'Candidature reçue', acceptee: 'Candidature acceptée', attente: "Liste d'attente", refusee: 'Candidature refusée', final_recu: 'Dossier final reçu', confirmee: 'Participation confirmée',
   benevole_recue: 'Bénévole : reçue', benevole_acceptee: 'Bénévole : acceptée', benevole_attente: "Bénévole : liste d'attente", benevole_refusee: 'Bénévole : refusée' };
 const COULEUR_STATUT = { 'À étudier': 'v', 'Accepté': 'p', "Liste d'attente": 'o', 'Refusé': 'c' };
 
@@ -1012,13 +1097,13 @@ function grosBouton(couleur, nom, texte, url, action) {
     else { b = document.createElement('span'); b.className = ''; }
   } else { b = document.createElement('button'); b.type = 'button'; if (action) b.addEventListener('click', action); }
   b.className = 'btn-grand ' + couleur + (b.tagName === 'SPAN' ? ' inactif' : '');
-  b.innerHTML = svgIcone(nom);
+  const ic = document.createElement('span'); ic.className = 'ico-btn'; ic.innerHTML = svgIcone(nom); b.appendChild(ic); habillerIcone(ic, ICONES_FICHE[nom]);
   const t = document.createElement('span'); t.textContent = texte; b.appendChild(t);
   return b;
 }
 function ligneInfo(nomIcone, texte, copiable) {
   const li = document.createElement('li');
-  li.innerHTML = svgIcone(nomIcone);
+  const ic = document.createElement('span'); ic.className = 'ico-btn'; ic.innerHTML = svgIcone(nomIcone); li.appendChild(ic); habillerIcone(ic, ICONES_FICHE[nomIcone]);
   const t = document.createElement('span'); t.textContent = texte; li.appendChild(t);
   if (copiable) {
     li.className = 'copiable'; li.title = 'Cliquer pour copier'; li.setAttribute('role', 'button'); li.tabIndex = 0;
@@ -1080,7 +1165,7 @@ function dessinerAccueil() {
   cartes.forEach((c) => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'total';
-    const p = document.createElement('span'); p.className = 'pastille'; p.style.background = c.pastel[0]; p.style.color = c.pastel[1]; p.innerHTML = icone(c.icone);
+    const p = document.createElement('span'); p.className = 'pastille'; p.style.background = c.pastel[0]; p.style.color = c.pastel[1]; p.innerHTML = icone(c.icone); habillerIcone(p, ICONES_ACCUEIL[c.icone]);
     const l = document.createElement('span'); l.className = 'libelle'; l.textContent = c.libelle;
     const n = document.createElement('span'); n.className = 'nombre'; n.textContent = String(c.nombre);
     const k = document.createElement('span'); k.className = 'lien'; k.textContent = 'Voir la liste';
@@ -1711,7 +1796,7 @@ function dessinerDetail(d, listes, mode) {
     const docs = [['Contrat signé', d.contrat, true], ['Preuve de paiement', d.preuve, !!(d.payant || d.preuve)]];
     docs.forEach((doc) => {
       if (!doc[2]) return;
-      const ligneDoc = el('div', 'preuve');
+      const ligneDoc = el('div', 'preuve ' + (doc[0] === 'Contrat signé' ? 'doc-contrat' : 'doc-preuve'));
       ligneDoc.appendChild(el('strong', '', doc[0]));
       const lienDoc = doc[1] ? lienSur(doc[1], 'Ouvrir le document') : null;
       if (lienDoc) ligneDoc.appendChild(lienDoc); else ligneDoc.appendChild(el('span', 'meta', 'Aucun document déposé.'));
@@ -1736,7 +1821,7 @@ function dessinerDetail(d, listes, mode) {
     emailZone.appendChild(lo); emailZone.appendChild(objet); emailZone.appendChild(lc); emailZone.appendChild(corps);
     emailZone.appendChild(el('p', 'astuce', "Tu peux ajouter ou changer des mots : ça ne modifie que cet email. Le modèle reste le même pour tout le monde. Si tu modifies le texte, le gras du modèle n'apparaît plus."));
     const actions = el('div', 'actions');
-    const envoyer = el('button', 'btn', "Envoyer l'email"); envoyer.type = 'button';
+    const envoyer = el('button', 'btn btn-envoi', "Envoyer l'email"); envoyer.type = 'button';
     const resultat = el('p', 'message');
     envoyer.addEventListener('click', () => {
       actions.innerHTML = '';
@@ -1787,14 +1872,67 @@ function dessinerDetail(d, listes, mode) {
     });
     histZone.appendChild(ul);
   }
+  // ----- Nouvel email (écrit à la main) : part vers la personne de la fiche, jamais vers une adresse tapée -----
+  const libreZone = carte('Écrire un nouvel email'); libreZone.classList.add('libre-zone');
+  if (!sid || !d.email) {
+    libreZone.appendChild(el('p', 'meta', !sid ? "Pas de ligne de suivi : crée d'abord le suivi (bouton « Créer le suivi maintenant »)." : "Cette personne n'a pas d'adresse email."));
+  } else {
+    libreZone.appendChild(el('p', 'meta', 'À : ' + d.email + (mode === 'REEL' ? '' : "  (mode TEST : l'email part à l'adresse de test, pas à cette personne)")));
+    const lo = el('label', '', 'Objet'); lo.htmlFor = 'libre-objet';
+    const io = document.createElement('input'); io.id = 'libre-objet'; io.type = 'text'; io.maxLength = 200; io.autocomplete = 'off';
+    const lc = el('label', '', 'Texte'); lc.htmlFor = 'libre-corps';
+    const ta = document.createElement('textarea'); ta.id = 'libre-corps'; ta.rows = 10; ta.maxLength = 20000;
+    libreZone.appendChild(lo); libreZone.appendChild(io); libreZone.appendChild(lc); libreZone.appendChild(ta);
+    libreZone.appendChild(el('p', 'aide-statut', "**gras** et les liens https:// fonctionnent. L'email part avec ton nom d'expéditeur habituel et il apparaît dans l'onglet Historique."));
+    const envoyerLibre = el('button', 'btn btn-envoi', "Envoyer l'email"); envoyerLibre.type = 'button'; envoyerLibre.id = 'libre-envoyer';
+    const retour = el('div', 'message'); retour.id = 'libre-resultat'; retour.setAttribute('role', 'status');
+    let confirme = false;
+    const reinit = () => { confirme = false; envoyerLibre.textContent = "Envoyer l'email"; };
+    io.addEventListener('input', reinit); ta.addEventListener('input', reinit);
+    envoyerLibre.addEventListener('click', async () => {
+      const objet = io.value.trim(), corps = ta.value.trim();
+      retour.className = 'message'; retour.textContent = '';
+      if (!objet || !corps) { retour.className = 'message ko'; retour.textContent = "Écris l'objet et le texte avant d'envoyer."; return; }
+      if (mode === 'REEL' && !confirme) { confirme = true; envoyerLibre.textContent = "Confirmer l'envoi à " + d.email; return; }
+      confirme = false; envoyerLibre.disabled = true; envoyerLibre.textContent = ''; envoyerLibre.appendChild(roue('Envoi en cours...'));
+      try {
+        const r = await appel({ op: 'send_libre', token: jeton, id: sid, objet: objet, corps: corps });
+        if (sessionExpiree(r)) return;
+        if (r.emails) redessinerHistorique(r.emails);
+        retour.className = 'message ' + (r.ok ? 'ok' : 'ko');
+        retour.textContent = r.ok ? '✓ Email envoyé' + (mode === 'REEL' ? '' : " (mode TEST : à l'adresse de test)") + ". Tu le retrouves dans l'onglet Historique." : (r.error || 'Envoi impossible.');
+        if (r.ok) { io.value = ''; ta.value = ''; delete detailsPrets[cleDetail]; }
+      } catch (err) { retour.className = 'message ko'; retour.textContent = 'Envoi impossible. Réessaie.'; }
+      envoyerLibre.disabled = false; envoyerLibre.textContent = "Envoyer l'email";
+    });
+    libreZone.appendChild(envoyerLibre); libreZone.appendChild(retour);
+  }
+  // ----- Les emails en onglets : prêt, historique, nouvel email -----
+  const emailsBoite = el('div', 'emails-boite');
+  emailsBoite.appendChild(el('h2', 'titre-emails', 'Emails'));
+  const barreE = el('div', 'onglets onglets-emails'); barreE.setAttribute('role', 'tablist');
+  const panE = { pret: emailZone, historique: histZone, nouveau: libreZone };
+  const boutE = {};
+  [['pret', 'Email prêt', 'EMAIL-NOTIFICATION.png'], ['historique', 'Historique', 'EMAIL-OPEN.png'], ['nouveau', 'Nouvel email', 'EMAIL - CLOSED.png']].forEach((o) => {
+    const b = el('button', '', o[1]); b.type = 'button'; b.setAttribute('role', 'tab'); b.id = 'onglet-email-' + o[0];
+    const ic = el('span', 'ico-onglet'); b.insertBefore(ic, b.firstChild); habillerIcone(ic, o[2]);
+    b.addEventListener('click', () => activerEmailOnglet(o[0]));
+    boutE[o[0]] = b; barreE.appendChild(b);
+  });
+  const activerEmailOnglet = (nom) => {
+    Object.keys(panE).forEach((k) => { panE[k].hidden = k !== nom; boutE[k].setAttribute('aria-selected', String(k === nom)); });
+  };
+  const redessinerEmailBase = redessinerEmail;
+  redessinerEmail = function (pret) { redessinerEmailBase(pret); boutE.pret.classList.toggle('a-envoyer', !!pret); };
+  emailsBoite.appendChild(barreE);
+  Object.keys(panE).forEach((k) => { panE[k].setAttribute('role', 'tabpanel'); emailsBoite.appendChild(panE[k]); });
   redessinerStatuts(); redessinerAlerte(); redessinerEmail(d.email_pret);
-  zone.appendChild(emailZone);
   redessinerHistorique(d.emails || []);
-  zone.appendChild(histZone);
+  activerEmailOnglet(d.email_pret ? 'pret' : 'historique');
   if (genre === 'participant') {
     // Trois onglets : le suivi, ce qui sert à la page du site, et les infos techniques.
     const panneaux = { suivi: el('div', 'onglet-contenu'), presentation: el('div', 'onglet-contenu'), technique: el('div', 'onglet-contenu') };
-    [cs, emailZone, histZone].forEach((b) => panneaux.suivi.appendChild(b));
+    [cs, emailsBoite].forEach((b) => panneaux.suivi.appendChild(b));
     cartesExtra.forEach((c) => { (c.querySelector('h2').textContent === 'Infos techniques' ? panneaux.technique : panneaux.presentation).appendChild(c); });
     panneaux.presentation.appendChild(cartePhotos);
     if (!panneaux.technique.childNodes.length) { const vide = carte('Infos techniques'); vide.appendChild(el('p', 'meta', "Aucune information technique n'a été donnée.")); panneaux.technique.appendChild(vide); }
@@ -1812,10 +1950,15 @@ function dessinerDetail(d, listes, mode) {
     ['suivi', 'presentation', 'technique'].forEach((k) => { panneaux[k].setAttribute('role', 'tabpanel'); zone.appendChild(panneaux[k]); });
     activerOnglet('suivi');
   } else {
-    [cs, emailZone, carteReponses].concat(cartesExtra).concat([cartePhotos, histZone]).forEach((bloc) => { if (bloc) zone.appendChild(bloc); });
+    [cs, emailsBoite, carteReponses].concat(cartesExtra).concat([cartePhotos]).forEach((bloc) => { if (bloc) zone.appendChild(bloc); });
   }
 }
 
+remplirSignatures();
+document.querySelectorAll('.rond[data-ico]').forEach((r) => habillerIcone(r, r.dataset.ico));
+sondeAsset('REFRESH LOADING.png', 'a-roue-img');
+sondeAsset('RIGHT ARROW.png', 'a-fleche');
+SONDES_ICONES.forEach((s) => sondeAsset(s[0], s[1]));
 if (jeton) { charger(); } else { montrerConnexion(''); }
 </script>
 </body>
