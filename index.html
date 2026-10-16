@@ -420,6 +420,20 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
   background: url("assets/BACKGROUND%20OVERLAY%201.png") 0 0 / 100% 100% no-repeat; }
 #cand-poles .puce .icone-pole { width: 38px; height: 38px; object-fit: contain; flex: none; margin-right: 12px; }
 .surtitre .icone-pole { width: 30px; height: 30px; object-fit: contain; vertical-align: middle; margin-right: 8px; }
+
+/* ---------- v3.25 : cartes de pôle, bloc FERMÉ très visible ---------- */
+#cand-poles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 700px) { #cand-poles { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); } }
+#cand-poles .puce.carte-pole { position: relative; flex-direction: column; gap: 6px; min-height: 170px; padding: 16px 10px 14px; font-size: 17px; line-height: 1.2; }
+#cand-poles .puce.carte-pole .icone-pole { width: 76px; height: 76px; margin: 0 0 2px; object-fit: contain; }
+.carte-pole .pole-nom { font-weight: 800; }
+.carte-pole .pole-ligne { font-size: 13px; font-weight: 600; opacity: .8; line-height: 1.3; }
+#cand-poles .puce.carte-pole.ferme { opacity: .8; filter: grayscale(.6); cursor: pointer; }
+.carte-pole .ruban-ferme { position: absolute; top: 12px; right: -6px; background: #C62828; color: #fff; font-weight: 800; font-size: 12px; letter-spacing: .08em; padding: 4px 12px; border-radius: 6px 0 0 6px; box-shadow: 0 2px 6px rgba(0, 0, 0, .25); }
+.bloc-ferme { background: #FDE3E0; border: 2px solid #C62828; border-left-width: 10px; border-radius: 14px; padding: 14px 16px; margin-top: 14px; color: #7A1410; font-weight: 700; font-size: 17px; }
+.bloc-ferme[hidden] { display: none; }
+.bloc-ferme p { margin: 8px 0 0; }
+.ruban-ferme-grand { display: inline-block; background: #C62828; color: #fff; font-weight: 800; letter-spacing: .1em; border-radius: 8px; padding: 4px 14px; }
 </style>
 </head>
 <body>
@@ -461,14 +475,19 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
       <p class="intro">Quel bonheur de t'accueillir dans l'aventure Mantra Joie ! 🌈</p>
       <div class="choix-accueil">
         <article class="candidature"><h2>Candidater ✨</h2><p>Tu souhaites participer au festival comme artiste, atelier, artisan, bien-être ou stand ? Dépose ta candidature ici.</p><button class="btn btn-avant" type="button" onclick="ouvrirCandidature()">Candidater</button></article>
-        <article class="benevole"><h2>Devenir bénévole 💛</h2><p>Tu souhaites rejoindre l'équipe du festival ? Présente-toi ici.</p><button class="btn btn-avant" type="button" onclick="aller('benevole')">Devenir bénévole</button></article>
-        <article class="participants"><h2>Participants ✨</h2><p>Tu es déjà inscrit·e et validé·e ? Complète tes informations pour ta participation et nos supports de communication.</p><button class="btn btn-avant" type="button" onclick="aller('acces')">Compléter mon inscription</button></article>
+        <article class="benevole"><h2>Devenir bénévole 💛</h2><p>Tu souhaites rejoindre l'équipe du festival ? Présente-toi ici.</p><button class="btn btn-avant" type="button" onclick="ouvrirParConfig('benevoles', 'benevole')">Devenir bénévole</button></article>
+        <article class="participants"><h2>Participants ✨</h2><p>Tu es déjà inscrit·e et validé·e ? Complète tes informations pour ta participation et nos supports de communication.</p><button class="btn btn-avant" type="button" onclick="ouvrirParConfig('formulaire_final', 'acces')">Compléter mon inscription</button></article>
       </div>
 
       <div class="hp" aria-hidden="true">
         <label>Votre site web <input type="text" id="honeypot" tabindex="-1" autocomplete="off"></label>
       </div>
 
+    </section>
+
+    <section class="ecran" id="ecran-ferme">
+      <div class="bloc-ferme" role="alert"><span class="ruban-ferme-grand">FERMÉ</span><p id="ferme-message"></p></div>
+      <div class="nav-etapes"><button class="btn btn-retour" type="button" onclick="aller(0)">Retour à l'accueil</button></div>
     </section>
 
     <section class="ecran" id="ecran-acces">
@@ -814,10 +833,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
     <section class="ecran" id="ecran-docs">
       <p class="surtitre">Étape 6 sur 7</p>
       <h2>Tes documents 📎</h2>
-      <p>Ajoute ton contrat signé<span id="docs-et-paiement"> et la preuve de ton paiement</span>. PDF ou image (JPG, PNG, WebP).</p>
-      <div class="champ" id="boite-contrat-modele" style="display:none">
-        <a class="btn btn-retour" id="lien-contrat" href="#" target="_blank" rel="noopener">📄 Télécharger le contrat à signer</a>
-      </div>
+      <p>Ajoute ton contrat signé<span id="docs-et-paiement"> et la preuve de ton paiement</span><span id="docs-et-assurance"> et ton attestation d'assurance</span>. PDF ou image (JPG, PNG, WebP).</p>
       <div class="champ" id="boite-contrat">
         <label class="etiquette obligatoire" for="contract_file">Ton contrat signé <span class="astuce">(PDF ou image, 10 Mo maximum)</span></label>
         <input type="file" id="contract_file" accept="application/pdf,image/jpeg,image/png,image/webp">
@@ -826,6 +842,10 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
         <label class="etiquette obligatoire" for="payment_proof">Preuve de ton paiement <span class="astuce">(capture d'écran ou PDF de ta confirmation HelloAsso ou de ton virement, 5 Mo maximum)</span></label>
         <input type="file" id="payment_proof" accept="application/pdf,image/jpeg,image/png,image/webp">
         <p class="aide" id="paiement-info"></p>
+      </div>
+      <div class="champ" id="boite-assurance" style="display:none">
+        <label class="etiquette obligatoire" for="insurance_file">Ton attestation d'assurance responsabilité civile <span class="astuce">(PDF ou photo, 5 Mo maximum)</span></label>
+        <input type="file" id="insurance_file" accept="application/pdf,image/jpeg,image/png,image/webp">
       </div>
       <div class="message-erreur" id="erreur-docs"></div>
       <div class="nav-etapes"><button class="btn btn-retour" onclick="aller('tech')">Retour</button><button class="btn btn-avant" onclick="validerDocs()">Continuer</button></div>
@@ -886,7 +906,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.24-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.26-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
@@ -1415,10 +1435,10 @@ async function afficherDocuments() {
   $('boite-paiement').querySelector('label').classList.toggle('obligatoire', payant === true);
   $('paiement-info').textContent = payant === null ? 'Si ta participation est payante, ajoute ici ta preuve de paiement.' : '';
   $('docs-et-paiement').style.display = payant === false ? 'none' : 'inline';
-  const modele = /^https:\/\//.test(cfg.lien_contrat || '');
-  $('boite-contrat-modele').style.display = modele ? 'block' : 'none';
-  if (modele) $('lien-contrat').href = cfg.lien_contrat;
+  $('docs-et-assurance').style.display = etat.category === 'Artiste' ? 'none' : 'inline';
   $('boite-contrat').querySelector('label').classList.toggle('obligatoire', cfg.contrat_obligatoire !== false);
+  // L'attestation d'assurance est demandée à tous les pôles sauf Artiste.
+  $('boite-assurance').style.display = etat.category === 'Artiste' ? 'none' : 'block';
   return payant;
 }
 function verifierFichierDoc(file, maxMo, nom) {
@@ -1429,11 +1449,14 @@ function verifierFichierDoc(file, maxMo, nom) {
 }
 // Retourne le message à montrer, ou '' si les documents sont en ordre.
 function problemeDocuments(payant) {
-  const contrat = $('contract_file').files[0], preuve = $('payment_proof').files[0];
+  const contrat = $('contract_file').files[0], preuve = $('payment_proof').files[0], assurance = $('insurance_file').files[0];
   const contratObligatoire = !derniereConfig || derniereConfig.contrat_obligatoire !== false;
   if (contratObligatoire && !contrat) return 'Ajoute ton contrat signé (PDF ou image).';
   if (payant === true && !preuve) return 'Ajoute la preuve de ton paiement (capture d’écran ou PDF).';
-  return verifierFichierDoc(contrat, 10, 'Le contrat') || verifierFichierDoc(preuve, 5, 'La preuve de paiement');
+  const mauvais = verifierFichierDoc(contrat, 10, 'Le contrat') || verifierFichierDoc(preuve, 5, 'La preuve de paiement') || verifierFichierDoc(assurance, 5, 'L’attestation d’assurance');
+  if (mauvais) return mauvais;
+  if (etat.category !== 'Artiste' && !assurance) return 'Ajoute ton attestation d’assurance responsabilité civile (PDF ou photo).';
+  return '';
 }
 async function validerDocs() {
   const payant = await afficherDocuments();
@@ -1531,13 +1554,13 @@ async function envoyer() {
 
   if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur(7, 'Le nouveau script doit être déployé avant le premier envoi.');
   const payant = await afficherDocuments();
-  const preuve = $('payment_proof').files[0], contrat = $('contract_file').files[0];
+  const preuve = $('payment_proof').files[0], contrat = $('contract_file').files[0], assurance = $('insurance_file').files[0];
   const probleme = problemeDocuments(payant);
   if (probleme) { aller('docs'); return erreur('docs', probleme); }
   envoiEnCours = true;
   let membres, technique;
-  let preuveData = '', contratData = '';
-  try { membres = await lireMembres(); technique = await lireTechnique(); if (preuve) preuveData = await lireFichier(preuve); if (contrat) contratData = await lireFichier(contrat); }
+  let preuveData = '', contratData = '', assuranceData = '';
+  try { membres = await lireMembres(); technique = await lireTechnique(); if (preuve) preuveData = await lireFichier(preuve); if (contrat) contratData = await lireFichier(contrat); if (assurance && etat.category !== 'Artiste') assuranceData = await lireFichier(assurance); }
   catch(e) { envoiEnCours = false; return erreur(7, 'Pièce jointe : ' + (e && e.message ? e.message : String(e))); }
   // Cles identiques au schema partage, copiees telles quelles
   const donnees = {
@@ -1568,7 +1591,8 @@ async function envoyer() {
     featured_original: etat.featured_original,
     gallery: etat.gallery,
     payment_proof: preuveData,
-    contract: contratData
+    contract: contratData,
+    insurance: assuranceData
   };
 
   $('nav-7').style.display = 'none';
@@ -1851,6 +1875,7 @@ const CAND_POLE = {
     { k: 'media_link', l: 'Lien vidéo ou audio', t: 't', r: 1 }
   ],
   'Atelier': [
+    { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
     { k: 'workshop_title', l: 'Titre de l’atelier', t: 't', r: 1 },
     { k: 'workshop_content', l: 'Que vont vivre ou faire les participants ?', t: 'a', r: 1 },
     { k: 'animators', l: 'Les animateurs (une ligne par personne : prénom, nom, rôle)', t: 'a', r: 1 },
@@ -1860,6 +1885,7 @@ const CAND_POLE = {
     { k: 'audio', l: 'Besoin d’un micro ou d’une enceinte fournie par le festival ?', t: 'chips', o: ['Non', 'Micro', 'Enceinte', 'Micro et enceinte'], r: 1 }
   ].concat(CAND_ELEC),
   'Artisan': [
+    { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
     { k: 'sells', l: 'Que proposes-tu précisément à la vente sur ton stand ?', t: 'a', r: 1 },
     { k: 'origin', l: 'Ces produits sont…', t: 'chips', multi: 1, o: ['Conçus par moi', 'Fabriqués par moi', 'Fabriqués par des artisans ou ateliers partenaires', 'Issus en partie d’achat-revente'], r: 1, n: 'Plusieurs choix possibles.' },
     { k: 'process', l: 'Ta démarche de conception et de fabrication', t: 'a', n: 'Précise l’origine de ce qui est acheté pour la revente, si c’est le cas.' },
@@ -1868,15 +1894,17 @@ const CAND_POLE = {
     { k: 'duo2', l: 'Exposant 2 : nom', t: 't', r: 1, si: ['stand', 'Duo (2 personnes)'] }
   ].concat(CAND_SURFACE, CAND_ELEC),
   'Bien-être': [
+    { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
     { k: 'practices', l: 'Pratiques ou prestations proposées', t: 'a', r: 1 },
     { k: 'session', l: 'Déroulement d’une séance et durée (en minutes)', t: 'a', r: 1 },
     { k: 'session_type', l: 'Séances individuelles ou collectives ?', t: 'chips', o: ['Individuelles', 'Collectives'], r: 1 },
     { k: 'capacity', l: 'Nombre de personnes par séance collective', t: 'n', r: 1, si: ['session_type', 'Collectives'] },
     { k: 'experience', l: 'Expérience ou formation dans cette pratique', t: 'a' },
-    { k: 'prices', l: 'Tarifs prévus pour les festivaliers', t: 't', n: '« Gratuit » possible.' },
+    { k: 'prices', l: 'Tarifs prévus pour les festivaliers', t: 't' },
     { k: 'practitioners', l: 'Praticiens présents : nombre, noms et pratiques', t: 't', r: 1 }
   ].concat(CAND_SURFACE, CAND_ELEC),
   'Stand / Miam Miam': [
+    { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
     { k: 'offer', l: 'Nom de l’activité et ce que tu proposes à manger ou à boire', t: 't', r: 1 },
     { k: 'menu', l: 'Menus, produits et prix envisagés', t: 'a', r: 1, n: 'Tu peux aussi joindre ta carte avec les photos.' },
     { k: 'diet', l: 'Options alimentaires', t: 'chips', multi: 1, o: ['Végétarien', 'Vegan', 'Sans gluten', 'Autres', 'Aucune'], r: 1 },
@@ -1891,6 +1919,7 @@ const CAND_POLE = {
     { k: 'cold_waste', l: 'Besoins pour le froid, les eaux usées et les déchets', t: 'a', r: 1, n: 'Écris « Aucun » si besoin.' }
   ]),
   'L\'Antre deux mondes': [
+    { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
     { k: 'activity', l: 'Quelle activité proposes-tu ?', t: 't', r: 1 },
     { k: 'flow', l: 'Comment se déroule ton activité ?', t: 'a', r: 1 },
     { k: 'people', l: 'Intervenants : nombre, noms et rôles', t: 't', r: 1 },
@@ -1898,7 +1927,9 @@ const CAND_POLE = {
     { k: 'capacity', l: 'Nombre de places par séance', t: 'n', r: 1, si: ['access', 'Places limitées, avec inscription'] },
     { k: 'surface', l: 'Surface et configuration souhaitées (en mètres)', t: 't', r: 1 }
   ].concat(CAND_ELEC),
-  'Autre': [{ k: 'other_what', l: 'Dis-nous ce que tu proposes et ce dont tu as besoin', t: 'a', r: 1 }]
+  'Autre': [
+    { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
+    { k: 'other_what', l: 'Dis-nous ce que tu proposes et ce dont tu as besoin', t: 'a', r: 1 }]
 };
 function candChamps() { return (CAND_POLE[cand.pole] || CAND_POLE['Autre']).concat(CAND_FIN); }
 
@@ -1940,7 +1971,7 @@ function candChamp(f) {
     const el = document.createElement(f.t === 'a' ? 'textarea' : 'input');
     el.id = 'cand-champ-' + f.k; el.name = f.k; lab.htmlFor = el.id;
     el.autocomplete = ({ first_name: 'given-name', last_name: 'family-name', email: 'email', phone: 'tel' })[f.k] || 'off';
-    if (f.t === 'a') { el.rows = 3; el.maxLength = 2000; } else { el.type = f.t === 'n' ? 'number' : (f.type || 'text'); if (f.t !== 'n') el.maxLength = 300; }
+    if (f.t === 'a') { el.rows = 3; el.maxLength = 2000; } else { el.type = f.t === 'n' ? 'number' : (f.type || 'text'); if (f.t !== 'n') el.maxLength = 300; if (f.mode) el.inputMode = f.mode; }
     if (f.t === 'n') { el.min = '0'; el.step = 'any'; }
     el.value = cand.vals[f.k] || '';
     el.addEventListener('input', () => { cand.vals[f.k] = el.value.trim(); if (f.t === 'a') autoGrow(el); });
@@ -1958,6 +1989,7 @@ function candValider(champs) {
     if (!f.r || !candVisible(f)) continue;
     const v = cand.vals[f.k];
     if (v === undefined || v === '' || (Array.isArray(v) && !v.length)) return 'À compléter : ' + f.l;
+    if (f.k === 'siret' && !/^\d{14}$/.test(String(v).replace(/\s+/g, ''))) return 'Le numéro de SIRET doit avoir 14 chiffres (sans lettre).';
   }
   return '';
 }
@@ -2004,18 +2036,46 @@ function candAfficherPoles() {
     etat.innerHTML = '<div class="message-erreur visible">Impossible de charger le formulaire pour le moment. Vérifie ta connexion et réessaie.</div><div class="nav-etapes"><button class="btn btn-retour" type="button" onclick="ouvrirCandidature()">Réessayer</button></div>';
     return;
   }
-  if (!c.ouvert.candidatures) { etat.innerHTML = '<div class="message-erreur visible">Les candidatures sont fermées pour le moment.</div>'; return; }
+  const msgs = c.messages_fermes || {};
+  if (!c.ouvert.candidatures) { etat.innerHTML = ''; const bf = document.createElement('div'); bf.className = 'bloc-ferme'; bf.setAttribute('role', 'alert'); const rb = document.createElement('span'); rb.className = 'ruban-ferme-grand'; rb.textContent = 'FERMÉ'; const pm = document.createElement('p'); pm.textContent = msgs.candidatures || 'Les candidatures sont fermées pour le moment.'; bf.appendChild(rb); bf.appendChild(pm); etat.appendChild(bf); return; }
   etat.innerHTML = '';
   if (!c.poles.some(p => p.ouvert)) { etat.innerHTML = '<div class="message-erreur visible">Toutes les candidatures sont fermées pour le moment.</div>'; }
+  // Une carte par pôle : icône, nom, une ligne pour comprendre de quoi il s'agit. Un pôle fermé porte un ruban rouge et dit pourquoi quand on le touche.
+  const boiteFerme = document.createElement('div'); boiteFerme.id = 'cand-ferme-msg'; boiteFerme.className = 'bloc-ferme'; boiteFerme.setAttribute('role', 'alert'); boiteFerme.hidden = true;
   c.poles.forEach(p => {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'puce'; b.dataset.pole = p.nom;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'puce carte-pole' + (p.ouvert ? '' : ' ferme'); b.dataset.pole = p.nom;
     const coul = CAND_COULEURS[p.nom] || ['#E6E6EE', '#A5A5BD']; b.style.setProperty('--pole-fond', coul[0]); b.style.setProperty('--pole-bord', coul[1]);
-    b.textContent = p.ouvert ? p.nom : p.nom + ' (fermé)';
-    const icone = iconePole(p.nom); if (icone) b.insertBefore(icone, b.firstChild);
-    if (!p.ouvert) { b.disabled = true; b.style.opacity = '.5'; b.style.cursor = 'not-allowed'; }
-    else b.onclick = () => { $('cand-poles').querySelectorAll('.puce').forEach(x => x.classList.remove('choisie')); b.classList.add('choisie'); candChoisirPole(p.nom); };
+    const icone = iconePole(p.nom); if (icone) b.appendChild(icone);
+    const nom = document.createElement('span'); nom.className = 'pole-nom'; nom.textContent = p.nom; b.appendChild(nom);
+    if (p.description) { const ligne = document.createElement('span'); ligne.className = 'pole-ligne'; ligne.textContent = p.description; b.appendChild(ligne); }
+    if (!p.ouvert) {
+      const ruban = document.createElement('span'); ruban.className = 'ruban-ferme'; ruban.textContent = 'FERMÉ'; b.appendChild(ruban);
+      b.setAttribute('aria-label', p.nom + ' : fermé. Touche pour lire pourquoi.');
+      b.onclick = () => {
+        $('cand-poles').querySelectorAll('.puce').forEach(x => x.classList.remove('choisie')); cand.pole = ''; $('cand-conditions').style.display = 'none';
+        boiteFerme.textContent = ''; const rb = document.createElement('span'); rb.className = 'ruban-ferme-grand'; rb.textContent = 'FERMÉ'; const pm = document.createElement('p'); pm.textContent = p.message_ferme || ('Les candidatures pour le pôle ' + p.nom + ' sont fermées pour cette édition. Merci pour ton intérêt !'); boiteFerme.appendChild(rb); boiteFerme.appendChild(pm); boiteFerme.hidden = false;
+      };
+    } else b.onclick = () => { boiteFerme.hidden = true; $('cand-poles').querySelectorAll('.puce').forEach(x => x.classList.remove('choisie')); b.classList.add('choisie'); candChoisirPole(p.nom); };
     $('cand-poles').appendChild(b);
   });
+  $('cand-poles').parentNode.insertBefore(boiteFerme, $('cand-poles').nextSibling);
+}
+// Ouvre un formulaire (bénévoles, dossier final) seulement s'il est ouvert : sinon on montre tout de suite le message de fermeture.
+async function ouvrirParConfig(cle, ecran) {
+  let c = null;
+  try {
+    const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    const minuteur = ctrl ? setTimeout(() => ctrl.abort(), 5000) : null;
+    const r = await fetch(CONFIG.scriptUrl + '?action=config', ctrl ? { signal: ctrl.signal } : undefined);
+    if (minuteur) clearTimeout(minuteur);
+    c = await r.json(); if (c && c.ok) derniereConfig = c;
+  } catch (e) { c = null; }   // hors ligne : on laisse entrer, le serveur refuse si c'est fermé
+  if (c && c.ok && c.ouvert && c.ouvert[cle] === false) {
+    const defauts = { benevoles: 'Les candidatures de bénévoles sont fermées pour cette édition. Merci pour ton élan !', formulaire_final: 'Le dossier final est fermé pour le moment.' };
+    $('ferme-message').textContent = (c.messages_fermes && c.messages_fermes[cle]) || defauts[cle];
+    aller('ferme'); return;
+  }
+  aller(ecran);
 }
 // Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
 // Pour changer une icône : modifie seulement le nom du fichier ici. Si le fichier manque, l'icône disparaît sans casser la page.
@@ -2077,10 +2137,10 @@ function candSuite0() {
   // « Fermé » ne s'affiche que si la page a vraiment lu que c'est fermé. Pendant le chargement ou en cas d'échec, on le dit autrement.
   if (cand.chargement) return erreur('cand-0', 'Les pôles sont encore en chargement. Patiente quelques secondes, puis clique à nouveau sur Continuer.');
   if (!cand.config || !cand.config.ok) return erreur('cand-0', 'Le formulaire n’a pas pu se charger. Clique sur Retour puis sur Candidater pour réessayer.');
-  if (!cand.config.ouvert.candidatures) return erreur('cand-0', 'Les candidatures sont fermées pour le moment.');
+  if (!cand.config.ouvert.candidatures) return erreur('cand-0', (cand.config.messages_fermes && cand.config.messages_fermes.candidatures) || 'Les candidatures sont fermées pour le moment.');
   if (!cand.pole) return erreur('cand-0', 'Choisis ton pôle.');
   const p = cand.config.poles.find(x => x.nom === cand.pole);
-  if (!p.ouvert) return erreur('cand-0', 'Les candidatures sont fermées pour ce pôle.');
+  if (!p.ouvert) return erreur('cand-0', p.message_ferme || 'Les candidatures sont fermées pour ce pôle.');
   if (!(p.conditions || '').trim()) return erreur('cand-0', 'Les conditions de ce pôle ne sont pas encore publiées. Reviens bientôt.');
   if (!$('cand_terms').checked) return erreur('cand-0', 'Coche la case pour accepter les conditions et les critères de sélection.');
   candRendre('cand-commun', CAND_COMMUN);
