@@ -467,6 +467,52 @@ li .ico-btn img { width: 24px; height: 24px; }
 .signature .btn-univers::after { content: " \2192"; }
 .signature .btn-univers:hover, .signature .btn-univers:focus-visible { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(110, 91, 208, 0.38); text-decoration: none; }
 @media (prefers-reduced-motion: reduce) { .signature .btn-univers { transition: none; } .signature .btn-univers:hover { transform: none; } }
+
+/* ---------- Réglages : ouvert / fermé très visible ---------- */
+.bandeau-ferme { background: #FDE3E0; border: 2px solid #C62828; border-left-width: 10px; color: #7A1410; border-radius: 14px; padding: 14px 18px; margin: 0 0 16px; font-size: 1.05rem; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.bandeau-ferme[hidden] { display: none; }
+.bandeau-ferme strong { background: #C62828; color: #fff; border-radius: 8px; padding: 3px 12px; letter-spacing: .08em; }
+.reglage-bloc { margin-top: 18px; }
+.reglage-bloc h3 { color: var(--violet); margin: 18px 0 8px; font-size: 1.05rem; }
+.ligne-ouv { border: 1px solid rgba(110, 90, 170, 0.22); border-radius: 14px; padding: 12px 14px; margin: 10px 0; background: rgba(255, 255, 255, 0.7); }
+.ligne-ouv.est-ferme { border: 2px solid #C62828; background: #FFF1EF; }
+.ligne-ouv-haut { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ligne-ouv-nom { flex: 1 1 180px; font-size: 1.05rem; }
+.etat { border-radius: 999px; padding: 4px 14px; font-weight: 800; letter-spacing: .06em; font-size: .85rem; }
+.etat-ouvert { background: #DDF2E4; color: #1F5E3A; }
+.etat-ferme { background: #C62828; color: #fff; }
+.btn-danger-doux { background: #FBE2DE; color: #8A1C14; border: 1px solid #E7A7A0; }
+.btn-danger { background: #C62828; color: #fff; }
+.btn-danger:disabled { opacity: .45; }
+.confirm-ferme { background: #FFF4E0; border: 1px solid #E2B66B; border-radius: 12px; padding: 10px 14px; margin: 10px 0; }
+.apercu-ferme { background: #fff; border-left: 5px solid #C62828; padding: 8px 12px; border-radius: 8px; font-weight: 700; }
+.champ-reglage { margin: 12px 0; }
+.champ-reglage label { display: block; font-weight: 700; margin-bottom: 4px; }
+.champ-reglage input, .champ-reglage textarea, .champ-reglage select { width: 100%; padding: 10px 12px; border: 2px solid var(--ligne); border-radius: 12px; background: rgba(255, 255, 255, 0.92); font: inherit; }
+.champ-reglage input:focus, .champ-reglage textarea:focus, .champ-reglage select:focus { border-color: var(--turquoise-vif); outline: none; }
+.reglage-detail { border: 1px solid rgba(110, 90, 170, 0.22); border-radius: 12px; padding: 8px 14px; margin: 8px 0; background: rgba(255, 255, 255, 0.7); }
+.reglage-detail summary { cursor: pointer; font-weight: 800; padding: 6px 0; }
+.mots { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
+.mot { border: 1px solid #C9B8F0; background: #F1ECFA; color: #43296F; border-radius: 999px; padding: 3px 10px; font-size: .8rem; cursor: pointer; }
+.ligne-oui-non { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+.admin-mode { border-radius: 12px; padding: 12px 14px; margin: 12px 0; }
+.mode-test { background: #E6F4EA; border: 1px solid #9ACDA9; }
+.mode-reel { background: #FDE3E0; border: 2px solid #C62828; }
+.admin-barre { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.reglage-admin { border: 2px dashed #8F7BDB; }
+.contrat-etat a { margin-left: 4px; }
+.rond-reglages svg { width: 26px; height: 26px; }
+.msg-details { margin-top: 8px; }
+.msg-details summary { cursor: pointer; font-weight: 700; color: var(--violet); padding: 4px 0; }
+
+/* ---------- v3.26 : contrat personnel, email bloqué ---------- */
+.contrat-etat-fiche { font-weight: 700; border-radius: 12px; padding: 10px 14px; margin: 10px 0; }
+.contrat-etat-fiche.ok { background: #DDF2E4; color: #1F5E3A; }
+.contrat-etat-fiche.ko { background: #FDE3E0; color: #7A1410; border: 1px solid #C62828; }
+.carte-contrat input[type=file] { display: block; margin: 8px 0; }
+.carte-contrat .btn { margin-right: 8px; }
+.piece-jointe { font-weight: 700; color: #43296F; }
+.bloque-contrat { font-size: 1.02rem; }
 </style>
 </head>
 <body>
@@ -509,6 +555,7 @@ li .ico-btn img { width: 24px; height: 24px; }
       <div class="sous-menu" id="sous-menu-benevoles" aria-label="Bénévoles par équipe"></div>
       <button type="button" data-vue="stats"><span class="ico-nav" data-ico="STATS.png"></span>Statistiques
       </button>
+      <button type="button" data-vue="reglages"><span class="ico-nav" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.2" fill="#fff"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="15" cy="17" r="2.2" fill="#fff"/></svg></span>Réglages</button>
       <a id="lien-drive" href="#" target="_blank" rel="noopener noreferrer" hidden><span class="ico-nav" data-ico="FILE.png"></span>Dossiers Drive
       </a>
     </nav>
@@ -522,6 +569,7 @@ li .ico-btn img { width: 24px; height: 24px; }
   </aside>
 
   <main>
+    <div id="bandeau-ferme" class="bandeau-ferme" role="status" hidden></div>
     <section id="vue-accueil" hidden>
       <div class="hero" id="hero">
         <div class="titre"><h1 id="hero-titre">Mantra Joie 2027</h1><p class="sous">Portail Festival</p></div>
@@ -575,6 +623,14 @@ li .ico-btn img { width: 24px; height: 24px; }
       </div>
     </section>
 
+    <section id="vue-reglages" hidden>
+      <div class="page">
+        <div class="titre-page"><div class="rond rond-reglages" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.2"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="15" cy="17" r="2.2"/></svg></div>
+          <div><h1>Réglages</h1><p>Ouvrir et fermer, dates, liens, contrat, pôles et textes</p></div></div>
+        <div id="reglages-contenu"></div>
+      </div>
+    </section>
+
     <section id="vue-stats" hidden>
       <div class="page">
         <div class="titre-page">
@@ -593,7 +649,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.24-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.26-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 // Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
@@ -864,12 +920,13 @@ document.querySelectorAll('[data-vue]').forEach((b) => b.addEventListener('click
 $('voir-toutes').addEventListener('click', () => { filtreCategorie = 'Toutes'; filtreStatut = 'Tous'; $('recherche').value = ''; naviguer('candidatures'); });
 
 function naviguer(nom) {
-  vue = ['candidatures', 'participants', 'benevoles', 'stats', 'detail'].indexOf(nom) >= 0 ? nom : 'accueil';
+  vue = ['candidatures', 'participants', 'benevoles', 'stats', 'reglages', 'detail'].indexOf(nom) >= 0 ? nom : 'accueil';
   $('vue-accueil').hidden = vue !== 'accueil';
   $('vue-candidatures').hidden = vue !== 'candidatures';
   $('vue-participants').hidden = vue !== 'participants';
   $('vue-benevoles').hidden = vue !== 'benevoles';
   $('vue-stats').hidden = vue !== 'stats';
+  $('vue-reglages').hidden = vue !== 'reglages';
   $('vue-detail').hidden = vue !== 'detail';
   const actif = vue === 'detail' ? ({ candidature: 'candidatures', participant: 'participants', benevole: 'benevoles' })[detailGenre] : vue;
   document.querySelectorAll('[data-vue]').forEach((b) => {
@@ -878,12 +935,323 @@ function naviguer(nom) {
   sectionOuverte = ['candidatures', 'participants', 'benevoles'].indexOf(actif) >= 0 ? actif : '';
   if (vue === 'accueil') dessinerAccueil(); else if (vue === 'candidatures') dessinerCandidatures();
   else if (vue === 'stats') chargerStatsDetail(false);
+  else if (vue === 'reglages') chargerReglages();
   else if (vue === 'participants') { dessinerParticipants(); if (!participants) chargerParticipants(); }
   else if (vue === 'benevoles') { dessinerBenevoles(); if (!benevoles) chargerBenevoles(); }
   dessinerSousMenu();
+  majBandeauFerme();
   window.scrollTo(0, 0);
 }
 
+
+/* ---------- Page Réglages ---------- */
+let reglagesDonnees = null, reglagesEnCours = false, adminJeton = '', adminDonnees = null, adminFin = 0, adminMessage = '';
+
+function fermeturesDepuis(r) {
+  const f = [];
+  if (!r.ouvertures.candidatures) f.push('Candidatures');
+  if (!r.ouvertures.formulaire_final) f.push('Dossier final');
+  if (!r.ouvertures.benevoles) f.push('Bénévoles');
+  r.poles.forEach((p) => { if (!p.ouvert) f.push('Pôle ' + p.nom); });
+  return f;
+}
+// Bandeau rouge, impossible à rater : on voit tout de suite ce qui est fermé.
+function majBandeauFerme() {
+  const b = $('bandeau-ferme');
+  const liste = reglagesDonnees ? fermeturesDepuis(reglagesDonnees) : ((config && config.fermetures) || []);
+  b.textContent = '';
+  b.hidden = !liste.length || (vue !== 'accueil' && vue !== 'reglages');
+  if (b.hidden) return;
+  b.appendChild(el('strong', '', 'FERMÉ'));
+  b.appendChild(document.createTextNode(' : ' + liste.join(', ') + '. Le public voit le message de fermeture.'));
+  if (vue !== 'reglages') {
+    const a = el('button', 'btn btn-doux-clair', 'Ouvrir les réglages'); a.type = 'button';
+    a.addEventListener('click', () => naviguer('reglages')); b.appendChild(a);
+  }
+}
+
+async function appelReglages(corps) {
+  const r = await appel(Object.assign({ token: jeton }, corps));
+  return sessionExpiree(r) ? null : r;
+}
+// Montre « Enregistrement… » puis « ✓ Enregistré » ou l'erreur, dans la zone donnée.
+async function enregistrer(zone, bouton, faire, texteOk) {
+  zone.className = 'statut-enr'; zone.textContent = ''; zone.appendChild(roue('Enregistrement...'));
+  if (bouton) bouton.disabled = true;
+  try {
+    const r = await faire();
+    if (r === null) return null;
+    if (!r.ok) { zone.className = 'message ko'; zone.textContent = r.error || "Impossible d'enregistrer."; return r; }
+    zone.className = 'message ok'; zone.textContent = '✓ ' + (texteOk || 'Enregistré');
+    return r;
+  } catch (err) {
+    zone.className = 'message ko'; zone.textContent = "Impossible d'enregistrer. Réessaie."; return { ok: false };
+  } finally { if (bouton) bouton.disabled = false; }
+}
+function gardeReglages(r) { if (r && r.ok && r.poles && r.ouvertures) { reglagesDonnees = r; majBandeauFerme(); } return r; }
+
+function blocReglages(titre, aide) {
+  const c = el('section', 'carte reglage-bloc'); c.appendChild(el('h2', '', titre));
+  if (aide) c.appendChild(el('p', 'compte', aide));
+  return c;
+}
+function champReglage(libelle, valeur, opts) {
+  opts = opts || {};
+  const boite = el('div', 'champ-reglage');
+  const lab = el('label', '', libelle);
+  const saisie = opts.long ? document.createElement('textarea') : document.createElement('input');
+  if (!opts.long) saisie.type = opts.type || 'text';
+  if (opts.long) saisie.rows = opts.lignes || 4;
+  saisie.value = valeur == null ? '' : valeur; saisie.autocomplete = 'off';
+  if (opts.placeholder) saisie.placeholder = opts.placeholder;
+  if (opts.nom) { saisie.dataset.champ = opts.nom; }
+  const id = 'reg-' + (opts.nom || Math.random().toString(36).slice(2)); saisie.id = id; lab.htmlFor = id;
+  boite.appendChild(lab); boite.appendChild(saisie);
+  if (opts.aide) boite.appendChild(el('p', 'aide-statut', opts.aide));
+  return { boite: boite, saisie: saisie };
+}
+
+// Une ligne « ouvert / fermé » : état en couleur, bouton, confirmation avant de fermer, message pour le public.
+function ligneOuverture(o) {
+  const ligne = el('div', 'ligne-ouv');
+  ligne.dataset.ouv = o.cle;
+  let ouvert = o.ouvert;
+  const haut = el('div', 'ligne-ouv-haut');
+  haut.appendChild(el('strong', 'ligne-ouv-nom', o.libelle));
+  const etat = el('span', ''); const bouton = el('button', 'btn', ''); bouton.type = 'button'; bouton.dataset.interrupteur = o.cle;
+  bouton.setAttribute('role', 'switch');
+  haut.appendChild(etat); haut.appendChild(bouton); ligne.appendChild(haut);
+  const confirm = el('div', 'confirm-ferme'); confirm.hidden = true; ligne.appendChild(confirm);
+  const msg = champReglage('Ce que le public lit', o.message, { long: true, lignes: 2, placeholder: o.defaut, nom: 'msg-' + o.cle.replace(/[^a-z0-9]+/gi, '-') });
+  msg.saisie.dataset.msg = o.cle;
+  // Le message se plie quand tout est ouvert (la page reste courte) et s'ouvre tout seul quand c'est fermé.
+  const detMsg = document.createElement('details'); detMsg.className = 'msg-details'; const sMsg = document.createElement('summary'); sMsg.textContent = 'Message montré au public si c\'est fermé'; detMsg.appendChild(sMsg);
+  detMsg.appendChild(msg.boite);
+  const barre = el('div', 'actions-reglage'); const bMsg = el('button', 'btn btn-doux-clair', 'Enregistrer le message'); bMsg.type = 'button';
+  barre.appendChild(bMsg); detMsg.appendChild(barre); ligne.appendChild(detMsg);
+  const statut = el('div', '', ''); statut.setAttribute('role', 'status'); ligne.appendChild(statut);
+  const dessiner = () => {
+    ligne.classList.toggle('est-ferme', !ouvert);
+    if (!ouvert) detMsg.open = true;
+    etat.className = 'etat ' + (ouvert ? 'etat-ouvert' : 'etat-ferme'); etat.textContent = ouvert ? 'OUVERT' : 'FERMÉ';
+    bouton.className = 'btn ' + (ouvert ? 'btn-danger-doux' : ''); bouton.textContent = ouvert ? 'Fermer' : 'Rouvrir';
+    bouton.setAttribute('aria-checked', String(ouvert)); bouton.setAttribute('aria-label', o.libelle + ' : ' + (ouvert ? 'ouvert, appuyer pour fermer' : 'fermé, appuyer pour rouvrir'));
+  };
+  const appliquer = async (neuf) => {
+    const r = await enregistrer(statut, bouton, () => o.changer(neuf), neuf ? 'Rouvert' : 'Fermé');
+    if (r && r.ok) { ouvert = neuf; dessiner(); } else if (r === null) return;
+    confirm.hidden = true;
+  };
+  bouton.addEventListener('click', () => {
+    if (!ouvert) { appliquer(true); return; }
+    // Fermer touche le public tout de suite : on demande confirmation en montrant ce qu'il verra.
+    confirm.hidden = false; confirm.textContent = '';
+    confirm.appendChild(el('p', '', 'Fermer maintenant ? Le public verra :'));
+    confirm.appendChild(el('p', 'apercu-ferme', msg.saisie.value.trim() || o.defaut));
+    const oui = el('button', 'btn btn-danger', 'Oui, fermer'); oui.type = 'button'; oui.dataset.confirmer = o.cle;
+    const non = el('button', 'btn btn-doux-clair', 'Annuler'); non.type = 'button';
+    oui.addEventListener('click', () => appliquer(false)); non.addEventListener('click', () => { confirm.hidden = true; });
+    confirm.appendChild(oui); confirm.appendChild(non);
+  });
+  bMsg.addEventListener('click', () => enregistrer(statut, bMsg, () => o.enregistrerMessage(msg.saisie.value), 'Message enregistré'));
+  dessiner();
+  return ligne;
+}
+
+function menuMots(zoneTexte, mots) {
+  const boite = el('div', 'mots'); boite.appendChild(el('span', 'compte', 'Mots remplis tout seuls : '));
+  mots.forEach((m) => {
+    const b = el('button', 'mot', '{' + m + '}'); b.type = 'button'; b.dataset.mot = m;
+    b.addEventListener('click', () => {
+      const z = zoneTexte(); const d = z.selectionStart == null ? z.value.length : z.selectionStart, f = z.selectionEnd == null ? d : z.selectionEnd;
+      z.value = z.value.slice(0, d) + '{' + m + '}' + z.value.slice(f); const p = d + m.length + 2; z.focus(); try { z.setSelectionRange(p, p); } catch (err) { /* sans effet */ }
+    });
+    boite.appendChild(b);
+  });
+  return boite;
+}
+
+function dessinerReglages() {
+  const r = reglagesDonnees, zone = $('reglages-contenu'); zone.textContent = '';
+  // 1. Ouvertures
+  const ouv = blocReglages('Ouvertures', 'Ferme un formulaire ou un pôle quand il est complet. Le public voit un message clair, rien n\'est supprimé.');
+  const formes = [['candidatures', 'Candidatures', 'candidatures_ouvertes', 'message_ferme_candidatures'], ['formulaire_final', 'Dossier final', 'formulaire_final_ouvert', 'message_ferme_formulaire_final'], ['benevoles', 'Bénévoles', 'benevoles_ouverts', 'message_ferme_benevoles']];
+  ouv.appendChild(el('h3', '', 'Les formulaires'));
+  formes.forEach((f) => ouv.appendChild(ligneOuverture({ cle: f[0], libelle: f[1], ouvert: r.ouvertures[f[0]], message: r.messages[f[0]], defaut: r.messages_defaut[f[0]],
+    changer: async (neuf) => gardeReglages(await appelReglages({ op: 'reglages_ecrire', valeurs: { [f[2]]: neuf ? 'OUI' : 'NON' } })),
+    enregistrerMessage: async (txt) => gardeReglages(await appelReglages({ op: 'reglages_ecrire', valeurs: { [f[3]]: txt } })) })));
+  ouv.appendChild(el('h3', '', 'Les pôles'));
+  r.poles.forEach((p) => ouv.appendChild(ligneOuverture({ cle: 'pole:' + p.nom, libelle: p.nom, ouvert: p.ouvert, message: p.message_ferme, defaut: r.message_pole_defaut.replace('{pole}', p.nom),
+    changer: async (neuf) => gardeReglages(await appelReglages({ op: 'pole_ecrire', nom: p.nom, champs: { ouvert: neuf ? 'OUI' : 'NON' } })),
+    enregistrerMessage: async (txt) => gardeReglages(await appelReglages({ op: 'pole_ecrire', nom: p.nom, champs: { message_ferme: txt } })) })));
+  zone.appendChild(ouv);
+  // 2. Dates et liens
+  const dl = blocReglages('Dates et liens', 'Ces dates et ces liens se remplissent tout seuls dans les emails.');
+  const champsDL = [['date_reponses', 'Date des réponses', r.dates.date_reponses, 'ex. 15 mars 2027'], ['date_limite_dossier', 'Date limite du dossier final', r.dates.date_limite_dossier, 'ex. 30 avril 2027'],
+    ['lien_faq', 'Lien de la FAQ', r.liens.lien_faq, 'https://'], ['lien_infos_pratiques', 'Lien des infos pratiques', r.liens.lien_infos_pratiques, 'https://'],
+    ['lien_whatsapp', 'Lien du groupe WhatsApp', r.liens.lien_whatsapp, 'https://'], ['lien_formulaire_final', 'Lien du formulaire du dossier final', r.liens.lien_formulaire_final, 'https://']];
+  const saisiesDL = {};
+  champsDL.forEach((c) => { const x = champReglage(c[1], c[2], { nom: c[0], placeholder: c[3] }); saisiesDL[c[0]] = x.saisie; dl.appendChild(x.boite); });
+  const sDL = el('div', '', ''); sDL.setAttribute('role', 'status'); const bDL = el('button', 'btn', 'Enregistrer'); bDL.type = 'button'; bDL.id = 'reg-enregistrer-dates';
+  bDL.addEventListener('click', () => enregistrer(sDL, bDL, async () => { const v = {}; champsDL.forEach((c) => { v[c[0]] = saisiesDL[c[0]].value; }); return gardeReglages(await appelReglages({ op: 'reglages_ecrire', valeurs: v })); }));
+  dl.appendChild(bDL); dl.appendChild(sDL); zone.appendChild(dl);
+  // 3. Contrat : un contrat personnel par personne, ajouté sur sa fiche
+  const ct = blocReglages('Contrat', "Chaque personne reçoit son contrat personnel, en pièce jointe de son email d'acceptation. Tu l'ajoutes sur la fiche de la personne, dans la carte « Contrat à envoyer ». Il n'est jamais téléchargeable depuis le formulaire.");
+  ct.appendChild(simpleOuiNon("Contrat obligatoire : l'email d'acceptation ne part pas sans contrat", r.contrat.obligatoire, async (v) => gardeReglages(await appelReglages({ op: 'reglages_ecrire', valeurs: { contrat_obligatoire: v ? 'OUI' : 'NON' } })), 'contrat_obligatoire'));
+  zone.appendChild(ct);
+  // 4. Emails
+  const em = blocReglages('Emails', "L'adresse où arrivent les réponses des bénévoles, et le récap du matin.");
+  const eb = champReglage('Email des réponses des bénévoles', r.emails.email_benevoles, { nom: 'email_benevoles', placeholder: 'benevoles@...' });
+  em.appendChild(eb.boite);
+  const sEm = el('div', '', ''); sEm.setAttribute('role', 'status'); const bEm = el('button', 'btn', 'Enregistrer'); bEm.type = 'button'; bEm.id = 'reg-enregistrer-emails';
+  bEm.addEventListener('click', () => enregistrer(sEm, bEm, async () => gardeReglages(await appelReglages({ op: 'reglages_ecrire', valeurs: { email_benevoles: eb.saisie.value } }))));
+  em.appendChild(bEm); em.appendChild(sEm);
+  em.appendChild(simpleOuiNon('Récap du matin (chaque jour vers 8 h)', r.emails.recap_actif, async (v) => gardeReglages(await appelReglages({ op: 'reglages_ecrire', valeurs: { recap_actif: v ? 'OUI' : 'NON' } })), 'recap_actif'));
+  zone.appendChild(em);
+  // 5. Pôles
+  const po = blocReglages('Pôles', 'Paiement, référente et conditions de chaque pôle. La ligne courte s\'affiche sous le nom du pôle sur la première page du formulaire.');
+  r.poles.forEach((p) => {
+    const d = document.createElement('details'); d.className = 'reglage-detail'; d.dataset.pole = p.nom;
+    const s = document.createElement('summary'); s.textContent = p.nom; d.appendChild(s);
+    const sel = document.createElement('select'); sel.dataset.champ = 'payant'; [['', 'À choisir'], ['OUI', 'Payant'], ['NON', 'Gratuit']].forEach((o) => { const op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; sel.appendChild(op); });
+    sel.value = p.payant === 'OUI' || p.payant === 'NON' ? p.payant : '';
+    const lp = el('label', '', 'Payant ou gratuit'); const bp = el('div', 'champ-reglage'); bp.appendChild(lp); bp.appendChild(sel); d.appendChild(bp);
+    const cs = {};
+    [['montant', 'Montant', p.montant, { placeholder: 'ex. 150' }], ['montant_duo', 'Montant en duo', p.montant_duo, { placeholder: 'ex. 250' }], ['lien', 'Lien de paiement (HelloAsso)', p.lien, { placeholder: 'https://' }],
+      ['referent', 'Nom de la référente', p.referent, {}], ['email_referent', 'Email de la référente', p.email_referent, { type: 'email' }],
+      ['description', 'Ligne courte sous le nom du pôle', p.description, { placeholder: p.description_defaut || 'ex. Musique, chant, spectacle' }], ['conditions', 'Conditions de participation (texte complet)', p.conditions, { long: true, lignes: 6 }],
+      ['a_preparer', "Ce que la personne doit préparer (liste dans l'email d'acceptation)", p.a_preparer, { long: true, lignes: 7, placeholder: p.a_preparer_defaut, aide: 'Vide : la liste de départ ci-dessus est utilisée.' }]
+    ].forEach((c) => { const x = champReglage(c[1], c[2], Object.assign({ nom: 'pole-' + p.nom.replace(/[^a-z0-9]+/gi, '-') + '-' + c[0] }, c[3])); cs[c[0]] = x.saisie; x.saisie.dataset.champ = c[0]; d.appendChild(x.boite); });
+    const sP = el('div', '', ''); sP.setAttribute('role', 'status'); const bP = el('button', 'btn', 'Enregistrer ce pôle'); bP.type = 'button'; bP.dataset.enregistrerPole = p.nom;
+    bP.addEventListener('click', () => enregistrer(sP, bP, async () => { const ch = { payant: sel.value }; Object.keys(cs).forEach((k) => { ch[k] = cs[k].value; }); return gardeReglages(await appelReglages({ op: 'pole_ecrire', nom: p.nom, champs: ch })); }));
+    d.appendChild(bP); d.appendChild(sP); po.appendChild(d);
+  });
+  zone.appendChild(po);
+  // 6. Textes
+  const tx = blocReglages('Textes des emails', 'Chaque email part dans un cas précis. Les mots entre { } se remplissent tout seuls : utilise les boutons sous le texte.');
+  r.textes.forEach((t) => {
+    const d = document.createElement('details'); d.className = 'reglage-detail'; d.dataset.texte = t.cle;
+    const s = document.createElement('summary'); s.textContent = t.libelle; d.appendChild(s);
+    const obj = champReglage('Objet', t.objet, { nom: 'texte-' + t.cle + '-objet' }); const cor = champReglage('Texte', t.corps, { long: true, lignes: 12, nom: 'texte-' + t.cle + '-corps' });
+    d.appendChild(obj.boite); d.appendChild(cor.boite); d.appendChild(menuMots(() => cor.saisie, r.mots));
+    const sT = el('div', '', ''); sT.setAttribute('role', 'status'); const bT = el('button', 'btn', 'Enregistrer'); bT.type = 'button'; bT.dataset.enregistrerTexte = t.cle;
+    const bR = el('button', 'btn btn-doux-clair', "Remettre le texte d'origine"); bR.type = 'button'; bR.dataset.remettre = t.cle;
+    bT.addEventListener('click', () => enregistrer(sT, bT, async () => gardeReglages(await appelReglages({ op: 'texte_ecrire', cle: t.cle, objet: obj.saisie.value, corps: cor.saisie.value }))));
+    bR.addEventListener('click', async () => { const rep = await enregistrer(sT, bR, async () => gardeReglages(await appelReglages({ op: 'texte_ecrire', cle: t.cle, remettre: true })), "Texte d'origine remis"); if (rep && rep.ok) { obj.saisie.value = t.defaut.objet; cor.saisie.value = t.defaut.corps; } });
+    d.appendChild(bT); d.appendChild(bR); d.appendChild(sT); tx.appendChild(d);
+  });
+  const dd = document.createElement('details'); dd.className = 'reglage-detail'; dd.dataset.texte = 'donnees';
+  const sd = document.createElement('summary'); sd.textContent = 'Texte sur les données personnelles (avant la case « J\'accepte »)'; dd.appendChild(sd);
+  const zd = champReglage('Texte', r.donnees.texte, { long: true, lignes: 10, nom: 'texte-donnees', placeholder: r.donnees.defaut, aide: 'Vide : le texte habituel est utilisé.' }); dd.appendChild(zd.boite);
+  const sDo = el('div', '', ''); sDo.setAttribute('role', 'status'); const bDo = el('button', 'btn', 'Enregistrer'); bDo.type = 'button'; bDo.dataset.enregistrerTexte = 'donnees';
+  bDo.addEventListener('click', () => enregistrer(sDo, bDo, async () => gardeReglages(await appelReglages({ op: 'donnees_ecrire', texte: zd.saisie.value }))));
+  dd.appendChild(bDo); dd.appendChild(sDo); tx.appendChild(dd); zone.appendChild(tx);
+  // 7. Administration
+  const adm = el('section', 'carte reglage-bloc reglage-admin'); adm.id = 'reglage-admin'; zone.appendChild(adm); dessinerAdmin();
+  majBandeauFerme();
+}
+
+// Un petit interrupteur Oui / Non qui s'enregistre tout seul.
+function simpleOuiNon(libelle, valeur, enregistrerValeur, nom) {
+  const ligne = el('div', 'ligne-oui-non'); const lab = el('span', 'ligne-ouv-nom', libelle);
+  const b = el('button', 'btn btn-doux-clair', ''); b.type = 'button'; b.dataset.ouinon = nom; b.setAttribute('role', 'switch');
+  const s = el('span', '', ''); s.setAttribute('role', 'status');
+  let v = valeur;
+  const dessiner = () => { b.textContent = v ? 'Oui' : 'Non'; b.setAttribute('aria-checked', String(v)); b.setAttribute('aria-label', libelle + ' : ' + (v ? 'oui' : 'non')); };
+  b.addEventListener('click', async () => { const rep = await enregistrer(s, b, () => enregistrerValeur(!v)); if (rep && rep.ok) { v = !v; dessiner(); } });
+  dessiner(); ligne.appendChild(lab); ligne.appendChild(b); ligne.appendChild(s);
+  return ligne;
+}
+
+/* ---------- Administration : mot de passe à part ---------- */
+async function appelAdmin(corps) {
+  const r = await appelReglages(Object.assign({ admin_token: adminJeton }, corps));
+  if (r && r.admin === false) { adminJeton = ''; adminDonnees = null; adminMessage = r.error || "L'accès administrateur a expiré."; dessinerAdmin(); return null; }
+  return r;
+}
+function dessinerAdmin() {
+  const adm = $('reglage-admin'); if (!adm) return; adm.textContent = '';
+  adm.appendChild(el('h2', '', 'Administration'));
+  adm.appendChild(el('p', 'compte', "Réservé à Holly. Cette partie a son propre mot de passe : le mot de passe de l'équipe ne l'ouvre pas."));
+  if (adminMessage) { adm.appendChild(el('p', 'message ko', adminMessage)); adminMessage = ''; }
+  if (!reglagesDonnees.admin_defini) { adm.appendChild(el('p', 'message ko', "Le mot de passe administrateur n'est pas encore défini. Dans le Google Sheet : menu Portail, « Définir le mot de passe administrateur ».")); return; }
+  if (!adminJeton) {
+    const mdp = champReglage('Mot de passe administrateur', '', { type: 'password', nom: 'admin-mdp' });
+    const bo = el('button', 'btn', "Ouvrir l'administration"); bo.type = 'button'; bo.id = 'admin-ouvrir';
+    const st = el('div', '', ''); st.setAttribute('role', 'status');
+    const ouvrir = async () => {
+      const rep = await enregistrer(st, bo, async () => appelReglages({ op: 'admin_login', password: mdp.saisie.value }), 'Administration ouverte');
+      if (rep && rep.ok && rep.admin_token) {
+        adminJeton = rep.admin_token; adminFin = Date.now() + (rep.duree_minutes || 30) * 60000;
+        const lu = await appelAdmin({ op: 'admin_lire' }); if (lu && lu.ok) { adminDonnees = lu.valeurs; dessinerAdmin(); }
+      }
+    };
+    bo.addEventListener('click', ouvrir); mdp.saisie.addEventListener('keydown', (e) => { if (e.key === 'Enter') ouvrir(); });
+    adm.appendChild(mdp.boite); adm.appendChild(bo); adm.appendChild(st); return;
+  }
+  const v = adminDonnees || {};
+  const barreTop = el('div', 'admin-barre'); barreTop.appendChild(el('span', 'compte', 'Accès administrateur ouvert pendant 30 minutes.'));
+  const bf = el('button', 'btn btn-doux-clair', "Fermer l'administration"); bf.type = 'button'; bf.id = 'admin-fermer';
+  bf.addEventListener('click', () => { adminJeton = ''; adminDonnees = null; dessinerAdmin(); }); barreTop.appendChild(bf); adm.appendChild(barreTop);
+  // mode TEST / REEL
+  const mode = el('div', 'admin-mode ' + (v.mode_envoi === 'REEL' ? 'mode-reel' : 'mode-test')); mode.id = 'admin-mode';
+  mode.appendChild(el('strong', '', v.mode_envoi === 'REEL' ? 'Mode REEL : les emails partent vers les vraies personnes.' : "Mode TEST : tous les emails vont à l'adresse de test, personne d'autre ne reçoit rien."));
+  const sm = el('div', '', ''); sm.setAttribute('role', 'status');
+  if (v.mode_envoi === 'REEL') {
+    const b = el('button', 'btn', 'Repasser en TEST'); b.type = 'button'; b.dataset.mode = 'TEST';
+    b.addEventListener('click', async () => { const rep = await enregistrer(sm, b, () => appelAdmin({ op: 'admin_ecrire', cle: 'mode_envoi', valeur: 'TEST' }), 'Mode TEST'); if (rep && rep.ok) { adminDonnees = rep.valeurs; if (config) config.mode = 'TEST'; dessinerAdmin(); } });
+    mode.appendChild(b);
+  } else {
+    const b = el('button', 'btn btn-danger', 'Passer en REEL…'); b.type = 'button'; b.dataset.mode = 'REEL';
+    const conf = el('div', 'confirm-ferme'); conf.hidden = true;
+    conf.appendChild(el('p', '', 'Les vraies personnes vont recevoir les emails. Pour confirmer, écris REEL :'));
+    const sai = document.createElement('input'); sai.type = 'text'; sai.id = 'admin-confirmer-reel'; sai.autocomplete = 'off';
+    const ok = el('button', 'btn btn-danger', 'Passer en REEL'); ok.type = 'button'; ok.id = 'admin-valider-reel'; ok.disabled = true;
+    sai.addEventListener('input', () => { ok.disabled = sai.value.trim() !== 'REEL'; });
+    ok.addEventListener('click', async () => { const rep = await enregistrer(sm, ok, () => appelAdmin({ op: 'admin_ecrire', cle: 'mode_envoi', valeur: 'REEL' }), 'Mode REEL'); if (rep && rep.ok) { adminDonnees = rep.valeurs; if (config) config.mode = 'REEL'; dessinerAdmin(); } });
+    b.addEventListener('click', () => { conf.hidden = false; sai.focus(); });
+    conf.appendChild(sai); conf.appendChild(ok); mode.appendChild(b); mode.appendChild(conf);
+  }
+  mode.appendChild(sm); adm.appendChild(mode);
+  // autres réglages
+  const champs = [['email_test', "Adresse de test (reçoit tous les emails en mode TEST)", { type: 'email' }], ['nom_expediteur', "Nom de l'expéditeur (affiché dans la boîte mail)", {}], ['edition', "Nom de l'édition", {}],
+    ['logo_portail', 'Logo du Portail (adresse https ou nom de fichier)', {}], ['image_accueil', "Grande image de l'accueil (adresse https ou nom de fichier)", {}]];
+  const saisies = {};
+  champs.forEach((c) => { const x = champReglage(c[1], v[c[0]], Object.assign({ nom: 'admin-' + c[0] }, c[2])); saisies[c[0]] = x.saisie; adm.appendChild(x.boite); });
+  const sA = el('div', '', ''); sA.setAttribute('role', 'status'); const bA = el('button', 'btn', 'Enregistrer'); bA.type = 'button'; bA.id = 'admin-enregistrer';
+  bA.addEventListener('click', () => enregistrer(sA, bA, async () => {
+    let dernier = { ok: true };
+    for (let i = 0; i < champs.length; i++) {
+      const k = champs[i][0]; if (saisies[k].value.trim() === String(v[k] || '').trim()) continue;
+      const rep = await appelAdmin({ op: 'admin_ecrire', cle: k, valeur: saisies[k].value }); if (rep === null) return null; if (!rep.ok) return rep; adminDonnees = rep.valeurs; dernier = rep;
+    }
+    return dernier;
+  }));
+  adm.appendChild(bA); adm.appendChild(sA);
+  // mot de passe de l'équipe
+  const pw = champReglage("Mot de passe de l'équipe (le changer déconnecte tout le monde)", v.mot_de_passe_equipe, { type: 'password', nom: 'admin-mot_de_passe_equipe' });
+  const voir = el('button', 'btn btn-doux-clair', 'Afficher'); voir.type = 'button'; voir.addEventListener('click', () => { const cache = pw.saisie.type === 'password'; pw.saisie.type = cache ? 'text' : 'password'; voir.textContent = cache ? 'Masquer' : 'Afficher'; });
+  const sPw = el('div', '', ''); sPw.setAttribute('role', 'status'); const bPw = el('button', 'btn', 'Changer le mot de passe'); bPw.type = 'button'; bPw.id = 'admin-changer-mdp';
+  bPw.addEventListener('click', () => enregistrer(sPw, bPw, async () => {
+    return appelAdmin({ op: 'admin_ecrire', cle: 'mot_de_passe_equipe', valeur: pw.saisie.value });
+  }, 'Mot de passe changé. Tout le monde, toi compris, devra se reconnecter.'));
+  adm.appendChild(pw.boite); adm.appendChild(voir); adm.appendChild(bPw); adm.appendChild(sPw);
+}
+
+async function chargerReglages() {
+  if (reglagesEnCours) return;
+  reglagesEnCours = true;
+  const zone = $('reglages-contenu'); zone.textContent = '';
+  const attente = el('p', 'compte'); attente.appendChild(roue('Chargement des réglages...')); zone.appendChild(attente);
+  try {
+    const r = await appelReglages({ op: 'reglages_lire' });
+    if (r === null) return;
+    if (!r.ok) throw new Error(r.error || 'Erreur');
+    reglagesDonnees = r; dessinerReglages();
+  } catch (err) {
+    zone.textContent = ''; zone.appendChild(el('p', 'message ko', 'Impossible de charger les réglages pour le moment. Réessaie.'));
+  } finally { reglagesEnCours = false; }
+}
 
 /* ---------- Page Statistiques ---------- */
 const LIBELLES_EMAILS = { libre: 'Email libre', recue: 'Candidature reçue', acceptee: 'Candidature acceptée', attente: "Liste d'attente", refusee: 'Candidature refusée', final_recu: 'Dossier final reçu', confirmee: 'Participation confirmée',
@@ -1848,10 +2216,10 @@ function dessinerDetail(d, listes, mode) {
   cs.appendChild(boutons); cs.appendChild(autres); cs.appendChild(message); cs.appendChild(alerte);
   if (genre === 'participant') {
     // Documents déposés dans le formulaire final : contrat signé (tout le monde) et preuve de paiement (pôles payants)
-    const docs = [['Contrat signé', d.contrat, true], ['Preuve de paiement', d.preuve, !!(d.payant || d.preuve)]];
+    const docs = [['Contrat signé', d.contrat, true], ['Preuve de paiement', d.preuve, !!(d.payant || d.preuve)], ['Assurance responsabilité civile', d.assurance, !!(d.assurance_requise || d.assurance)]];
     docs.forEach((doc) => {
       if (!doc[2]) return;
-      const ligneDoc = el('div', 'preuve ' + (doc[0] === 'Contrat signé' ? 'doc-contrat' : 'doc-preuve'));
+      const ligneDoc = el('div', 'preuve ' + (doc[0] === 'Contrat signé' ? 'doc-contrat' : (doc[0] === 'Preuve de paiement' ? 'doc-preuve' : 'doc-assurance')));
       ligneDoc.appendChild(el('strong', '', doc[0]));
       const lienDoc = doc[1] ? lienSur(doc[1], 'Ouvrir le document') : null;
       if (lienDoc) ligneDoc.appendChild(lienDoc); else ligneDoc.appendChild(el('span', 'meta', 'Aucun document déposé.'));
@@ -1869,6 +2237,12 @@ function dessinerDetail(d, listes, mode) {
     if (pret.erreur) { emailZone.appendChild(el('p', 'message ko', pret.erreur)); return; }
     emailZone.appendChild(el('p', 'avis-email', '⚠ Cet email n\u2019est pas encore parti. Relis-le, puis clique sur Envoyer.'));
     emailZone.appendChild(el('p', 'ligne-mail', 'Destinataire : ' + pret.destinataire + (pret.reel ? (genre === 'candidature' ? ' (le candidat)' : ' (la personne concernée)') : ' (adresse de test)')));
+    if (pret.piece_jointe) emailZone.appendChild(el('p', 'ligne-mail piece-jointe', '📎 Contrat joint : ' + pret.piece_jointe));
+    if (pret.bloque) {
+      emailZone.appendChild(el('p', 'message ko bloque-contrat', pret.bloque));
+      emailZone.appendChild(el('p', 'meta', "Dès que le contrat est ajouté, le bouton Envoyer apparaît ici."));
+      return;
+    }
     const lo = el('label', 'etiq', 'Objet'); lo.htmlFor = 'mail-objet';
     const objet = document.createElement('input'); objet.type = 'text'; objet.id = 'mail-objet'; objet.className = 'champ-mail'; objet.maxLength = 200; objet.value = pret.objet_modifiable;
     const lc = el('label', 'etiq', 'Texte de l\u2019email'); lc.htmlFor = 'mail-corps';
@@ -1982,6 +2356,57 @@ function dessinerDetail(d, listes, mode) {
   redessinerEmail = function (pret) { redessinerEmailBase(pret); boutE.pret.classList.toggle('a-envoyer', !!pret); };
   emailsBoite.appendChild(barreE);
   Object.keys(panE).forEach((k) => { panE[k].setAttribute('role', 'tabpanel'); emailsBoite.appendChild(panE[k]); });
+
+  // ----- Contrat à envoyer (candidatures) : un PDF personnel et privé, joint à l'email d'acceptation -----
+  let carteContrat = null;
+  if (genre === 'candidature') {
+    carteContrat = carte('Contrat à envoyer'); carteContrat.classList.add('carte-contrat');
+    carteContrat.appendChild(el('p', 'compte', "Prépare le contrat de cette personne (avec son nom), puis ajoute-le ici : PDF, 10 Mo au maximum. Seule l'équipe le voit. Il part en pièce jointe de l'email d'acceptation."));
+    const etatC = el('p', 'contrat-etat-fiche'); etatC.id = 'contrat-fiche-etat';
+    const fichierC = document.createElement('input'); fichierC.type = 'file'; fichierC.accept = 'application/pdf,.pdf'; fichierC.id = 'contrat-fiche-fichier';
+    const boutonC = el('button', 'btn', 'Ajouter le contrat'); boutonC.type = 'button'; boutonC.id = 'contrat-fiche-envoyer';
+    const retirerC = el('button', 'btn btn-doux-clair', 'Retirer le contrat'); retirerC.type = 'button'; retirerC.id = 'contrat-fiche-retirer';
+    const resC = el('div', '', ''); resC.setAttribute('role', 'status');
+    let confirmeRetrait = false;
+    const dessinerC = () => {
+      const cj = d.contrat_joint;
+      etatC.className = 'contrat-etat-fiche ' + (cj ? 'ok' : 'ko');
+      etatC.textContent = cj ? '✓ Contrat ajouté : ' + cj.nom + ' (le ' + cj.date + ')' : (d.contrat_requis === false ? "Aucun contrat ajouté. Il n'est pas obligatoire pour le moment." : "Aucun contrat ajouté. L'email d'acceptation ne peut pas partir sans lui.");
+      boutonC.textContent = cj ? 'Remplacer le contrat' : 'Ajouter le contrat';
+      retirerC.hidden = !cj; confirmeRetrait = false; retirerC.textContent = 'Retirer le contrat';
+    };
+    const apres = (r) => {
+      d.contrat_joint = r.contrat_joint; delete detailsPrets[cleDetail];
+      if ('email_pret' in r) { majEmailAEnvoyer(genre, d, r.email_pret); redessinerEmail(r.email_pret); }
+      dessinerC();
+    };
+    boutonC.addEventListener('click', () => {
+      const f = fichierC.files && fichierC.files[0];
+      if (!f) { resC.className = 'message ko'; resC.textContent = "Choisis d'abord un fichier PDF."; return; }
+      if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') { resC.className = 'message ko'; resC.textContent = 'Envoie un fichier PDF.'; return; }
+      if (f.size > 10 * 1024 * 1024) { resC.className = 'message ko'; resC.textContent = 'Le fichier est trop lourd (10 Mo au maximum).'; return; }
+      enregistrer(resC, boutonC, () => new Promise((resolve, reject) => {
+        const lecteur = new FileReader();
+        lecteur.onload = async () => {
+          try {
+            const r = await appel({ op: 'contrat_personne_televerser', token: jeton, id: sid, nom: f.name, contenu: String(lecteur.result) });
+            if (sessionExpiree(r)) { resolve(null); return; }
+            if (r.ok) { apres(r); fichierC.value = ''; }
+            resolve(r);
+          } catch (err) { reject(err); }
+        };
+        lecteur.onerror = () => reject(new Error('lecture'));
+        lecteur.readAsDataURL(f);
+      }), 'Contrat enregistré');
+    });
+    retirerC.addEventListener('click', async () => {
+      if (!confirmeRetrait) { confirmeRetrait = true; retirerC.textContent = 'Confirmer : retirer ce contrat'; return; }
+      const r = await enregistrer(resC, retirerC, async () => { const rep = await appel({ op: 'contrat_personne_retirer', token: jeton, id: sid }); return sessionExpiree(rep) ? null : rep; }, 'Contrat retiré');
+      if (r && r.ok) apres(r); else { confirmeRetrait = false; retirerC.textContent = 'Retirer le contrat'; }
+    });
+    carteContrat.appendChild(etatC); carteContrat.appendChild(fichierC); carteContrat.appendChild(boutonC); carteContrat.appendChild(retirerC); carteContrat.appendChild(resC);
+    dessinerC();
+  }
   redessinerStatuts(); redessinerAlerte(); redessinerEmail(d.email_pret);
   redessinerHistorique(d.emails || []);
   activerEmailOnglet(d.email_pret ? 'pret' : 'historique');
@@ -2007,7 +2432,7 @@ function dessinerDetail(d, listes, mode) {
     ['suivi', 'presentation', 'technique'].forEach((k) => { panneaux[k].setAttribute('role', 'tabpanel'); zone.appendChild(panneaux[k]); });
     activerOnglet('suivi');
   } else {
-    const ordre = [cs, emailsBoite, carteReponses].concat(cartesExtra).concat([cartePhotos]);
+    const ordre = (carteContrat ? [cs, carteContrat, emailsBoite, carteReponses] : [cs, emailsBoite, carteReponses]).concat(cartesExtra).concat([cartePhotos]);
     if (genre === 'benevole') {   // la motivation d'abord : c'est ce qui aide à décider
       const motivation = cartesExtra.filter((c) => c.querySelector('h2') && c.querySelector('h2').textContent === 'Motivation et compétences')[0];
       if (motivation) { ordre.splice(ordre.indexOf(motivation), 1); ordre.unshift(motivation); }
