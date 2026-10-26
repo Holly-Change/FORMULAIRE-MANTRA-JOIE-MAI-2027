@@ -906,13 +906,19 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.26-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.28-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
   categories: ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'],
-  typesArtiste: ['DJ ecstatic', 'Cercle de chants', 'Sieste musicale', 'Spectacle', 'Concert', 'Musicien accompagnant'],
-  couleursConfettis: ['#A44FC4', '#6E5BD0', '#2BB8C4', '#F0663C', '#E0A93B']
+  typesArtiste: ['DJ ecstatic', 'Cercle de chants', 'Spectacle', 'Concert', 'Musicien accompagnant', 'Danse'],
+  couleursConfettis: ['#A44FC4', '#6E5BD0', '#2BB8C4', '#F0663C', '#E0A93B'],
+  // Contacts affichés dans les formulaires. Vide : rien ne s'affiche. À remplir quand la personne a donné son accord.
+  contacts: {
+    referentes: { 'Artiste': '', 'Atelier': '', 'Bien-être': '', 'Artisan': '', "L'Antre deux mondes": '', 'Stand / Miam Miam': '' },   // ex. 'Solène : solene@exemple.fr'
+    fab: '',    // responsable technique (Artiste et Atelier) : email ou téléphone
+    eric: ''    // contact sur place pour les artistes : téléphone
+  }
 };
 
 // Formats de la galerie (pixels du rendu final)
@@ -1864,47 +1870,138 @@ const CAND_COMMUN = [
   { k: 'links', l: 'Liens pour découvrir ton travail (site, réseaux, vidéo)', t: 'a' }
 ];
 const CAND_FIN = [{ k: 'other_needs', l: 'Autres besoins ou contraintes à signaler ?', t: 'a' }];
+// Réponses refusées pour les micros, appareils et instruments : un « aucun » est impossible (demande de Marylou).
+const CAND_AUCUN = /^\s*(aucun|aucune|rien|non|none|n\/a|sans objet|pas besoin)\s*\.?\s*$/i;
+// Un seul invité : ses quatre coordonnées s'affichent seulement si la réponse est Oui.
+function CAND_INVITE(note) {
+  return [
+    { k: 'invite', l: 'Viens-tu avec un invité ?', t: 'chips', o: ['Oui', 'Non'], r: 1, n: note || '' },
+    { k: 'guest_last', l: 'Nom de ton invité', t: 't', r: 1, si: ['invite', 'Oui'] },
+    { k: 'guest_first', l: 'Prénom de ton invité', t: 't', r: 1, si: ['invite', 'Oui'] },
+    { k: 'guest_email', l: 'Email de ton invité', t: 't', type: 'email', r: 1, si: ['invite', 'Oui'] },
+    { k: 'guest_phone', l: 'Téléphone de ton invité', t: 't', type: 'tel', r: 1, si: ['invite', 'Oui'] }
+  ];
+}
+// Électricité : appareils, puissance approximative et unité séparés (W ou kW, jamais kWh).
+const CAND_ELEC_W = [
+  { k: 'elec', l: 'As-tu besoin d’électricité ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
+  { k: 'elec_devices', l: 'Quels appareils ?', t: 'a', r: 1, si: ['elec', 'Oui'] },
+  { k: 'elec_power', l: 'Puissance approximative totale', t: 'n', r: 1, pos: 1, si: ['elec', 'Oui'] },
+  { k: 'elec_unit', l: 'Unité de cette puissance', t: 'chips', o: ['W', 'kW'], r: 1, si: ['elec', 'Oui'], n: 'Une puissance s’exprime en W ou en kW, pas en kWh.' }
+];
+// Contacts : une ligne de texte, affichée seulement si le contact est renseigné dans CONFIG.contacts.
+function CAND_REFERENTE(pole) {
+  const c = CONFIG.contacts.referentes[pole];
+  return c ? [{ k: 'ref_contact', t: 'info', l: 'Une question sur ce pôle ?', n: 'Écris à ' + c + '.' }] : [];
+}
+function CAND_FAB() {
+  return CONFIG.contacts.fab ? [{ k: 'fab_contact', t: 'info', l: 'Responsable technique', n: 'Envoie ta fiche technique et tes besoins en matériel directement à Fab : ' + CONFIG.contacts.fab + '.' }] : [];
+}
+function CAND_ERIC() {
+  return CONFIG.contacts.eric ? [{ k: 'eric_contact', t: 'info', l: 'Contact sur place pour les artistes', n: 'Éric : ' + CONFIG.contacts.eric + '.' }] : [];
+}
+// Deuxième personne : toujours demandée (food trucks) ou seulement en duo (stands, Healing space, Antre).
+function CAND_SECOND(toujours, contactRequis) {
+  const si = toujours ? {} : { si: ['formula', 'Duo (2 personnes)'] };
+  const q = (k, l, extra) => Object.assign({ k: k, l: l, t: 't', r: 1 }, si, extra || {});
+  return [
+    q('second_last', 'Nom de la deuxième personne'),
+    q('second_first', 'Prénom de la deuxième personne'),
+    q('second_email', 'Email de la deuxième personne', { type: 'email', r: contactRequis ? 1 : 0 }),
+    q('second_phone', 'Téléphone de la deuxième personne', { type: 'tel', r: contactRequis ? 1 : 0 })
+  ];
+}
+function CAND_DUO() {
+  return [{ k: 'formula', l: 'Viens-tu seul·e ou à deux ?', t: 'chips', o: ['Solo (1 personne)', 'Duo (2 personnes)'], r: 1, n: 'Le forfait duo est de 270 €, camping de 5 nuits compris pour les deux personnes.' }].concat(CAND_SECOND(false, false));
+}
+// Ateliers : dates d'arrivée et de départ.
+const CAND_DATES_ATELIER = [
+  { k: 'arrival_date', l: 'Date d’arrivée au festival', t: 't', type: 'date', r: 1 },
+  { k: 'departure_date', l: 'Date de départ', t: 't', type: 'date', r: 1, apres: 'arrival_date' }
+];
+// Artistes : accueil, voyage et repas.
+const CAND_ACCUEIL = [
+  { k: 'arrival_date', l: 'Date d’arrivée', t: 't', type: 'date', r: 1 },
+  { k: 'arrival_time', l: 'Heure d’arrivée', t: 't', type: 'time', r: 1 },
+  { k: 'transport', l: 'Moyen de transport', t: 'chips', o: ['Voiture', 'Train', 'Avion', 'Autre'], r: 1 },
+  { k: 'transport_details', l: 'Détails du voyage : numéro de vol ou de train, gare ou aéroport, horaires', t: 'a', r: 1, si: ['transport', ['Train', 'Avion']] },
+  { k: 'transfer', l: 'As-tu besoin d’un transfert depuis la gare ou l’aéroport ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
+  { k: 'transfer_details', l: 'Précise le transfert souhaité', t: 'a', r: 1, si: ['transfer', 'Oui'] },
+  { k: 'food_needs', l: 'Régime alimentaire et besoins en repas', t: 'a', r: 1, n: 'Écris « aucun » s’il n’y en a pas.' },
+  { k: 'allergies', l: 'Allergies ou intolérances alimentaires', t: 'a', n: 'Facultatif. Cette information sert uniquement à préparer tes repas.' }
+];
 const CAND_POLE = {
   'Artiste': [
     { k: 'artist_type', l: 'Type de proposition', t: 'chips', o: CONFIG.typesArtiste, r: 1 },
     { k: 'members', l: 'Les personnes du groupe (une ligne par personne : prénom, nom, rôle)', t: 'a', r: 1 },
-    { k: 'duration', l: 'Durée proposée (en minutes)', t: 'n', r: 1 },
-    { k: 'instruments', l: 'Instruments utilisés', t: 't', r: 1, n: 'Écris « Aucun » si besoin.' },
-    { k: 'sound', l: 'Micros et appareils à brancher', t: 't', r: 1, n: 'Écris « Aucun » si besoin.' },
-    { k: 'tech_sheet', l: 'As-tu une fiche technique ?', t: 'chips', o: ['Oui', 'Non'], r: 1, n: 'Tu pourras la déposer à l’inscription finale.' },
+    { k: 'tech_sheet', l: 'As-tu une fiche technique ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
+    { k: 'tech_sheet_link', l: 'Lien vers ta fiche technique', t: 't', r: 1, si: ['tech_sheet', 'Oui'], n: 'Dépose-la sur Drive, Dropbox ou WeTransfer et colle le lien ici. Tu pourras aussi la déposer à l’inscription finale.' },
+    { k: 'instruments', l: 'Instruments utilisés', t: 't', r: 1, si: ['tech_sheet', 'Non'], rejet: CAND_AUCUN, n: 'Indique ce que tu utilises.' },
+    { k: 'sound', l: 'Micros et appareils à brancher', t: 't', r: 1, si: ['tech_sheet', 'Non'], rejet: CAND_AUCUN, n: 'Indique ce qu’il faut brancher.' },
     { k: 'media_link', l: 'Lien vidéo ou audio', t: 't', r: 1 }
-  ],
+  ].concat(CAND_FAB(), CAND_ERIC(), CAND_ELEC_W, CAND_ACCUEIL, CAND_INVITE('')),
   'Atelier': [
     { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
-    { k: 'workshop_title', l: 'Titre de l’atelier', t: 't', r: 1 },
-    { k: 'workshop_content', l: 'Que vont vivre ou faire les participants ?', t: 'a', r: 1 },
-    { k: 'animators', l: 'Les animateurs (une ligne par personne : prénom, nom, rôle)', t: 'a', r: 1 },
-    { k: 'duration', l: 'Durée (en minutes)', t: 'n', r: 1 },
-    { k: 'capacity', l: 'Nombre maximum de participant·es', t: 'n', r: 1 },
-    { k: 'public', l: 'Public visé et prérequis', t: 't', r: 1, n: '« Tous publics » ou « Aucun » possible.' },
-    { k: 'audio', l: 'Besoin d’un micro ou d’une enceinte fournie par le festival ?', t: 'chips', o: ['Non', 'Micro', 'Enceinte', 'Micro et enceinte'], r: 1 }
-  ].concat(CAND_ELEC),
+    { k: 'workshop_title', l: 'Intitulé de l’atelier', t: 't', r: 1 },
+    { k: 'workshop_presentation', l: 'Présentation de l’intervenant, de ton parcours et de ta pratique', t: 'a', r: 1 },
+    { k: 'workshop_experience', l: 'Expérience dans l’animation d’ateliers ou d’événements similaires', t: 'a', r: 1 },
+    { k: 'workshop_training', l: 'Formations et certifications pertinentes', t: 't', n: 'Écris « sans objet » s’il n’y en a pas.' },
+    { k: 'workshop_content', l: 'Intention et description de l’atelier', t: 'a', r: 1 },
+    { k: 'workshop_steps', l: 'Déroulement et principales étapes de l’atelier', t: 'a', r: 1 },
+    { k: 'workshop_duration', l: 'Durée de l’atelier : 2 h', t: 'info', n: 'Chaque atelier dure 2 heures, avec un seul facilitateur.' },
+    { k: 'public', l: 'Public visé', t: 't', r: 1 },
+    { k: 'prerequisites', l: 'Éventuels prérequis', t: 't', r: 1, n: 'Écris « aucun » s’il n’y en a pas.' },
+    { k: 'minimum', l: 'Nombre minimum de participant·es', t: 'n', r: 1, pos: 1 },
+    { k: 'capacity', l: 'Nombre maximum de participant·es', t: 'n', r: 1, pos: 1 },
+    { k: 'materiel', l: 'Matériel nécessaire à la réalisation de l’atelier', t: 'a', r: 1, n: 'Distingue ce que tu apportes et ce que tu demandes au festival.' },
+    { k: 'technique', l: 'Besoins techniques ou logistiques particuliers', t: 'a', r: 1 },
+    { k: 'space', l: 'Type d’espace souhaité', t: 'chips', multi: 1, o: ['Intérieur', 'Extérieur', 'Calme', 'Dégagé', 'Autre'], r: 1, n: 'Plusieurs choix possibles.' },
+    { k: 'space_other', l: 'Précise le type d’espace', t: 't', r: 1, si: ['space', 'Autre'] },
+    { k: 'constraints', l: 'Contraintes liées au bruit, à la météo ou à la configuration de l’espace', t: 'a', r: 1, n: 'Écris « aucune » s’il n’y en a pas.' },
+    { k: 'safety', l: 'Précautions de sécurité à prévoir', t: 'a', r: 1 },
+    { k: 'motivation', l: 'Pourquoi souhaites-tu participer à Mantra Joie et qu’as-tu envie d’y partager ou apporter ?', t: 'a' }
+  ].concat(CAND_FAB(), CAND_ELEC_W, CAND_DATES_ATELIER, CAND_INVITE('Un seul invité, qui peut t’assister. Ses coordonnées sont à renseigner au plus tard le 21 mai. Ton invité règle son camping à son arrivée.')),
   'Artisan': [
     { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
-    { k: 'sells', l: 'Que proposes-tu précisément à la vente sur ton stand ?', t: 'a', r: 1 },
-    { k: 'origin', l: 'Ces produits sont…', t: 'chips', multi: 1, o: ['Conçus par moi', 'Fabriqués par moi', 'Fabriqués par des artisans ou ateliers partenaires', 'Issus en partie d’achat-revente'], r: 1, n: 'Plusieurs choix possibles.' },
-    { k: 'process', l: 'Ta démarche de conception et de fabrication', t: 'a', n: 'Précise l’origine de ce qui est acheté pour la revente, si c’est le cas.' },
-    { k: 'stand', l: 'Combien de personnes seront sur le stand ?', t: 'chips', o: ['Individuel (1 personne)', 'Duo (2 personnes)'], r: 1 },
-    { k: 'duo1', l: 'Exposant 1 : nom', t: 't', r: 1, si: ['stand', 'Duo (2 personnes)'] },
-    { k: 'duo2', l: 'Exposant 2 : nom', t: 't', r: 1, si: ['stand', 'Duo (2 personnes)'] }
-  ].concat(CAND_SURFACE, CAND_ELEC),
+    ...CAND_DUO(),
+    { k: 'brand_presentation', l: 'Présentation détaillée de l’artisan, de sa marque et de sa démarche créative', t: 'a', r: 1 },
+    { k: 'sells', l: 'Produits proposés', t: 'a', r: 1 },
+    { k: 'category', l: 'Catégorie de créations ou de produits vendus', t: 't', r: 1, n: 'Par exemple : bijoux, textile, céramique. Texte libre pour le moment.' },
+    { k: 'designed', l: 'Les créations sont-elles conçues par toi ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
+    { k: 'designed_detail', l: 'Précisions sur la conception', t: 't' },
+    { k: 'made', l: 'Les créations sont-elles fabriquées par toi ou par des artisans ou ateliers partenaires ?', t: 'chips', o: ['Par moi', 'Par des artisans ou ateliers partenaires', 'Par moi et par des partenaires'], r: 1 },
+    { k: 'made_detail', l: 'Qui sont les partenaires, et quel est ton rôle dans la conception ?', t: 'a', r: 1, si: ['made', ['Par des artisans ou ateliers partenaires', 'Par moi et par des partenaires']] },
+    { k: 'resale', l: 'Proposes-tu des produits achetés pour être revendus et que tu n’as pas conçus ?', t: 'chips', o: ['Non', 'Oui'], r: 1, n: 'Une réponse « Oui » est examinée par l’équipe : ce n’est pas une acceptation automatique.' },
+    { k: 'resale_detail', l: 'Précise lesquels', t: 'a', r: 1, si: ['resale', 'Oui'] },
+    { k: 'width', l: 'Longueur souhaitée du stand, tente ou barnum compris (en mètres)', t: 'n', r: 1, pos: 1 },
+    { k: 'depth', l: 'Profondeur souhaitée du stand, tente ou barnum compris (en mètres)', t: 'n', r: 1, pos: 1 }
+  ].concat(CAND_ELEC_W, [
+    { k: 'mobility', l: 'Contraintes d’accessibilité ou de mobilité à signaler pour l’installation', t: 'a', n: 'Facultatif. Ce que tu écris ici sert uniquement à préparer ton installation.' },
+    { k: 'motivation', l: 'Pourquoi souhaites-tu participer à Mantra Joie et qu’as-tu envie d’y partager ou apporter ?', t: 'a' }
+  ]),
   'Bien-être': [
     { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
-    { k: 'practices', l: 'Pratiques ou prestations proposées', t: 'a', r: 1 },
-    { k: 'session', l: 'Déroulement d’une séance et durée (en minutes)', t: 'a', r: 1 },
-    { k: 'session_type', l: 'Séances individuelles ou collectives ?', t: 'chips', o: ['Individuelles', 'Collectives'], r: 1 },
-    { k: 'capacity', l: 'Nombre de personnes par séance collective', t: 'n', r: 1, si: ['session_type', 'Collectives'] },
-    { k: 'experience', l: 'Expérience ou formation dans cette pratique', t: 'a' },
-    { k: 'prices', l: 'Tarifs prévus pour les festivaliers', t: 't' },
-    { k: 'practitioners', l: 'Praticiens présents : nombre, noms et pratiques', t: 't', r: 1 }
-  ].concat(CAND_SURFACE, CAND_ELEC),
+    ...CAND_DUO(),
+    { k: 'bio', l: 'Mini-biographie : présentation de la personne et de son approche', t: 'a', r: 1, maxLignes: 3, n: '3 lignes au maximum.' },
+    { k: 'care_count', l: 'Combien de soins ou de massages proposes-tu ?', t: 'chips', o: ['1', '2', '3'], r: 1, n: '3 au maximum.' },
+    { k: 'care1_title', l: 'Soin ou massage 1 : intitulé', t: 't', r: 1 },
+    { k: 'care1_desc', l: 'Soin ou massage 1 : courte description', t: 'a', r: 1 },
+    { k: 'care2_title', l: 'Soin ou massage 2 : intitulé', t: 't', r: 1, si: ['care_count', ['2', '3']] },
+    { k: 'care2_desc', l: 'Soin ou massage 2 : courte description', t: 'a', r: 1, si: ['care_count', ['2', '3']] },
+    { k: 'care3_title', l: 'Soin ou massage 3 : intitulé', t: 't', r: 1, si: ['care_count', '3'] },
+    { k: 'care3_desc', l: 'Soin ou massage 3 : courte description', t: 'a', r: 1, si: ['care_count', '3'] },
+    { k: 'structure', l: 'Type, forme et format de la structure envisagée', t: 't', r: 1 },
+    { k: 'length', l: 'Longueur de l’installation (en mètres)', t: 'n', r: 1, pos: 1 },
+    { k: 'depth', l: 'Profondeur de l’installation (en mètres)', t: 'n', r: 1, pos: 1 },
+    { k: 'height', l: 'Hauteur de l’installation, si nécessaire (en mètres)', t: 'n', pos: 1 },
+    ...CAND_ELEC_W,
+    { k: 'motivation', l: 'Pourquoi souhaites-tu participer à Mantra Joie et qu’as-tu envie d’y partager ou apporter ?', t: 'a' }
+  ],
+
   'Stand / Miam Miam': [
     { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
+    { k: 'food_type', l: 'Catégorie de ton activité', t: 'chips', o: ['Repas', 'Desserts et glaces'], r: 1, n: 'Forfait pour deux personnes, 5 jours de festival et 5 nuits de camping compris : 550 € pour les repas, 450 € pour les desserts et glaces.' },
+    ...CAND_SECOND(true, true),
     { k: 'offer', l: 'Nom de l’activité et ce que tu proposes à manger ou à boire', t: 't', r: 1 },
     { k: 'menu', l: 'Menus, produits et prix envisagés', t: 'a', r: 1, n: 'Tu peux aussi joindre ta carte avec les photos.' },
     { k: 'diet', l: 'Options alimentaires', t: 'chips', multi: 1, o: ['Végétarien', 'Vegan', 'Sans gluten', 'Autres', 'Aucune'], r: 1 },
@@ -1920,23 +2017,29 @@ const CAND_POLE = {
   ]),
   'L\'Antre deux mondes': [
     { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
-    { k: 'activity', l: 'Quelle activité proposes-tu ?', t: 't', r: 1 },
-    { k: 'flow', l: 'Comment se déroule ton activité ?', t: 'a', r: 1 },
-    { k: 'people', l: 'Intervenants : nombre, noms et rôles', t: 't', r: 1 },
-    { k: 'access', l: 'Accès à ton activité', t: 'chips', o: ['Places limitées, avec inscription', 'Illimité, accès libre'], r: 1, n: 'Les activités sont toujours gratuites pour le public.' },
-    { k: 'capacity', l: 'Nombre de places par séance', t: 'n', r: 1, si: ['access', 'Places limitées, avec inscription'] },
-    { k: 'surface', l: 'Surface et configuration souhaitées (en mètres)', t: 't', r: 1 }
-  ].concat(CAND_ELEC),
+    ...CAND_DUO(),
+    { k: 'bio', l: 'Mini-biographie', t: 'a', r: 1 },
+    { k: 'activity_desc', l: 'Mini-description de l’activité et des prestations proposées', t: 'a', r: 1, n: 'Une prestation ou une expérience créative, artistique, esthétique ou symbolique.' },
+    { k: 'sells_also', l: 'Proposes-tu des créations à la vente en complément ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
+    { k: 'creations', l: 'Description des créations proposées à la vente', t: 'a', r: 1, si: ['sells_also', 'Oui'], n: 'Uniquement des créations artisanales ou des produits faits maison.' },
+    { k: 'installation', l: 'Dimensions, structure, besoins techniques et contraintes', t: 'a', n: 'Facultatif pour le moment : décris ce que tu sais déjà de ton installation.' },
+    ...CAND_ELEC_W,
+    { k: 'motivation', l: 'Pourquoi souhaites-tu participer à Mantra Joie et qu’as-tu envie d’y partager ou apporter ?', t: 'a' }
+  ],
   'Autre': [
     { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
     { k: 'other_what', l: 'Dis-nous ce que tu proposes et ce dont tu as besoin', t: 'a', r: 1 }]
 };
+Object.keys(CAND_POLE).forEach(p => { CAND_POLE[p] = CAND_REFERENTE(p).concat(CAND_POLE[p]); });
+// Artisanat : 3 à 4 photos de produits, un fichier par photo. Les autres pôles : 1 à 6.
+function candMinPhotos() { return cand.pole === 'Artisan' ? 3 : 1; }
+function candMaxPhotos() { return cand.pole === 'Artisan' ? 4 : 6; }
 function candChamps() { return (CAND_POLE[cand.pole] || CAND_POLE['Autre']).concat(CAND_FIN); }
 
 function candVisible(f) {
   if (!f.si) return true;
-  const v = cand.vals[f.si[0]];
-  return Array.isArray(v) ? v.indexOf(f.si[1]) >= 0 : v === f.si[1];
+  const v = cand.vals[f.si[0]], attendu = Array.isArray(f.si[1]) ? f.si[1] : [f.si[1]];
+  return Array.isArray(v) ? v.some(x => attendu.indexOf(x) >= 0) : attendu.indexOf(v) >= 0;
 }
 function candActualiserVisibilite() {
   document.querySelectorAll('#cand-commun [data-k], #cand-specifique [data-k]').forEach(el => {
@@ -1945,6 +2048,11 @@ function candActualiserVisibilite() {
 }
 function candChamp(f) {
   const div = document.createElement('div'); div.className = 'champ'; div.dataset.k = f.k; div._f = f;
+  if (f.t === 'info') {
+    const t = document.createElement('p'); t.className = 'etiquette'; t.textContent = f.l; div.appendChild(t);
+    if (f.n) { const n = document.createElement('p'); n.className = 'aide'; n.textContent = f.n; div.appendChild(n); }
+    return div;
+  }
   const lab = document.createElement('label'); lab.className = 'etiquette' + (f.r ? ' obligatoire' : ''); lab.textContent = f.l; div.appendChild(lab);
   if (f.n) { const n = document.createElement('p'); n.className = 'aide'; n.textContent = f.n; div.appendChild(n); }
   if (f.t === 'chips') {
@@ -1990,6 +2098,17 @@ function candValider(champs) {
     const v = cand.vals[f.k];
     if (v === undefined || v === '' || (Array.isArray(v) && !v.length)) return 'À compléter : ' + f.l;
     if (f.k === 'siret' && !/^\d{14}$/.test(String(v).replace(/\s+/g, ''))) return 'Le numéro de SIRET doit avoir 14 chiffres (sans lettre).';
+  }
+  // Contrôles de forme, y compris sur les champs facultatifs quand ils sont remplis.
+  for (const f of champs) {
+    if (!candVisible(f)) continue;
+    const v = cand.vals[f.k];
+    if (v === undefined || v === '' || Array.isArray(v)) continue;
+    if (f.type === 'email' && !/^\S+@\S+\.\S+$/.test(String(v))) return 'L’adresse email « ' + f.l + ' » ne semble pas valide.';
+    if (f.rejet && f.rejet.test(String(v))) return f.l + ' : indique ce que tu utilises, une réponse du type « aucun » n’est pas possible.';
+    if (f.maxLignes && String(v).split(/\r?\n/).filter(l => l.trim()).length > f.maxLignes) return f.l + ' : ' + f.maxLignes + ' lignes au maximum.';
+    if (f.pos && !(Number(v) > 0)) return f.l + ' : indique un nombre supérieur à 0.';
+    if (f.apres && cand.vals[f.apres] && String(v) < String(cand.vals[f.apres])) return f.l + ' : la date doit être après la date d’arrivée.';
   }
   return '';
 }
@@ -2151,7 +2270,7 @@ function candSuite1() {
   if (m) return erreur('cand-1', m);
   if (!/^\S+@\S+\.\S+$/.test(cand.vals.email)) return erreur('cand-1', 'Écris une adresse email valide.');
   candRendre('cand-specifique', candChamps());
-  $('cand-photos-label').textContent = cand.pole === 'Artisan' ? 'Photos montrant clairement tes créations (1 à 6)' : 'Photos ou exemples de ta proposition (1 à 6)';
+  $('cand-photos-label').textContent = ({ 'Artisan': 'Photographies haute définition de tes produits (3 à 4, un fichier par photo)', 'Bien-être': 'Photo de toi en pratique et/ou de ton espace (1 à 6)', 'L\'Antre deux mondes': 'Photo de profil et photos de ton activité ou de tes créations (1 à 6)' })[cand.pole] || 'Photos ou exemples de ta proposition (1 à 6)';
   $('cand-donnees-texte').textContent = (cand.config.texte_donnees || '').trim();
   candVignettes();
   aller('cand-2');
@@ -2175,7 +2294,7 @@ function candRedimensionner(file) {
 $('cand-depot').onclick = () => $('cand-fichier').click();
 $('cand-fichier').onchange = async e => {
   for (const f of Array.from(e.target.files)) {
-    if (cand.photos.length >= 6) { erreur('cand-2', '6 photos maximum.'); break; }
+    if (cand.photos.length >= candMaxPhotos()) { erreur('cand-2', candMaxPhotos() + ' photos maximum.'); break; }
     try { cand.photos.push(await candRedimensionner(f)); } catch (err) { erreur('cand-2', err.message); }
   }
   e.target.value = ''; candVignettes();
@@ -2217,7 +2336,7 @@ async function candEnvoyer() {
   const champs = candChamps();
   const m = candValider(champs);
   if (m) return erreur('cand-2', m);
-  if (!cand.photos.length) return erreur('cand-2', 'Ajoute au moins une photo.');
+  if (cand.photos.length < candMinPhotos()) return erreur('cand-2', candMinPhotos() > 1 ? 'Ajoute au moins ' + candMinPhotos() + ' photos, une par fichier.' : 'Ajoute au moins une photo.');
   if (!$('cand_data').checked) return erreur('cand-2', 'Coche la case pour confirmer que tu as pris connaissance de l’information sur tes données.');
   const btn = $('btn-cand-envoyer'); btn.disabled = true; btn.textContent = 'Envoi en cours…'; candProgres(true);
   const reponses = [];
@@ -2231,7 +2350,7 @@ async function candEnvoyer() {
   try {
     const res = await fetch(CONFIG.scriptUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow',
       body: JSON.stringify({ kind: 'application', submission_id: cand.id, honeypot: $('honeypot').value, pole: cand.pole,
-        formule: v.stand === 'Duo (2 personnes)' ? 'Duo' : 'Individuel', name: v.name, first_name: v.first_name, last_name: v.last_name,
+        formule: (/^Duo/.test(v.formula || '') || cand.pole === 'Stand / Miam Miam') ? 'Duo' : 'Individuel', name: v.name, first_name: v.first_name, last_name: v.last_name,
         email: v.email, phone: v.phone, past: v.past, past_years: v.past_years || '',
         consent_terms: $('cand_terms').checked, consent_data: $('cand_data').checked, photos: cand.photos, answers: reponses }) });
     const rep = await res.json();
