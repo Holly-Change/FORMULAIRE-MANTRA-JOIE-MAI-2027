@@ -434,6 +434,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
 .bloc-ferme[hidden] { display: none; }
 .bloc-ferme p { margin: 8px 0 0; }
 .ruban-ferme-grand { display: inline-block; background: #C62828; color: #fff; font-weight: 800; letter-spacing: .1em; border-radius: 8px; padding: 4px 14px; }
+.verrouille { pointer-events: none; opacity: .65; }
 </style>
 </head>
 <body>
@@ -493,6 +494,8 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
     <section class="ecran" id="ecran-acces">
       <h2>Compléter mon inscription</h2>
       <p>Ce formulaire est réservé aux personnes déjà inscrites et validées.</p>
+      <p class="astuce" id="acces-lien-perso">Tu as reçu un lien personnel par email ? Ouvre-le directement : ton dossier se remplit pour toi, sans code.</p>
+      <p class="astuce" id="acces-attente" style="display:none">Ouverture de ton dossier personnel...</p>
       <div class="champ"><label class="etiquette obligatoire" for="access_code">Ton code d'accès <span class="astuce">(dans le message reçu)</span></label><input type="text" id="access_code" autocomplete="off" autocapitalize="characters"></div>
       <div class="message-erreur" id="erreur-acces"></div>
       <div class="nav-etapes"><button class="btn btn-retour" onclick="aller(0)">Retour</button><button class="btn btn-avant" onclick="verifierCode()">Continuer</button></div>
@@ -507,6 +510,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
       <div class="champ"><label class="etiquette obligatoire" for="vol_first_name">Prénom</label><input id="vol_first_name" autocomplete="given-name"></div>
       <div class="champ"><label class="etiquette obligatoire" for="vol_phone">Téléphone</label><input id="vol_phone" type="tel" autocomplete="tel" placeholder="06 12 34 56 78"><p class="aide">En France, indique ton numéro habituel. Ajoute l'indicatif seulement pour un numéro étranger.</p></div>
       <div class="champ"><label class="etiquette obligatoire">Deux pôles préférés</label><div id="vol-teams"></div></div>
+      <div class="champ"><label class="etiquette obligatoire" for="vol_birth">Date de naissance</label><input id="vol_birth" type="date" autocomplete="bday"><p class="aide">Il faut avoir 18 ans révolus à la date du festival (26 mai 2027) pour être bénévole.</p></div>
       <div class="champ"><label class="etiquette obligatoire" for="vol_motivation">Motivation et compétences</label><textarea id="vol_motivation" rows="4"></textarea></div>
       <div class="champ" id="champ-vol-portrait"><label class="etiquette" for="vol-portrait">Ton portrait <span class="astuce">(facultatif, à recadrer ici)</span></label><input id="vol-portrait" type="file" accept="image/*"><div id="vol-portrait-etat" class="etat-photo"></div></div>
       <div class="recadreur" id="recadreur-portrait">
@@ -847,6 +851,18 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
         <label class="etiquette obligatoire" for="insurance_file">Ton attestation d'assurance responsabilité civile <span class="astuce">(PDF ou photo, 5 Mo maximum)</span></label>
         <input type="file" id="insurance_file" accept="application/pdf,image/jpeg,image/png,image/webp">
       </div>
+      <div class="champ" id="boite-iban" style="display:none">
+        <label class="etiquette" for="iban">Ton IBAN <span class="astuce">(facultatif)</span></label>
+        <input type="text" id="iban" autocomplete="off" inputmode="text" maxlength="42" placeholder="FR76 1234 5678 9012 3456 7890 123">
+        <p class="aide">Pour te régler plus facilement. Seules les personnes qui gèrent les paiements peuvent le voir. Si tu n'as pas d'IBAN, laisse vide et préviens ta référente.</p>
+      </div>
+      <div class="champ" id="boite-hygiene" style="display:none">
+        <label class="etiquette obligatoire" for="hygiene_file">Justificatif d’hygiène alimentaire <span class="astuce">(PDF ou photo, 5 Mo maximum)</span></label>
+        <input type="file" id="hygiene_file" accept="application/pdf,image/jpeg,image/png,image/webp">
+        <p class="aide">Merci de joindre votre attestation de formation, diplôme ou justificatif de dispense. Si vous êtes exempté, merci de le préciser.</p>
+        <label class="etiquette" for="hygiene_note">Si tu es exempté·e, précise pourquoi</label>
+        <textarea id="hygiene_note" rows="3" maxlength="500"></textarea>
+      </div>
       <div class="message-erreur" id="erreur-docs"></div>
       <div class="nav-etapes"><button class="btn btn-retour" onclick="aller('tech')">Retour</button><button class="btn btn-avant" onclick="validerDocs()">Continuer</button></div>
     </section>
@@ -906,18 +922,20 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.28-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.33-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
   categories: ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'],
   typesArtiste: ['DJ ecstatic', 'Cercle de chants', 'Spectacle', 'Concert', 'Musicien accompagnant', 'Danse'],
   couleursConfettis: ['#A44FC4', '#6E5BD0', '#2BB8C4', '#F0663C', '#E0A93B'],
+  festivalDebut: '2027-05-26',   // l'âge minimum des bénévoles se compte à cette date
+  ageMinimumBenevole: 18,
   // Contacts affichés dans les formulaires. Vide : rien ne s'affiche. À remplir quand la personne a donné son accord.
   contacts: {
     referentes: { 'Artiste': '', 'Atelier': '', 'Bien-être': '', 'Artisan': '', "L'Antre deux mondes": '', 'Stand / Miam Miam': '' },   // ex. 'Solène : solene@exemple.fr'
-    fab: '',    // responsable technique (Artiste et Atelier) : email ou téléphone
-    eric: ''    // contact sur place pour les artistes : téléphone
+    fab: 'fabienrenda@gmail.com',    // responsable technique (Artiste et Atelier) : email ou téléphone
+    eric: '+33 6 11 25 20 81'    // contact sur place pour les artistes : téléphone
   }
 };
 
@@ -981,6 +999,31 @@ function allerOnglet(e) {
   aller(e);
 }
 
+// Lien personnel reçu par email (…?d=code) : on ouvre directement le dossier final, déjà rempli.
+async function ouvrirDossierPersonnel(jeton) {
+  await ouvrirParConfig('formulaire_final', 'acces');   // formulaire fermé : le message de fermeture s'affiche et on s'arrête là
+  if (etapeCourante !== 'acces') return;
+  $('acces-attente').style.display = 'block'; $('acces-lien-perso').style.display = 'none';
+  let rep = null;
+  try {
+    const r = await fetch(CONFIG.scriptUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ kind: 'dossier_lookup', token: jeton }) });
+    rep = await r.json();
+  } catch (e) { rep = null; }
+  $('acces-attente').style.display = 'none';
+  if (!rep || !rep.ok) {
+    $('acces-lien-perso').style.display = 'block';
+    erreur('acces', (rep && rep.error) || 'Impossible de vérifier ton lien pour le moment. Vérifie ta connexion et réessaie.');
+    return;
+  }
+  etat.jeton = jeton;
+  const puce = Array.from($('puces-categorie').querySelectorAll('.puce')).find(b => b.textContent === rep.pole);
+  if (puce) puce.click();
+  $('puces-categorie').classList.add('verrouille');
+  const mettre = (id, v) => { const el = $(id); if (el && v) el.value = v; };
+  mettre('name', rep.projet); mettre('first_name', rep.prenom); mettre('last_name', rep.nom); mettre('email', rep.email); mettre('phone', rep.telephone);
+  aller(1);
+}
+
 function aller(n) {
   document.querySelectorAll('.ecran').forEach(e => e.classList.remove('actif'));
   $(n === 'merci' ? 'ecran-merci' : 'ecran-' + n).classList.add('actif');
@@ -1020,7 +1063,22 @@ function effacerErreur(n) {
 }
 
 // ------------------ Ecran 0 ------------------
+// IBAN : contrôle de forme (pays + clé modulo 97). Ne prouve pas que le compte existe.
+function ibanNormaliser(s) { return String(s || '').replace(/[\s.-]+/g, '').toUpperCase(); }
+function ibanValide(s) {
+  const v = ibanNormaliser(s);
+  if (!/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(v)) return false;
+  const r = v.slice(4) + v.slice(0, 4);
+  let reste = 0;
+  for (let i = 0; i < r.length; i++) {
+    const c = r.charAt(i), n = /[A-Z]/.test(c) ? String(c.charCodeAt(0) - 55) : c;
+    for (let j = 0; j < n.length; j++) reste = (reste * 10 + Number(n.charAt(j))) % 97;
+  }
+  return reste === 1;
+}
+
 function verifierCode() {
+  if (derniereConfig && derniereConfig.code_partage_actif === false) return erreur('acces', 'Le code partagé n\u2019est plus accepté. Utilise le lien personnel reçu par email.');
   const code = valeur('access_code').toUpperCase();
   if (!code) return erreur('acces', 'Il te faut le code d\u2019acc\u00e8s du festival pour continuer.');
   if (code !== CONFIG.code) return erreur('acces', 'Ce code ne correspond pas. V\u00e9rifie le message que tu as re\u00e7u.');
@@ -1445,6 +1503,8 @@ async function afficherDocuments() {
   $('boite-contrat').querySelector('label').classList.toggle('obligatoire', cfg.contrat_obligatoire !== false);
   // L'attestation d'assurance est demandée à tous les pôles sauf Artiste.
   $('boite-assurance').style.display = etat.category === 'Artiste' ? 'none' : 'block';
+  $('boite-iban').style.display = ['Artiste', 'Atelier'].indexOf(etat.category) >= 0 ? 'block' : 'none';
+  $('boite-hygiene').style.display = etat.category === 'Stand / Miam Miam' ? 'block' : 'none';
   return payant;
 }
 function verifierFichierDoc(file, maxMo, nom) {
@@ -1455,13 +1515,15 @@ function verifierFichierDoc(file, maxMo, nom) {
 }
 // Retourne le message à montrer, ou '' si les documents sont en ordre.
 function problemeDocuments(payant) {
-  const contrat = $('contract_file').files[0], preuve = $('payment_proof').files[0], assurance = $('insurance_file').files[0];
+  const contrat = $('contract_file').files[0], preuve = $('payment_proof').files[0], assurance = $('insurance_file').files[0], hygiene = $('hygiene_file').files[0];
   const contratObligatoire = !derniereConfig || derniereConfig.contrat_obligatoire !== false;
   if (contratObligatoire && !contrat) return 'Ajoute ton contrat signé (PDF ou image).';
   if (payant === true && !preuve) return 'Ajoute la preuve de ton paiement (capture d’écran ou PDF).';
-  const mauvais = verifierFichierDoc(contrat, 10, 'Le contrat') || verifierFichierDoc(preuve, 5, 'La preuve de paiement') || verifierFichierDoc(assurance, 5, 'L’attestation d’assurance');
+  const mauvais = verifierFichierDoc(contrat, 10, 'Le contrat') || verifierFichierDoc(preuve, 5, 'La preuve de paiement') || verifierFichierDoc(assurance, 5, 'L’attestation d’assurance') || verifierFichierDoc(hygiene, 5, 'Le justificatif d’hygiène');
   if (mauvais) return mauvais;
   if (etat.category !== 'Artiste' && !assurance) return 'Ajoute ton attestation d’assurance responsabilité civile (PDF ou photo).';
+  if (etat.category === 'Stand / Miam Miam' && !hygiene && !valeur('hygiene_note')) return 'Ajoute ton justificatif d’hygiène alimentaire, ou explique pourquoi tu en es exempté·e.';
+  if (['Artiste', 'Atelier'].indexOf(etat.category) >= 0 && ibanNormaliser(valeur('iban')) && !ibanValide(valeur('iban'))) return 'Cet IBAN ne semble pas valide. Vérifie-le, ou laisse le champ vide et préviens ta référente.';
   return '';
 }
 async function validerDocs() {
@@ -1560,18 +1622,19 @@ async function envoyer() {
 
   if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur(7, 'Le nouveau script doit être déployé avant le premier envoi.');
   const payant = await afficherDocuments();
-  const preuve = $('payment_proof').files[0], contrat = $('contract_file').files[0], assurance = $('insurance_file').files[0];
+  const preuve = $('payment_proof').files[0], contrat = $('contract_file').files[0], assurance = $('insurance_file').files[0], hygiene = $('hygiene_file').files[0];
   const probleme = problemeDocuments(payant);
   if (probleme) { aller('docs'); return erreur('docs', probleme); }
   envoiEnCours = true;
   let membres, technique;
-  let preuveData = '', contratData = '', assuranceData = '';
-  try { membres = await lireMembres(); technique = await lireTechnique(); if (preuve) preuveData = await lireFichier(preuve); if (contrat) contratData = await lireFichier(contrat); if (assurance && etat.category !== 'Artiste') assuranceData = await lireFichier(assurance); }
+  let preuveData = '', contratData = '', assuranceData = '', hygieneData = '';
+  try { membres = await lireMembres(); technique = await lireTechnique(); if (preuve) preuveData = await lireFichier(preuve); if (contrat) contratData = await lireFichier(contrat); if (assurance && etat.category !== 'Artiste') assuranceData = await lireFichier(assurance); if (hygiene && etat.category === 'Stand / Miam Miam') hygieneData = await lireFichier(hygiene); }
   catch(e) { envoiEnCours = false; return erreur(7, 'Pièce jointe : ' + (e && e.message ? e.message : String(e))); }
   // Cles identiques au schema partage, copiees telles quelles
   const donnees = {
     submission_id: submissionIds.participant,
-    access_code: valeur('access_code').toUpperCase(),
+    access_code: etat.jeton ? '' : valeur('access_code').toUpperCase(),
+    dossier_token: etat.jeton || '',
     honeypot: $('honeypot').value,
     category: etat.category,
     artist_type: etat.artist_type,
@@ -1598,7 +1661,10 @@ async function envoyer() {
     gallery: etat.gallery,
     payment_proof: preuveData,
     contract: contratData,
-    insurance: assuranceData
+    insurance: assuranceData,
+    iban: ['Artiste', 'Atelier'].indexOf(etat.category) >= 0 ? ibanNormaliser(valeur('iban')) : '',
+    hygiene_file: hygieneData,
+    hygiene_note: etat.category === 'Stand / Miam Miam' ? valeur('hygiene_note') : ''
   };
 
   $('nav-7').style.display = 'none';
@@ -1784,18 +1850,29 @@ function volProgres(actif) {
     etape.textContent = pct < 25 ? 'Envoi de ton portrait et de tes réponses…' : pct < 60 ? 'Enregistrement de ta candidature…' : 'Création de ta fiche… (cela peut prendre une minute)';
   }, 500);
 }
+// Date de naissance d'un·e bénévole : même règle que le script (18 ans révolus au premier jour du festival).
+function verifierNaissanceClient(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || '').trim());
+  if (!m) return 'Indique ta date de naissance.';
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  if (d.getUTCFullYear() !== +m[1] || d.getUTCMonth() !== +m[2] - 1 || d.getUTCDate() !== +m[3] || iso < '1900-01-01' || iso > new Date().toISOString().slice(0, 10)) return 'La date de naissance n’est pas valide.';
+  const limite = (Number(CONFIG.festivalDebut.slice(0, 4)) - CONFIG.ageMinimumBenevole) + CONFIG.festivalDebut.slice(4);
+  return iso > limite ? 'Il faut avoir ' + CONFIG.ageMinimumBenevole + ' ans révolus à la date du festival (26 mai 2027) pour être bénévole.' : '';
+}
 async function envoyerBenevole() {
   const v = id => valeur(id), teams = Array.from(document.querySelectorAll('.vol-team:checked')).map(e => e.value);
   if ($('vol-portrait').files[0] && !volunteerPortrait.portraitData)
     return erreur('benevole', 'Valide le recadrage du portrait avant d’envoyer.');
   if (!/^\S+@\S+\.\S+$/.test(v('vol_email')) || !v('vol_last_name') || !v('vol_first_name') || !v('vol_phone') || !v('vol_motivation') || teams.length !== 2)
     return erreur('benevole', 'Remplis tous les champs et choisis exactement deux pôles.');
+  const erreurNaissance = verifierNaissanceClient(v('vol_birth'));
+  if (erreurNaissance) return erreur('benevole', erreurNaissance);
   if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur('benevole', 'Le nouveau script doit être déployé avant le premier envoi.');
   const btn = $('btn-benevole'); btn.disabled = true; btn.textContent = 'Envoi en cours… Garde cette page ouverte.'; volProgres(true);
   try {
     const res = await fetch(CONFIG.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({
       kind:'volunteer', submission_id:submissionIds.volunteer, access_code:CONFIG.code, honeypot:$('honeypot').value, email:v('vol_email'),
-      first_name:v('vol_first_name'), last_name:v('vol_last_name'), phone:v('vol_phone'),
+      first_name:v('vol_first_name'), last_name:v('vol_last_name'), phone:v('vol_phone'), birth_date:v('vol_birth'),
       teams:teams, motivation:v('vol_motivation'), portrait:volunteerPortrait.portraitData, portrait_original:volunteerPortrait.portraitOriginal
     }) });
     const rep = await res.json();
@@ -1912,7 +1989,7 @@ function CAND_SECOND(toujours, contactRequis) {
   ];
 }
 function CAND_DUO() {
-  return [{ k: 'formula', l: 'Viens-tu seul·e ou à deux ?', t: 'chips', o: ['Solo (1 personne)', 'Duo (2 personnes)'], r: 1, n: 'Le forfait duo est de 270 €, camping de 5 nuits compris pour les deux personnes.' }].concat(CAND_SECOND(false, false));
+  return [{ k: 'formula', l: 'Viens-tu seul·e ou à deux ?', t: 'chips', o: ['Solo (1 personne)', 'Duo (2 personnes)'], r: 1, n: 'Le forfait duo est de 280 €, camping de 5 nuits compris pour les deux personnes.' }].concat(CAND_SECOND(false, false));
 }
 // Ateliers : dates d'arrivée et de départ.
 const CAND_DATES_ATELIER = [
@@ -1957,7 +2034,7 @@ const CAND_POLE = {
     { k: 'technique', l: 'Besoins techniques ou logistiques particuliers', t: 'a', r: 1 },
     { k: 'space', l: 'Type d’espace souhaité', t: 'chips', multi: 1, o: ['Intérieur', 'Extérieur', 'Calme', 'Dégagé', 'Autre'], r: 1, n: 'Plusieurs choix possibles.' },
     { k: 'space_other', l: 'Précise le type d’espace', t: 't', r: 1, si: ['space', 'Autre'] },
-    { k: 'constraints', l: 'Contraintes liées au bruit, à la météo ou à la configuration de l’espace', t: 'a', r: 1, n: 'Écris « aucune » s’il n’y en a pas.' },
+    { k: 'constraints', l: 'Contraintes liées au bruit ou à la configuration de l’espace', t: 'a', r: 1, n: 'Écris « aucune » s’il n’y en a pas.' },
     { k: 'safety', l: 'Précautions de sécurité à prévoir', t: 'a', r: 1 },
     { k: 'motivation', l: 'Pourquoi souhaites-tu participer à Mantra Joie et qu’as-tu envie d’y partager ou apporter ?', t: 'a' }
   ].concat(CAND_FAB(), CAND_ELEC_W, CAND_DATES_ATELIER, CAND_INVITE('Un seul invité, qui peut t’assister. Ses coordonnées sont à renseigner au plus tard le 21 mai. Ton invité règle son camping à son arrivée.')),
@@ -2004,7 +2081,7 @@ const CAND_POLE = {
     ...CAND_SECOND(true, true),
     { k: 'offer', l: 'Nom de l’activité et ce que tu proposes à manger ou à boire', t: 't', r: 1 },
     { k: 'menu', l: 'Menus, produits et prix envisagés', t: 'a', r: 1, n: 'Tu peux aussi joindre ta carte avec les photos.' },
-    { k: 'diet', l: 'Options alimentaires', t: 'chips', multi: 1, o: ['Végétarien', 'Vegan', 'Sans gluten', 'Autres', 'Aucune'], r: 1 },
+    { k: 'diet', l: 'Options alimentaires', t: 'chips', multi: 1, o: ['Végétarien', 'Vegan', 'Sans gluten', 'Autres', 'Aucune'], r: 1, n: 'Le végétarien est un critère de sélection. Le sans gluten est apprécié.' },
     { k: 'install', l: 'Installation', t: 'chips', o: ['Food truck', 'Stand', 'Autre'], r: 1 },
     { k: 'footprint', l: 'Emprise totale, véhicule et espace de travail compris (en mètres)', t: 't', r: 1 },
     { k: 'team', l: 'Nombre de personnes dans l’équipe', t: 'n', r: 1 }
@@ -2365,6 +2442,11 @@ async function candEnvoyer() {
     erreur('cand-2', 'Envoi impossible : ' + e.message + '\nRien n’est perdu, tu peux réessayer.');
   } finally { btn.disabled = false; btn.textContent = 'Envoyer ma candidature 🕊️'; candProgres(false); }
 }
+
+(function () {
+  const m = /[?&]d=([a-f0-9]{40})(?:&|#|$)/.exec(location.search);
+  if (m) ouvrirDossierPersonnel(m[1]);
+})();
 </script>
 
 </body>

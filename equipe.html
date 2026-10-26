@@ -515,7 +515,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 .bloque-contrat { font-size: 1.02rem; }
 
 /* ---------- v3.27 : Réglages avec menu à gauche, interrupteurs clairs, message important ---------- */
-.message-important { background: linear-gradient(135deg, #FFF3E6, #FDE9F0); border: 1px solid #F0B9C8; border-left: 8px solid #E06A8B; border-radius: 16px; padding: 18px 22px; margin: 0 0 18px; color: #5A2237; }
+.message-important { background: linear-gradient(135deg, #FFF3E6, #FDE9F0); border: 1px solid #F0B9C8; border-left: 8px solid #E06A8B; border-radius: 16px; padding: 18px 22px; margin: 26px auto 0; width: calc(100% - 56px); max-width: 1024px; color: #5A2237; }
 .message-important[hidden] { display: none; }
 .mi-titre { display: block; font-size: 1.25rem; font-family: var(--police-titres); color: #8A2845; margin-bottom: 4px; }
 .mi-texte { font-size: 1.12rem; font-weight: 700; margin: 4px 0; }
@@ -560,6 +560,27 @@ li .ico-btn img { width: 24px; height: 24px; }
   .reglages-menu { flex-direction: row; overflow-x: auto; position: static; padding-bottom: 6px; scrollbar-width: thin; }
   .reglages-entree { flex: none; white-space: nowrap; }
 }
+
+/* ---------- Sauvegardes ---------- */
+.admin-sauvegardes { margin-top: 22px; padding-top: 14px; border-top: 1px solid rgba(110, 90, 170, 0.22); }
+.sauv-auto { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+.sauv-liste { margin-top: 10px; }
+.sauv-ligne { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px solid rgba(110, 90, 170, 0.15); }
+.sauv-type { border-radius: 999px; padding: 2px 10px; font-size: .85rem; background: #EEE8F8; color: #4A3A78; }
+.sauv-type.sauv-speciale { background: #FFF1D6; color: #7A5200; }
+.sauv-detail { margin-top: 14px; padding: 14px 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(110, 90, 170, 0.22); }
+.sauv-detail:empty { display: none; }
+.sauv-case { display: block; margin: 10px 0; }
+.iban-visible { font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 700; user-select: all; margin-left: 8px; }
+
+/* ---------- Comptes et rôles ---------- */
+.compte-qui { font-size: .85rem; margin: 6px 0; opacity: .85; }
+.admin-comptes { margin-top: 22px; padding-top: 14px; border-top: 1px solid rgba(110, 90, 170, 0.22); }
+.compte-ligne { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px solid rgba(110, 90, 170, 0.15); }
+.comptes-form { margin-top: 14px; padding: 14px 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(110, 90, 170, 0.22); }
+.comptes-form:empty, .comptes-code:empty { display: none; }
+.comptes-poles label { display: block; }
+.code-initial { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 1.5rem; letter-spacing: .18em; background: #FFF8E1; border: 2px dashed #E0A93B; padding: 10px 16px; border-radius: 12px; display: inline-block; user-select: all; }
 </style>
 </head>
 <body>
@@ -575,6 +596,20 @@ li .ico-btn img { width: 24px; height: 24px; }
     <div class="message-erreur" id="erreur-connexion" role="alert"></div>
     <a class="lien-formulaire-connexion" id="lien-formulaire-connexion" href="./" target="_blank" rel="noopener">Aller au formulaire public</a>
     <div class="signature" id="signature-connexion"></div>
+  </form>
+</section>
+<section id="ecran-code" hidden>
+  <form class="connexion" id="form-code" autocomplete="off">
+    <h1 id="code-titre">Choisis ton code</h1>
+    <p>C'est ta première connexion. Le code que tu as reçu ne sert qu'une fois : choisis maintenant ton code personnel (8 caractères au moins). Il ne sera jamais affiché ni envoyé par email.</p>
+    <label for="code-ancien">Code reçu</label>
+    <input id="code-ancien" type="password" autocomplete="off" required>
+    <label for="code-nouveau">Ton nouveau code</label>
+    <input id="code-nouveau" type="password" autocomplete="new-password" minlength="8" required>
+    <label for="code-confirme">Ton nouveau code, encore une fois</label>
+    <input id="code-confirme" type="password" autocomplete="new-password" minlength="8" required>
+    <button class="btn" type="submit" id="btn-code">Enregistrer mon code</button>
+    <div class="message-erreur" id="erreur-code" role="alert"></div>
   </form>
 </section>
 
@@ -609,6 +644,7 @@ li .ico-btn img { width: 24px; height: 24px; }
     </nav>
     <div class="bas">
       <div class="version" id="version"></div>
+      <p class="compte-qui" id="compte-qui"></p>
       <a class="btn btn-doux" id="lien-formulaire" href="./" target="_blank" rel="noopener">Formulaire public</a>
       <button class="btn btn-doux" type="button" id="btn-actualiser">Actualiser</button>
       <button class="btn btn-doux" type="button" id="btn-deconnexion">Se déconnecter</button>
@@ -697,7 +733,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.28-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.33-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 // Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
@@ -763,6 +799,7 @@ const COULEURS_POLES = {
 };
 const $ = (id) => document.getElementById(id);
 let jeton = '';
+let compte = { nom: '', role: 'maitre', poles: [], doit_changer: false };   // le compte connecté : donné par le serveur à la connexion et à chaque liste
 let items = [];
 let config = {};
 let vue = 'accueil';
@@ -828,7 +865,8 @@ $('form-connexion').addEventListener('submit', async (e) => {
       jeton = r.token;
       try { sessionStorage.setItem('equipe_jeton', jeton); } catch (err) { /* stockage indisponible */ }
       $('mot-de-passe').value = '';
-      await charger();
+      if (r.compte) compte = r.compte;
+      if (compte.doit_changer) montrerChangementCode(); else await charger();
     } else {
       erreur.textContent = r.error || 'Connexion impossible.';
     }
@@ -841,19 +879,22 @@ $('form-connexion').addEventListener('submit', async (e) => {
 });
 
 $('btn-deconnexion').addEventListener('click', () => { oublierJeton(); items = []; statsDetail = null; statsServeur = null; sectionOuverte = ''; montrerConnexion(''); });
-$('btn-actualiser').addEventListener('click', () => { participants = null; benevoles = null; statsDetail = null; charger(); });
+$('btn-actualiser').addEventListener('click', () => { participants = null; benevoles = null; statsDetail = null; reglagesDonnees = null; charger(); });
 
 async function charger() {
   try {
     const r = await appel({ op: 'list', token: jeton });
     if (r.auth === false) { oublierJeton(); montrerConnexion(r.error || 'Session expirée. Reconnecte-toi.'); return; }
+    if (r.doit_changer) { if (r.compte) compte = r.compte; montrerChangementCode(); return; }
     if (!r.ok) throw new Error(r.error || 'Erreur');
+    if (r.compte) compte = r.compte;
     items = r.items || [];
     config = r.config || {};
     versionServeur = r.version || '';
     $('ecran-connexion').hidden = true;
     $('app').hidden = false;
     habiller();
+    appliquerRole();
     naviguer(vue === 'detail' ? 'candidatures' : vue);
     chargerEnArrierePlan();
   } catch (err) {
@@ -1005,7 +1046,7 @@ function naviguer(nom) {
 
 
 /* ---------- Page Réglages ---------- */
-let reglagesDonnees = null, reglagesEnCours = false, adminJeton = '', adminDonnees = null, adminFin = 0, adminMessage = '';
+let reglagesCharge = 0, reglagesDonnees = null, reglagesEnCours = false, adminJeton = '', adminDonnees = null, adminFin = 0, adminMessage = '';
 
 function fermeturesDepuis(r) {
   const f = [];
@@ -1022,8 +1063,8 @@ function majBandeauFerme() {
   b.textContent = '';
   b.hidden = !liste.length || vue !== 'accueil';
   if (b.hidden) return;
-  b.appendChild(el('strong', 'mi-titre', 'Message important'));
-  b.appendChild(el('p', 'mi-texte', 'Fermé en ce moment : ' + liste.join(', ') + '.'));
+  b.appendChild(el('strong', 'mi-titre', 'Inscriptions ou formulaires fermés'));
+  b.appendChild(el('p', 'mi-texte', liste.join(', ') + '.'));
   b.appendChild(el('p', 'mi-aide', 'Le public voit un message de fermeture clair. Tu peux tout rouvrir dans les réglages.'));
   const a = el('button', 'btn btn-doux-clair', 'Ouvrir les réglages'); a.type = 'button';
   a.addEventListener('click', () => naviguer('reglages')); b.appendChild(a);
@@ -1047,7 +1088,7 @@ async function enregistrer(zone, bouton, faire, texteOk) {
     zone.className = 'message ko'; zone.textContent = "Impossible d'enregistrer. Réessaie."; return { ok: false };
   } finally { if (bouton) bouton.disabled = false; }
 }
-function gardeReglages(r) { if (r && r.ok && r.poles && r.ouvertures) { reglagesDonnees = r; majBandeauFerme(); majMenuReglages(); } return r; }
+function gardeReglages(r) { if (r && r.ok && r.poles && r.ouvertures) { reglagesDonnees = r; reglagesCharge = Date.now(); majBandeauFerme(); majMenuReglages(); } return r; }
 
 function blocReglages(titre, aide) {
   const c = el('section', 'carte reglage-bloc'); c.appendChild(el('h2', '', titre));
@@ -1148,7 +1189,10 @@ function slug(t) { return String(t).replace(/[^a-z0-9]+/gi, '-').toLowerCase(); 
 function detailTexte(o) {
   const d = document.createElement('details'); d.className = 'reglage-detail'; d.dataset.texte = o.cle;
   const s = document.createElement('summary'); s.appendChild(document.createTextNode(o.libelle));
-  if (o.badge) s.appendChild(el('span', 'badge-texte ' + (o.personnalise ? 'perso' : ''), o.badge));
+  const bd = o.badge ? el('span', 'badge-texte ' + (o.personnalise ? 'perso' : ''), o.badge) : null;
+  if (bd) s.appendChild(bd);
+  // Après un enregistrement ou un retour au texte commun, l'étiquette montre l'état réel (lu dans la réponse du serveur).
+  const majBadge = () => { if (!bd || !o.estPerso) return; const perso = !!o.estPerso(); bd.textContent = perso ? 'Texte de ce pôle' : 'Texte commun'; bd.classList.toggle('perso', perso); };
   d.appendChild(s);
   const obj = champReglage('Objet', o.objet, { nom: 'texte-' + o.portee + '-' + o.cle + '-objet' });
   const cor = champReglage('Texte', o.corps, { long: true, lignes: 12, nom: 'texte-' + o.portee + '-' + o.cle + '-corps' });
@@ -1156,13 +1200,67 @@ function detailTexte(o) {
   const st = el('div', '', ''); st.setAttribute('role', 'status');
   const bE = el('button', 'btn', 'Enregistrer'); bE.type = 'button'; bE.dataset.enregistrerTexte = o.cle;
   const bR = el('button', 'btn btn-doux-clair', o.libelleRemettre); bR.type = 'button'; bR.dataset.remettre = o.cle;
-  bE.addEventListener('click', () => enregistrer(st, bE, async () => o.enregistrer(obj.saisie.value, cor.saisie.value), 'Enregistré'));
+  bE.addEventListener('click', async () => { const rep = await enregistrer(st, bE, async () => o.enregistrer(obj.saisie.value, cor.saisie.value), 'Enregistré'); if (rep && rep.ok) majBadge(); });
   bR.addEventListener('click', async () => {
     const rep = await enregistrer(st, bR, async () => o.remettre(), o.messageRemis);
-    if (rep && rep.ok) { obj.saisie.value = o.defaut.objet; cor.saisie.value = o.defaut.corps; if (o.apresRemise) o.apresRemise(); }
+    if (rep && rep.ok) { obj.saisie.value = o.defaut.objet; cor.saisie.value = o.defaut.corps; majBadge(); if (o.apresRemise) o.apresRemise(); }
   });
   d.appendChild(bE); d.appendChild(bR); d.appendChild(st);
   return d;
+}
+
+/* ---------- Comptes : code de départ à remplacer, rôle, « Mon compte » ---------- */
+const LIBELLE_ROLE = { maitre: 'organisatrice principale', referente: 'référente' };
+function montrerChangementCode() {
+  $('app').hidden = true; $('ecran-connexion').hidden = true; $('ecran-code').hidden = false;
+  $('code-titre').textContent = 'Bienvenue' + (compte.nom ? ' ' + compte.nom : '') + ' : choisis ton code';
+  $('erreur-code').textContent = ''; $('code-ancien').value = ''; $('code-nouveau').value = ''; $('code-confirme').value = '';
+  $('code-ancien').focus();
+}
+$('form-code').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const erreur = $('erreur-code'), bouton = $('btn-code'); erreur.textContent = '';
+  if ($('code-nouveau').value !== $('code-confirme').value) { erreur.textContent = 'Les deux codes ne sont pas identiques.'; return; }
+  if ($('code-nouveau').value.length < 8) { erreur.textContent = 'Ton code doit avoir au moins 8 caractères.'; return; }
+  bouton.disabled = true;
+  try {
+    const r = await appel({ op: 'mon_code_changer', token: jeton, ancien: $('code-ancien').value, nouveau: $('code-nouveau').value });
+    if (r.ok && r.token) {
+      jeton = r.token; compte = r.compte || compte;
+      try { sessionStorage.setItem('equipe_jeton', jeton); } catch (err) { /* stockage indisponible */ }
+      $('ecran-code').hidden = true; await charger();
+    } else erreur.textContent = r.error || 'Impossible de changer le code.';
+  } catch (err) { erreur.textContent = 'Le serveur ne répond pas. Réessaie.'; }
+  finally { bouton.disabled = false; }
+});
+// Ce que le compte voit dans le menu. Le serveur refuse de toute façon ce qui n'est pas permis : ceci évite seulement des boutons inutiles.
+function appliquerRole() {
+  const ref = compte.role === 'referente';
+  document.querySelectorAll('button[data-vue="stats"]').forEach((b) => { b.hidden = ref; });
+  document.querySelectorAll('button[data-vue="benevoles"]').forEach((b) => { b.hidden = ref && (compte.poles || []).indexOf('Bénévoles') < 0; });
+  const qui = $('compte-qui');
+  if (qui) qui.textContent = compte.nom ? 'Connecté·e : ' + compte.nom + ' (' + (LIBELLE_ROLE[compte.role] || compte.role) + (ref && compte.poles.length ? ' : ' + compte.poles.join(', ') : '') + ')' : '';
+}
+function construireCompte(zone) {
+  const c = el('section', 'carte reglage-bloc'); c.id = 'reglage-compte';
+  c.appendChild(el('h2', '', 'Mon compte'));
+  c.appendChild(el('p', 'compte', compte.nom + ' : ' + (LIBELLE_ROLE[compte.role] || compte.role) + (compte.role === 'referente' ? '. Tes pôles : ' + (compte.poles || []).join(', ') + '.' : '. Tu vois tous les pôles.')));
+  const a = champReglage('Mon code actuel', '', { type: 'password', nom: 'compte-actuel' });
+  const n = champReglage('Mon nouveau code (8 caractères au moins)', '', { type: 'password', nom: 'compte-nouveau' });
+  const k = champReglage('Mon nouveau code, encore une fois', '', { type: 'password', nom: 'compte-confirme' });
+  const st = el('div', '', ''); st.setAttribute('role', 'status');
+  const b = el('button', 'btn', 'Changer mon code'); b.type = 'button'; b.id = 'compte-changer';
+  b.addEventListener('click', async () => {
+    if (n.saisie.value !== k.saisie.value) { st.className = 'message ko'; st.textContent = 'Les deux codes ne sont pas identiques.'; return; }
+    const rep = await enregistrer(st, b, () => appelReglages({ op: 'mon_code_changer', ancien: a.saisie.value, nouveau: n.saisie.value }), 'Code changé. Tes autres connexions sont fermées.');
+    if (rep && rep.ok && rep.token) {
+      jeton = rep.token; compte = rep.compte || compte;
+      try { sessionStorage.setItem('equipe_jeton', jeton); } catch (err) { /* stockage indisponible */ }
+      a.saisie.value = ''; n.saisie.value = ''; k.saisie.value = '';
+    }
+  });
+  c.appendChild(a.boite); c.appendChild(n.boite); c.appendChild(k.boite); c.appendChild(b); c.appendChild(st);
+  zone.appendChild(c);
 }
 
 function dessinerReglages() {
@@ -1171,7 +1269,9 @@ function dessinerReglages() {
   const menu = el('nav', 'reglages-menu'); menu.setAttribute('aria-label', 'Sections des réglages');
   const corps = el('div', 'reglages-corps');
   mise.appendChild(menu); mise.appendChild(corps); zone.appendChild(mise);
-  const defs = [['general', 'Général']].concat(r.poles.map((p) => ['pole:' + p.nom, p.nom])).concat([['benevoles', 'Bénévoles'], ['admin', 'Administration']]);
+  const restreint = !!r.restreint;   // une référente ne reçoit que ses pôles
+  const defs = restreint ? [['compte', 'Mon compte']].concat(r.poles.map((p) => ['pole:' + p.nom, p.nom]))
+    : [['general', 'Général']].concat(r.poles.map((p) => ['pole:' + p.nom, p.nom])).concat([['benevoles', 'Bénévoles'], ['compte', 'Mon compte'], ['admin', 'Administration']]);
   const panneaux = {};
   const ouvrir = (id) => {
     reglagesPanneau = id;
@@ -1183,11 +1283,12 @@ function dessinerReglages() {
     const p = el('div', 'reglages-panneau'); p.dataset.panneau = x[0]; p.hidden = true; panneaux[x[0]] = p; corps.appendChild(p);
     b.addEventListener('click', () => ouvrir(x[0]));
   });
-  construireGeneral(panneaux.general, r);
+  if (panneaux.general) construireGeneral(panneaux.general, r);
   r.poles.forEach((p) => construirePole(panneaux['pole:' + p.nom], p, r));
-  construireBenevoles(panneaux.benevoles, r);
-  const adm = el('section', 'carte reglage-bloc reglage-admin'); adm.id = 'reglage-admin'; panneaux.admin.appendChild(adm); dessinerAdmin();
-  ouvrir(panneaux[reglagesPanneau] ? reglagesPanneau : 'general');
+  if (panneaux.benevoles) construireBenevoles(panneaux.benevoles, r);
+  if (panneaux.compte) construireCompte(panneaux.compte);
+  if (panneaux.admin) { const adm = el('section', 'carte reglage-bloc reglage-admin'); adm.id = 'reglage-admin'; panneaux.admin.appendChild(adm); dessinerAdmin(); }
+  ouvrir(panneaux[reglagesPanneau] ? reglagesPanneau : defs[0][0]);
   majBandeauFerme(); majMenuReglages();
 }
 
@@ -1224,6 +1325,8 @@ function construireGeneral(z, r) {
   const ct = blocReglages('Contrat et récap', '');
   ct.appendChild(simpleOuiNon('Contrat obligatoire', "Quand c'est activé, l'email d'acceptation ne part pas sans le contrat de la personne. Tu l'ajoutes sur sa fiche, dans la carte « Contrat à envoyer ». Il n'est jamais téléchargeable depuis le formulaire.", r.contrat.obligatoire,
     async (v) => gardeReglages(await appelReglages({ op: 'reglages_ecrire', valeurs: { contrat_obligatoire: v ? 'OUI' : 'NON' } })), 'contrat_obligatoire'));
+  ct.appendChild(simpleOuiNon('Code partagé du dossier final', "Quand c'est activé, le code d'accès partagé ouvre encore le dossier final, en plus du lien personnel de l'email d'acceptation. Désactive-le quand chaque personne a son lien personnel. Les bénévoles gardent leur code.", r.dossier_final ? r.dossier_final.code_partage : true,
+    async (v) => gardeReglages(await appelReglages({ op: 'reglages_ecrire', valeurs: { code_partage_actif: v ? 'OUI' : 'NON' } })), 'code_partage_actif'));
   ct.appendChild(simpleOuiNon('Récap du matin', "Quand c'est activé, chaque référente reçoit chaque jour, vers 8 h, un email s'il y a du nouveau dans son pôle.", r.emails.recap_actif,
     async (v) => gardeReglages(await appelReglages({ op: 'reglages_ecrire', valeurs: { recap_actif: v ? 'OUI' : 'NON' } })), 'recap_actif'));
   z.appendChild(ct);
@@ -1299,6 +1402,7 @@ function construirePole(z, p, r) {
   p.textes.forEach((t) => bl.appendChild(detailTexte({
     cle: t.cle, portee: 'pole-' + slug(p.nom), libelle: t.libelle, objet: t.objet, corps: t.corps, defaut: t.commun, personnalise: t.personnalise, badge: t.personnalise ? 'Texte de ce pôle' : 'Texte commun',
     libelleRemettre: 'Utiliser le texte commun', messageRemis: 'Texte commun rétabli',
+    estPerso: () => { const pp = (reglagesDonnees.poles || []).find((x) => x.nom === p.nom); const tt = pp && (pp.textes || []).find((x) => x.cle === t.cle); return !!(tt && tt.personnalise); },
     enregistrer: async (o, c) => gardeReglages(await appelReglages({ op: 'texte_ecrire', pole: p.nom, cle: t.cle, objet: o, corps: c })),
     remettre: async () => gardeReglages(await appelReglages({ op: 'texte_ecrire', pole: p.nom, cle: t.cle, remettre: true })) })));
   em.appendChild(bl);
@@ -1413,8 +1517,177 @@ function dessinerAdmin() {
     return appelAdmin({ op: 'admin_ecrire', cle: 'mot_de_passe_equipe', valeur: pw.saisie.value });
   }, 'Mot de passe changé. Tout le monde, toi compris, devra se reconnecter.'));
   adm.appendChild(pw.boite); adm.appendChild(voir); adm.appendChild(bPw); adm.appendChild(sPw);
+  dessinerComptes(adm);
+  dessinerSauvegardes(adm);
   dessinerNouvelleEdition(adm);
 }
+
+// Comptes : une organisatrice principale voit tout, une référente seulement ses pôles. Le code de départ n'est montré qu'une fois.
+function dessinerComptes(adm) {
+  const bloc = el('div', 'admin-comptes'); bloc.id = 'admin-comptes';
+  bloc.appendChild(el('h3', '', 'Comptes'));
+  bloc.appendChild(el('p', 'compte', "Un compte par personne. Une organisatrice principale voit et fait tout, IBAN compris. Une référente ne voit que son ou ses pôles. Le code de départ est tiré au hasard et montré une seule fois : la personne doit le remplacer par le sien dès sa première connexion."));
+  const st = el('div', '', ''); st.setAttribute('role', 'status');
+  const liste = el('div', 'comptes-liste'); const code = el('div', 'comptes-code'); const form = el('div', 'comptes-form');
+  bloc.appendChild(liste); bloc.appendChild(code); bloc.appendChild(form); bloc.appendChild(st);
+  adm.appendChild(bloc);
+  let etat = null;
+  const montrerCode = (nom, c) => {
+    code.textContent = '';
+    if (!c) return;
+    code.appendChild(el('p', 'message ok', 'Code de départ de ' + nom + ' : à noter maintenant, il ne sera plus affiché.'));
+    code.appendChild(el('span', 'code-initial', c));
+    code.appendChild(el('p', 'compte', 'Donne-le-lui par un canal privé (pas dans un groupe). Elle choisira son propre code à la première connexion.'));
+  };
+  const cases = (parent, choisis) => {
+    const boite = el('div', 'comptes-poles');
+    ((etat && etat.poles_possibles) || []).forEach((p) => {
+      const lab = el('label', 'sauv-case'); const cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = p; cb.checked = choisis.indexOf(p) >= 0;
+      lab.appendChild(cb); lab.appendChild(document.createTextNode(' ' + p)); boite.appendChild(lab);
+    });
+    parent.appendChild(boite);
+    return () => Array.from(boite.querySelectorAll('input:checked')).map((x) => x.value);
+  };
+  const formulaire = (titre, existant) => {
+    form.textContent = '';
+    form.appendChild(el('h4', '', titre));
+    const nom = champReglage('Nom', existant ? existant.nom : '', { nom: 'compte-nom' });
+    form.appendChild(nom.boite);
+    const role = document.createElement('select'); role.id = 'compte-role';
+    [['referente', 'Référente (ses pôles seulement)'], ['maitre', 'Organisatrice principale (tout, IBAN compris)']].forEach((o) => { const op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; role.appendChild(op); });
+    role.value = existant ? existant.role : 'referente';
+    form.appendChild(role);
+    const zonePoles = el('div', ''); form.appendChild(zonePoles);
+    let lire = () => [];
+    const dessinerPoles = () => { zonePoles.textContent = ''; if (role.value === 'referente') lire = cases(zonePoles, existant ? existant.poles : []); else lire = () => []; };
+    role.addEventListener('change', dessinerPoles); dessinerPoles();
+    const ok = el('button', 'btn', existant ? 'Enregistrer' : 'Créer le compte'); ok.type = 'button'; ok.id = 'compte-valider';
+    const annuler = el('button', 'btn btn-doux-clair', 'Annuler'); annuler.type = 'button'; annuler.addEventListener('click', () => { form.textContent = ''; });
+    ok.addEventListener('click', async () => {
+      const op = existant ? { op: 'compte_modifier', id: existant.id } : { op: 'compte_creer' };
+      const rep = await enregistrer(st, ok, () => appelAdmin(Object.assign(op, { nom: nom.saisie.value, role: role.value, poles: lire() })), existant ? 'Compte modifié' : 'Compte créé');
+      if (rep && rep.ok) { form.textContent = ''; dessiner(rep); montrerCode(nom.saisie.value, rep.code_initial); }
+    });
+    form.appendChild(ok); form.appendChild(annuler);
+  };
+  const dessiner = (r) => {
+    etat = r; liste.textContent = '';
+    if (!r.comptes.length) liste.appendChild(el('p', 'compte', "Aucun compte pour l'instant : tout le monde se connecte avec le mot de passe commun et voit tout."));
+    r.comptes.forEach((c) => {
+      const l = el('div', 'compte-ligne'); l.dataset.compteId = c.id;
+      l.appendChild(el('strong', '', c.nom));
+      l.appendChild(el('span', 'sauv-type' + (c.role === 'maitre' ? '' : ' sauv-speciale'), c.role === 'maitre' ? 'organisatrice principale' : 'référente : ' + (c.poles.join(', ') || 'aucun pôle')));
+      if (c.doit_changer) l.appendChild(el('span', 'meta', ' (n\'a pas encore choisi son code)'));
+      const bM = el('button', 'btn btn-doux-clair', 'Modifier'); bM.type = 'button'; bM.dataset.compteModifier = c.id; bM.addEventListener('click', () => formulaire('Modifier ' + c.nom, c));
+      const bR = el('button', 'btn btn-doux-clair', 'Nouveau code de départ'); bR.type = 'button'; bR.dataset.compteReinit = c.id;
+      let surR = false;
+      bR.addEventListener('click', async () => {
+        if (!surR) { surR = true; bR.textContent = 'Confirmer : son code actuel cessera de marcher'; return; }
+        const rep = await enregistrer(st, bR, () => appelAdmin({ op: 'compte_reinitialiser', id: c.id }), 'Code réinitialisé');
+        if (rep && rep.ok) { dessiner(rep); montrerCode(c.nom, rep.code_initial); } else { surR = false; bR.textContent = 'Nouveau code de départ'; }
+      });
+      const bS = el('button', 'btn btn-doux-clair', 'Supprimer'); bS.type = 'button'; bS.dataset.compteSupprimer = c.id;
+      let surS = false;
+      bS.addEventListener('click', async () => {
+        if (!surS) { surS = true; bS.textContent = 'Confirmer la suppression'; return; }
+        const rep = await enregistrer(st, bS, () => appelAdmin({ op: 'compte_supprimer', id: c.id }), 'Compte supprimé');
+        if (rep && rep.ok) { code.textContent = ''; dessiner(rep); } else { surS = false; bS.textContent = 'Supprimer'; }
+      });
+      l.appendChild(bM); l.appendChild(bR); l.appendChild(bS); liste.appendChild(l);
+    });
+    const bN = el('button', 'btn', 'Créer un compte'); bN.type = 'button'; bN.id = 'compte-nouveau'; bN.addEventListener('click', () => { code.textContent = ''; formulaire('Nouveau compte', null); });
+    liste.appendChild(bN);
+    if (r.mot_de_passe_commun && r.comptes.length) {
+      const avert = el('p', 'message ko', "Le mot de passe commun marche encore : celui qui le connaît voit tout (sans l'IBAN). Quand chaque personne a son compte, désactive-le.");
+      const bC = el('button', 'btn btn-danger', 'Désactiver le mot de passe commun'); bC.type = 'button'; bC.id = 'compte-desactiver-commun';
+      let surC = false;
+      bC.addEventListener('click', async () => {
+        if (!surC) { surC = true; bC.textContent = 'Confirmer : plus personne ne pourra l\'utiliser'; return; }
+        const rep = await enregistrer(st, bC, () => appelAdmin({ op: 'admin_ecrire', cle: 'mot_de_passe_equipe', valeur: '' }), 'Mot de passe commun désactivé');
+        if (rep && rep.ok) { const n = await appelAdmin({ op: 'comptes_lire' }); if (n && n.ok) dessiner(n); } else { surC = false; bC.textContent = 'Désactiver le mot de passe commun'; }
+      });
+      liste.appendChild(avert); liste.appendChild(bC);
+    }
+  };
+  appelAdmin({ op: 'comptes_lire' }).then((r) => { if (r && r.ok) dessiner(r); else if (r) { st.className = 'message ko'; st.textContent = r.error || 'Impossible de lire les comptes.'; } });
+}
+
+// Sauvegardes : la liste, une copie à la demande, l'interrupteur de la sauvegarde automatique, et le retour en arrière.
+// Restaurer : on voit d'abord ce qui sera remis, on tape RESTAURER, et le serveur fait d'abord une copie de sécurité de l'état actuel.
+function dessinerSauvegardes(adm) {
+  const bloc = el('div', 'admin-sauvegardes'); bloc.id = 'admin-sauvegardes';
+  bloc.appendChild(el('h3', '', 'Sauvegardes'));
+  bloc.appendChild(el('p', 'compte', "Une copie complète du Sheet est faite chaque nuit. On garde les 7 dernières nuits, puis 4 semaines, puis 3 mois. Elles sont dans le dossier « Sauvegardes du Portail » du Drive. Les copies faites avant une restauration ou avant une nouvelle édition restent jusqu'à ce que tu les supprimes."));
+  const etat = el('div', 'sauv-etat'); const liste = el('div', 'sauv-liste'); const detail = el('div', 'sauv-detail');
+  const st = el('div', '', ''); st.setAttribute('role', 'status');
+  const bFaire = el('button', 'btn', 'Faire une sauvegarde maintenant'); bFaire.type = 'button'; bFaire.id = 'sauv-faire';
+  bloc.appendChild(etat); bloc.appendChild(bFaire); bloc.appendChild(st); bloc.appendChild(liste); bloc.appendChild(detail);
+  adm.appendChild(bloc);
+  let dernierEtat = null;
+  const dessiner = (r) => {
+    dernierEtat = r; etat.textContent = ''; liste.textContent = ''; detail.textContent = '';
+    const auto = el('div', 'sauv-auto');
+    auto.appendChild(el('strong', '', r.auto ? 'Sauvegarde automatique : active, chaque nuit vers 3 h' : 'Sauvegarde automatique : désactivée'));
+    const bAuto = el('button', 'btn btn-doux-clair', r.auto ? 'Désactiver' : 'Activer'); bAuto.type = 'button'; bAuto.id = 'sauv-auto';
+    bAuto.addEventListener('click', async () => { const rep = await enregistrer(st, bAuto, () => appelAdmin({ op: 'sauvegarde_auto', actif: !r.auto }), r.auto ? 'Sauvegarde automatique désactivée' : 'Sauvegarde automatique activée'); if (rep && rep.ok) dessiner(rep); });
+    auto.appendChild(bAuto); etat.appendChild(auto);
+    if (r.derniere && r.derniere.ok === false) etat.appendChild(el('p', 'message ko', 'La dernière sauvegarde automatique a échoué (' + r.derniere.date + ') : ' + r.derniere.erreur));
+    else if (r.derniere) etat.appendChild(el('p', 'compte', 'Dernière sauvegarde automatique : ' + r.derniere.date + '.'));
+    else if (r.auto) etat.appendChild(el('p', 'compte', "Pas encore de sauvegarde automatique : la première se fera cette nuit."));
+    if (!r.auto) etat.appendChild(el('p', 'message ko', "Sans sauvegarde automatique, une erreur ne pourrait pas être annulée. Réactive-la."));
+    if (!r.sauvegardes.length) { liste.appendChild(el('p', 'compte', 'Aucune sauvegarde pour le moment.')); return; }
+    r.sauvegardes.forEach((b) => {
+      const l = el('div', 'sauv-ligne'); l.dataset.sauvId = b.id;
+      l.appendChild(el('strong', '', b.date));
+      l.appendChild(el('span', 'sauv-type' + (b.type === 'quotidienne' ? '' : ' sauv-speciale'), b.type));
+      const bR = el('button', 'btn btn-doux-clair', 'Restaurer…'); bR.type = 'button'; bR.dataset.sauvRestaurer = b.id;
+      bR.addEventListener('click', () => ouvrirRestauration(b));
+      l.appendChild(bR);
+      if (b.type !== 'quotidienne') {
+        const bS = el('button', 'btn btn-doux-clair', 'Supprimer'); bS.type = 'button'; bS.dataset.sauvSupprimer = b.id;
+        let sur = false;
+        bS.addEventListener('click', async () => {
+          if (!sur) { sur = true; bS.textContent = 'Confirmer la suppression'; return; }
+          const rep = await enregistrer(st, bS, () => appelAdmin({ op: 'sauvegarde_supprimer', id: b.id }), 'Sauvegarde supprimée (elle est dans la corbeille du Drive)');
+          if (rep && rep.ok) dessiner(rep); else { sur = false; bS.textContent = 'Supprimer'; }
+        });
+        l.appendChild(bS);
+      }
+      liste.appendChild(l);
+    });
+  };
+  const ouvrirRestauration = async (b) => {
+    detail.textContent = '';
+    const rep = await enregistrer(st, null, () => appelAdmin({ op: 'sauvegarde_detail', id: b.id }), 'Voilà ce qui serait remis');
+    if (!rep || !rep.ok) return;
+    detail.appendChild(el('h4', '', 'Restaurer la sauvegarde du ' + b.date));
+    const ul = el('ul', 'ne-liste');
+    rep.lignes.forEach((l) => ul.appendChild(el('li', '', l.onglet + ' : ' + (l.sauvegarde === null ? "absent de la sauvegarde" : l.sauvegarde + ' ligne' + (l.sauvegarde > 1 ? 's' : '') + ' dans la sauvegarde') + ', ' + l.actuel + ' maintenant')));
+    detail.appendChild(ul);
+    detail.appendChild(el('p', 'compte', "Ce qui est arrivé depuis cette date (nouvelles candidatures, statuts changés) disparaît du Sheet, mais une copie de sécurité de l'état actuel est faite juste avant. Les emails « prêts » sont annulés pour ne rien envoyer deux fois. Les fichiers du Drive ne sont pas touchés."));
+    const lab = el('label', 'sauv-case'); const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'sauv-reglages';
+    lab.appendChild(cb); lab.appendChild(document.createTextNode(" Restaurer aussi les réglages (pôles, textes des emails, mot de passe de l'équipe). Non coché : les réglages actuels restent."));
+    detail.appendChild(lab);
+    const conf = champReglage('Pour confirmer, écris exactement : RESTAURER', '', { nom: 'sauv-confirmer' });
+    const go = el('button', 'btn btn-danger', 'Faire la copie de sécurité et restaurer'); go.type = 'button'; go.id = 'sauv-valider'; go.disabled = true;
+    conf.saisie.addEventListener('input', () => { go.disabled = conf.saisie.value.trim() !== 'RESTAURER'; });
+    go.addEventListener('click', async () => {
+      const fin = await enregistrer(st, go, () => appelAdmin({ op: 'sauvegarde_restaurer', id: b.id, confirmation: conf.saisie.value, avec_reglages: cb.checked }), 'Restauration faite');
+      if (fin && fin.ok) {
+        reglagesDonnees = null; items = []; participants = null; benevoles = null; statsDetail = null;
+        detail.textContent = '';
+        const message = el('p', 'message ok', 'Restauré : ' + fin.restaure + '. Copie de sécurité de l\'état d\'avant : ' + fin.securite + '. ' + fin.emails_annules + ' email(s) prêt(s) annulé(s).' + (fin.reglages ? ' Les réglages ont été restaurés aussi : reconnecte-toi.' : ''));
+        detail.appendChild(message);
+        // la liste se met à jour (la copie de sécurité apparaît) sans effacer le message
+        appelAdmin({ op: 'sauvegardes_lire' }).then((r) => { if (r && r.ok) { dessiner(r); detail.appendChild(message); } });
+      }
+    });
+    detail.appendChild(conf.boite); detail.appendChild(go);
+  };
+  bFaire.addEventListener('click', async () => { const rep = await enregistrer(st, bFaire, () => appelAdmin({ op: 'sauvegarde_faire' }), 'Sauvegarde faite'); if (rep && rep.ok) dessiner(rep); });
+  appelAdmin({ op: 'sauvegardes_lire' }).then((r) => { if (r && r.ok) dessiner(r); else if (r) { st.className = 'message ko'; st.textContent = r.error || 'Impossible de lire les sauvegardes.'; } });
+}
+
 
 // Nouvelle édition : on voit d'abord ce qui sera vidé, on tape la phrase, une copie de sauvegarde est faite avant tout.
 function dessinerNouvelleEdition(adm) {
@@ -1452,6 +1725,8 @@ function dessinerNouvelleEdition(adm) {
 
 async function chargerReglages() {
   if (reglagesEnCours) return;
+  // Déjà chargés il y a moins de 5 minutes : on les montre tout de suite, sans repasser par le serveur (le bouton Actualiser recharge).
+  if (reglagesDonnees && Date.now() - reglagesCharge < 300000) { dessinerReglages(); return; }
   reglagesEnCours = true;
   const zone = $('reglages-contenu'); zone.textContent = '';
   const attente = el('p', 'compte'); attente.appendChild(roue('Chargement des réglages...')); zone.appendChild(attente);
@@ -1459,7 +1734,7 @@ async function chargerReglages() {
     const r = await appelReglages({ op: 'reglages_lire' });
     if (r === null) return;
     if (!r.ok) throw new Error(r.error || 'Erreur');
-    reglagesDonnees = r; dessinerReglages();
+    reglagesDonnees = r; reglagesCharge = Date.now(); dessinerReglages();
   } catch (err) {
     zone.textContent = ''; zone.appendChild(el('p', 'message ko', 'Impossible de charger les réglages pour le moment. Réessaie.'));
   } finally { reglagesEnCours = false; }
@@ -2430,15 +2705,38 @@ function dessinerDetail(d, listes, mode) {
   cs.appendChild(boutons); cs.appendChild(autres); cs.appendChild(message); cs.appendChild(alerte);
   if (genre === 'participant') {
     // Documents déposés dans le formulaire final : contrat signé (tout le monde) et preuve de paiement (pôles payants)
-    const docs = [['Contrat signé', d.contrat, true], ['Preuve de paiement', d.preuve, !!(d.payant || d.preuve)], ['Assurance responsabilité civile', d.assurance, !!(d.assurance_requise || d.assurance)]];
+    const docs = [['Contrat signé', d.contrat, true], ['Preuve de paiement', d.preuve, !!(d.payant || d.preuve)], ['Assurance responsabilité civile', d.assurance, !!(d.assurance_requise || d.assurance)], ['Justificatif d’hygiène (HACCP)', d.hygiene, !!(d.hygiene_requise || d.hygiene || d.hygiene_note), d.hygiene_note ? 'Dispense indiquée : ' + d.hygiene_note : '']];
     docs.forEach((doc) => {
       if (!doc[2]) return;
-      const ligneDoc = el('div', 'preuve ' + (doc[0] === 'Contrat signé' ? 'doc-contrat' : (doc[0] === 'Preuve de paiement' ? 'doc-preuve' : 'doc-assurance')));
+      const ligneDoc = el('div', 'preuve ' + (doc[0] === 'Contrat signé' ? 'doc-contrat' : (doc[0] === 'Preuve de paiement' ? 'doc-preuve' : (doc[0] === 'Assurance responsabilité civile' ? 'doc-assurance' : 'doc-hygiene'))));
       ligneDoc.appendChild(el('strong', '', doc[0]));
       const lienDoc = doc[1] ? lienSur(doc[1], 'Ouvrir le document') : null;
-      if (lienDoc) ligneDoc.appendChild(lienDoc); else ligneDoc.appendChild(el('span', 'meta', 'Aucun document déposé.'));
+      if (lienDoc) ligneDoc.appendChild(lienDoc);
+      if (doc[3]) ligneDoc.appendChild(el('span', 'meta', ' ' + doc[3]));
+      else if (!lienDoc) ligneDoc.appendChild(el('span', 'meta', 'Aucun document déposé.'));
       cs.appendChild(ligneDoc);
     });
+    // IBAN (artistes et ateliers) : on voit s'il est renseigné ; la valeur ne s'affiche qu'avec la session administrateur.
+    if (d.iban_possible) {
+      const ligneIban = el('div', 'preuve doc-iban');
+      ligneIban.appendChild(el('strong', '', 'IBAN'));
+      if (!d.iban_renseigne) ligneIban.appendChild(el('span', 'meta', 'Non renseigné.'));
+      else {
+        ligneIban.appendChild(el('span', 'meta', 'Renseigné. '));
+        const organisatrice = compte.role === 'maitre' && !!compte.nom && compte.nom !== 'Équipe';   // le mot de passe commun n'ouvre jamais l'IBAN
+        if (adminJeton || organisatrice) {
+          const bI = el('button', 'btn btn-doux-clair', "Voir l'IBAN"); bI.type = 'button'; bI.dataset.voirIban = d.id;
+          const valeurI = el('span', 'iban-valeur'); valeurI.setAttribute('role', 'status');
+          bI.addEventListener('click', async () => {
+            const r = adminJeton ? await appelAdmin({ op: 'iban_lire', id: d.id }) : await appelReglages({ op: 'iban_lire', id: d.id });
+            if (r && r.ok) { valeurI.textContent = r.iban; valeurI.classList.add('iban-visible'); bI.hidden = true; }
+            else if (r) valeurI.textContent = r.error || "Impossible de lire l'IBAN.";
+          });
+          ligneIban.appendChild(bI); ligneIban.appendChild(valeurI);
+        } else ligneIban.appendChild(el('span', 'meta', 'Visible par les organisatrices principales, ou avec le mot de passe administrateur.'));
+      }
+      cs.appendChild(ligneIban);
+    }
   }
   zone.appendChild(cs);
 
