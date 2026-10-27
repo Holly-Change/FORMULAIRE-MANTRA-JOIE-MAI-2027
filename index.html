@@ -435,8 +435,8 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
 .bloc-ferme p { margin: 8px 0 0; }
 .ruban-ferme-grand { display: inline-block; background: #C62828; color: #fff; font-weight: 800; letter-spacing: .1em; border-radius: 8px; padding: 4px 14px; }
 .verrouille { pointer-events: none; opacity: .65; }
-.engagements { margin-top: 10px; }
-.engagements-titre { font-size: .95rem; margin: 0 0 8px; opacity: .9; }
+.engagements, #vol-engagements { margin-top: 10px; display: flex; flex-direction: column; gap: 12px; }
+.engagements-titre { background: #fff; color: #1C1B3A; padding: 12px 14px; border-radius: 14px; border-left: 5px solid #D6248C; font-size: 1rem; font-weight: 600; line-height: 1.45; margin: 0; opacity: 1; }
 </style>
 </head>
 <body>
@@ -486,6 +486,11 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
         <label>Votre site web <input type="text" id="honeypot" tabindex="-1" autocomplete="off"></label>
       </div>
 
+    </section>
+
+    <section class="ecran" id="ecran-ouverture" aria-live="polite">
+      <h2>Ouverture de ton dossier…</h2>
+      <p class="aide"><span class="tourne"></span> Cela peut prendre quelques secondes, merci de patienter.</p>
     </section>
 
     <section class="ecran" id="ecran-ferme">
@@ -854,6 +859,8 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
       <div class="champ" id="boite-assurance" style="display:none">
         <label class="etiquette obligatoire" for="insurance_file">Ton attestation d'assurance responsabilité civile <span class="astuce">(PDF ou photo, 5 Mo maximum)</span></label>
         <input type="file" id="insurance_file" accept="application/pdf,image/jpeg,image/png,image/webp">
+        <label class="etiquette" for="insurance_note" style="margin-top:10px">Pas d’attestation ? Explique pourquoi <span class="astuce">(une phrase suffit)</span></label>
+        <textarea id="insurance_note" rows="2" maxlength="500"></textarea>
       </div>
       <div class="champ" id="boite-iban" style="display:none">
         <label class="etiquette" for="iban">Ton IBAN <span class="astuce">(facultatif)</span></label>
@@ -931,7 +938,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.35-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.36-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
@@ -1010,20 +1017,19 @@ function allerOnglet(e) {
 
 // Lien personnel reçu par email (…?d=code) : on ouvre directement le dossier final, déjà rempli.
 async function ouvrirDossierPersonnel(jeton) {
-  await ouvrirParConfig('formulaire_final', 'acces');   // formulaire fermé : le message de fermeture s'affiche et on s'arrête là
-  if (etapeCourante !== 'acces') return;
-  $('acces-attente').style.display = 'block'; $('acces-lien-perso').style.display = 'none';
+  aller('ouverture');   // un écran clair tout de suite : jamais l'accueil, jamais la saisie du code
   let rep = null;
   try {
     const r = await fetch(CONFIG.scriptUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ kind: 'dossier_lookup', token: jeton }) });
     rep = await r.json();
   } catch (e) { rep = null; }
-  $('acces-attente').style.display = 'none';
+  if (rep && rep.ok && rep.ouvert === false) { $('ferme-message').textContent = rep.message_ferme || 'Le dossier final est fermé pour le moment.'; aller('ferme'); return; }
   if (!rep || !rep.ok) {
-    $('acces-lien-perso').style.display = 'block';
+    aller('acces'); $('acces-attente').style.display = 'none'; $('acces-lien-perso').style.display = 'block';
     erreur('acces', (rep && rep.error) || 'Impossible de vérifier ton lien pour le moment. Vérifie ta connexion et réessaie.');
     return;
   }
+  // La configuration (contrat obligatoire, etc.) est déjà en train de se charger depuis l'ouverture de la page (candPrefetch) : les deux requêtes partent en même temps.
   etat.jeton = jeton;
   const puce = Array.from($('puces-categorie').querySelectorAll('.puce')).find(b => b.textContent === nomPole(rep.pole));
   if (puce) puce.click();
@@ -1031,6 +1037,17 @@ async function ouvrirDossierPersonnel(jeton) {
   const mettre = (id, v) => { const el = $(id); if (el && v) el.value = v; };
   mettre('name', rep.projet); mettre('first_name', rep.prenom); mettre('last_name', rep.nom); mettre('email', rep.email); mettre('phone', rep.telephone);
   aller(1);
+}
+// Liens directs vers un pôle (pour les boutons du site) : ?pole=artisanat, ?pole=food-truck, ?pole=benevoles...
+const POLES_LIENS = { artiste: 'Artiste', artistes: 'Artiste', atelier: 'Atelier', ateliers: 'Atelier', workshop: 'Atelier', workshops: 'Atelier', 'bien-etre': 'Bien-être', bienetre: 'Bien-être', 'healing-space': 'Bien-être', artisan: 'Artisan', artisans: 'Artisan', artisanat: 'Artisan', antre: "L'Antre deux mondes", 'antre-deux-mondes': "L'Antre deux mondes", 'food-truck': 'Stand / Miam Miam', 'food-trucks': 'Stand / Miam Miam', foodtruck: 'Stand / Miam Miam', stand: 'Stand / Miam Miam', autre: 'Autre' };
+async function ouvrirPoleDirect(slug) {
+  const s = String(slug || '').toLowerCase().replace(/[^a-z-]/g, '');
+  if (s === 'benevoles' || s === 'benevole') { await ouvrirParConfig('benevoles', 'benevole'); return; }
+  const pole = POLES_LIENS[s];
+  if (!pole) { aller(0); return; }
+  await ouvrirCandidature();   // le même chemin que le bouton « Candidater »
+  const b = Array.from($('cand-poles').querySelectorAll('.puce')).find(x => x.textContent.indexOf(nomPole(pole)) >= 0);
+  if (b) b.click();
 }
 
 function aller(n) {
@@ -1047,7 +1064,7 @@ function aller(n) {
 
 function majColibri(n) {
   const sentier = $('sentier');
-  if (n === 0 || n === 'benevole' || n === 'acces' || String(n).indexOf('cand') === 0) { sentier.hidden = true; return; }
+  if (n === 0 || n === 'benevole' || n === 'acces' || n === 'ouverture' || String(n).indexOf('cand') === 0) { sentier.hidden = true; return; }
   sentier.hidden = false;
   const etape = n === 'merci' ? ETAPES.length : ETAPES.indexOf(n) + 1;
   const largeur = sentier.offsetWidth - 76;
@@ -1104,7 +1121,7 @@ const ACCUEIL_INVITE = [
   { k: 'invite', l: 'Viens-tu avec un invité ?', t: 's', o: ['Oui', 'Non'], r: 1 },
   { k: 'guest_last', l: 'Nom de ton invité', t: 't', r: 1, si: ['invite', 'Oui'] },
   { k: 'guest_first', l: 'Prénom de ton invité', t: 't', r: 1, si: ['invite', 'Oui'] },
-  { k: 'guest_email', l: 'Email de ton invité', t: 't', type: 'email', r: 1, si: ['invite', 'Oui'] },
+  { k: 'guest_email', l: 'Email de ton invité (facultatif)', t: 't', type: 'email', si: ['invite', 'Oui'] },
   { k: 'guest_phone', l: 'Téléphone de ton invité', t: 't', type: 'tel', r: 1, si: ['invite', 'Oui'] }
 ];
 const ACCUEIL_CHAMPS = {
@@ -1138,6 +1155,11 @@ function rendreAccueil() {
   if (zone.dataset.cat === etat.category) return;   // déjà dessiné : on garde ce qui a été saisi
   zone.dataset.cat = etat.category; zone.textContent = '';
   $('accueil-intro').textContent = ACCUEIL_NOTES[etat.category] || '';
+  // Contacts utiles, donnés ici (après la sélection) et plus à la candidature.
+  const infos = [];
+  if (CONFIG.contacts.fab) infos.push('Responsable technique : envoie ta fiche technique et tes besoins en matériel directement à Fab : ' + CONFIG.contacts.fab + '.');
+  if (etat.category === 'Artiste' && CONFIG.contacts.eric) infos.push('Contact sur place pour les artistes : Éric : ' + CONFIG.contacts.eric + '.');
+  infos.forEach(t => { const p = document.createElement('p'); p.className = 'aide accueil-contact'; p.textContent = t; zone.appendChild(p); });
   accueilListe().forEach(f => {
     const div = document.createElement('div'); div.className = 'champ'; div.id = 'accb_' + f.k;
     const lab = document.createElement('label'); lab.className = 'etiquette' + (f.r ? ' obligatoire' : ''); lab.htmlFor = 'acc_' + f.k; lab.textContent = f.l; div.appendChild(lab);
@@ -1604,7 +1626,7 @@ function problemeDocuments(payant) {
   if (payant === true && !preuve) return 'Ajoute la preuve de ton paiement (capture d’écran ou PDF).';
   const mauvais = verifierFichierDoc(contrat, 10, 'Le contrat') || verifierFichierDoc(preuve, 5, 'La preuve de paiement') || verifierFichierDoc(assurance, 5, 'L’attestation d’assurance') || verifierFichierDoc(hygiene, 5, 'Le justificatif d’hygiène');
   if (mauvais) return mauvais;
-  if (etat.category !== 'Artiste' && !assurance) return 'Ajoute ton attestation d’assurance responsabilité civile (PDF ou photo).';
+  if (etat.category !== 'Artiste' && !assurance && valeur('insurance_note').length < 10) return 'Ajoute ton attestation d’assurance responsabilité civile (PDF ou photo), ou explique pourquoi tu n’en as pas (une phrase).';
   if (etat.category === 'Stand / Miam Miam' && !hygiene && !valeur('hygiene_note')) return 'Ajoute ton justificatif d’hygiène alimentaire, ou explique pourquoi tu en es exempté·e.';
   if (['Artiste', 'Atelier'].indexOf(etat.category) >= 0 && ibanNormaliser(valeur('iban')) && !ibanValide(valeur('iban'))) return 'Cet IBAN ne semble pas valide. Vérifie-le, ou laisse le champ vide et préviens ta référente.';
   const pa = problemeAccueil(); if (pa) return pa;
@@ -1747,6 +1769,7 @@ async function envoyer() {
     contract: contratData,
     insurance: assuranceData,
     iban: ['Artiste', 'Atelier'].indexOf(etat.category) >= 0 ? ibanNormaliser(valeur('iban')) : '',
+    insurance_note: etat.category !== 'Artiste' ? valeur('insurance_note') : '',
     accueil: ['Artiste', 'Atelier'].indexOf(etat.category) >= 0 ? accueilValeurs() : null,
     hygiene_file: hygieneData,
     hygiene_note: etat.category === 'Stand / Miam Miam' ? valeur('hygiene_note') : ''
@@ -1816,7 +1839,7 @@ function echecEnvoi(rep, xhr) {
 
 
 // Portraits de groupe et inscription des bénévoles.
-const POLES = ['INSTALLATION/DÉSINSTALLATION', 'ACCUEIL + Gardien·nes du temps le dimanche', 'PARKING/CAMPING', 'INFIRMERIE + Gardien·nes du temps le vendredi', 'CATERING', 'BUVETTE (sans alcool)', 'SNACK (incluant le petit-déjeuner)/CRÊPES', 'GREENTEAM'];
+const POLES = ['INSTALLATION/DÉSINSTALLATION', 'ACCUEIL + Gardien·nes du temps le dimanche', 'PARKING/CAMPING', 'INFIRMERIE + Gardien·nes du temps le vendredi', 'CATERING', 'BUVETTE (sans alcool)', 'SNACK (incluant le petit-déjeuner)/CRÊPES', 'GREENTEAM', 'RECRUTEMENT DES BÉNÉVOLES (à confirmer)'];
 $('vol-teams').innerHTML = POLES.map((p, i) => `<label class="consentement" style="margin:8px 0"><input type="checkbox" class="vol-team" value="${p}"> <span>${p}</span></label>`).join('');
 document.querySelectorAll('.vol-team').forEach(el => el.addEventListener('change', () => {
   const checked = document.querySelectorAll('.vol-team:checked');
@@ -2006,6 +2029,9 @@ function confettis() {
 }
 </script>
 <script>
+(function () { if (/[?&](?:d=[a-f0-9]{40}|pole=[A-Za-z-]+)(?:&|#|$)/.test(location.search)) { var a = document.getElementById('ecran-0'), o = document.getElementById('ecran-ouverture'); if (a) a.classList.remove('actif'); if (o) o.classList.add('actif'); } })();
+</script>
+<script>
 /* ================================================================
    CANDIDATURE PUBLIQUE (sans code d'accès)
    Les conditions, tarifs et l'ouverture viennent du Google Sheet
@@ -2072,8 +2098,8 @@ function CAND_SECOND(toujours, contactRequis) {
     q('second_phone', 'Téléphone de la deuxième personne', { type: 'tel', r: contactRequis ? 1 : 0 })
   ];
 }
-function CAND_DUO() {
-  return [{ k: 'formula', l: 'Viens-tu seul·e ou à deux ?', t: 'chips', o: ['Solo (1 personne)', 'Duo (2 personnes)'], r: 1, n: 'Forfait solo : 210 €. Forfait duo : 280 €, camping de 5 nuits compris pour les deux personnes.' }].concat(CAND_SECOND(false, false));
+function CAND_DUO(solo) {
+  return [{ k: 'formula', l: 'Viens-tu seul·e ou à deux ?', t: 'chips', o: ['Solo (1 personne)', 'Duo (2 personnes)'], r: 1, n: (solo || 'Forfait solo : 210 €.') + ' Forfait duo : 280 €, camping de 5 nuits compris pour les deux personnes.' }].concat(CAND_SECOND(false, false));
 }
 const CAND_POLE = {
   'Artiste': [
@@ -2084,7 +2110,7 @@ const CAND_POLE = {
     { k: 'instruments', l: 'Instruments utilisés', t: 't', r: 1, si: ['tech_sheet', 'Non'], rejet: CAND_AUCUN, n: 'Indique ce que tu utilises.' },
     { k: 'sound', l: 'Micros et appareils à brancher', t: 't', r: 1, si: ['tech_sheet', 'Non'], rejet: CAND_AUCUN, n: 'Indique ce qu’il faut brancher.' },
     { k: 'media_link', l: 'Lien vidéo ou audio', t: 't', r: 1 }
-  ].concat(CAND_FAB(), CAND_ERIC(), CAND_ELEC_W, CAND_INVITE()),
+  ].concat(CAND_ELEC_W, CAND_INVITE()),
   'Atelier': [
     { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
     { k: 'workshop_title', l: 'Intitulé de l’atelier', t: 't', r: 1 },
@@ -2105,10 +2131,10 @@ const CAND_POLE = {
     { k: 'constraints', l: 'Contraintes liées au bruit ou à la configuration de l’espace', t: 'a', r: 1, n: 'Écris « aucune » s’il n’y en a pas.' },
     { k: 'safety', l: 'Précautions de sécurité à prévoir', t: 'a', r: 1 },
     { k: 'motivation', l: 'Pourquoi souhaites-tu participer à Mantra Joie et qu’as-tu envie d’y partager ou apporter ?', t: 'a' }
-  ].concat(CAND_FAB(), CAND_ELEC_W, CAND_INVITE()),
+  ].concat(CAND_ELEC_W, CAND_INVITE()),
   'Artisan': [
     { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
-    ...CAND_DUO(),
+    ...CAND_DUO('Forfait solo : 210 €, camping compris.'),
     { k: 'brand_presentation', l: 'Présentation détaillée de l’artisan, de sa marque et de sa démarche créative', t: 'a', r: 1 },
     { k: 'sells', l: 'Produits proposés', t: 'a', r: 1 },
     { k: 'category', l: 'Catégorie de créations ou de produits vendus', t: 't', r: 1, n: 'Par exemple : bijoux, textile, céramique. Texte libre pour le moment.' },
@@ -2145,7 +2171,7 @@ const CAND_POLE = {
 
   'Stand / Miam Miam': [
     { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
-    { k: 'food_type', l: 'Catégorie de ton activité', t: 'chips', o: ['Repas', 'Desserts et glaces'], r: 1, n: 'Forfait pour deux personnes, 5 jours de festival et 5 nuits de camping compris : 550 € pour les repas, 450 € pour les desserts et glaces.' },
+    { k: 'food_type', l: 'Catégorie de ton food truck', t: 'chips', o: ['Food truck repas', 'Food truck desserts et glaces'], r: 1, n: 'Forfait pour deux personnes, 5 jours de festival et 5 nuits de camping compris : 550 € pour un food truck repas, 450 € pour un food truck desserts et glaces.' },
     ...CAND_SECOND(true, true),
     { k: 'offer', l: 'Nom de l’activité et ce que tu proposes à manger ou à boire', t: 't', r: 1 },
     { k: 'menu', l: 'Menus, produits et prix envisagés', t: 'a', r: 1, n: 'Tu peux aussi joindre ta carte avec les photos.' },
@@ -2178,9 +2204,19 @@ const CAND_POLE = {
 // Artisanat : 3 à 4 photos de produits, un fichier par photo. Les autres pôles : 1 à 6.
 function candMinPhotos() { return cand.pole === 'Artisan' ? 3 : 1; }
 function candMaxPhotos() { return cand.pole === 'Artisan' ? 4 : 6; }
+// SIRET : un numéro, ou « Je n'ai pas de SIRET » avec une explication (activité non soumise à cette obligation).
+Object.keys(CAND_POLE).forEach(function (pole) {
+  const liste = CAND_POLE[pole]; const i = liste.findIndex(function (x) { return x.k === 'siret'; });
+  if (i < 0) return;
+  liste[i] = Object.assign({}, liste[i], { sauf: ['siret_sans', 'Oui'] });
+  liste.splice(i + 1, 0,
+    { k: 'siret_sans', l: 'Je n’ai pas de SIRET', t: 'chips', o: ['Non', 'Oui'], n: 'Réponds « Oui » seulement si ton activité n’est pas soumise à cette obligation.' },
+    { k: 'siret_dispense', l: 'Explique pourquoi tu n’as pas de SIRET', t: 'a', r: 1, si: ['siret_sans', 'Oui'], n: 'Une phrase suffit : ton statut, ou pourquoi ton activité n’est pas concernée.' });
+});
 function candChamps() { return CAND_REFERENTE(cand.pole).concat(CAND_POLE[cand.pole] || CAND_POLE['Autre']).concat(CAND_FIN); }
 
 function candVisible(f) {
+  if (f.sauf && cand.vals[f.sauf[0]] === f.sauf[1]) return false;   // masqué quand l'autre réponse le remplace (ex. « Je n'ai pas de SIRET »)
   if (!f.si) return true;
   const v = cand.vals[f.si[0]], attendu = Array.isArray(f.si[1]) ? f.si[1] : [f.si[1]];
   return Array.isArray(v) ? v.some(x => attendu.indexOf(x) >= 0) : attendu.indexOf(v) >= 0;
@@ -2242,6 +2278,7 @@ function candValider(champs) {
     const v = cand.vals[f.k];
     if (v === undefined || v === '' || (Array.isArray(v) && !v.length)) return 'À compléter : ' + f.l;
     if (f.k === 'siret' && !/^\d{14}$/.test(String(v).replace(/\s+/g, ''))) return 'Le numéro de SIRET doit avoir 14 chiffres (sans lettre).';
+    if (f.k === 'siret_dispense' && String(v).trim().length < 10) return 'Explique en une phrase pourquoi tu n’as pas de SIRET.';
   }
   // Contrôles de forme, y compris sur les champs facultatifs quand ils sont remplis.
   for (const f of champs) {
@@ -2406,7 +2443,7 @@ function rendreCases(zone, liste, prefixe) {
   zone.textContent = '';
   if (!liste.length) return;
   const titre = document.createElement('p'); titre.className = 'engagements-titre';
-  titre.textContent = 'Pour continuer, coche chaque case. Cocher ne vaut ni sélection, ni inscription définitive, ni signature de contrat.';
+  titre.textContent = 'Dans le cas où ma candidature est retenue, j’accepte les conditions ci-dessous. Cocher ces cases ne vaut ni sélection, ni inscription définitive, ni signature du contrat.';
   zone.appendChild(titre);
   liste.forEach(e => {
     const div = document.createElement('div'); div.className = 'consentement-interieur';
@@ -2535,7 +2572,9 @@ async function candEnvoyer() {
 
 (function () {
   const m = /[?&]d=([a-f0-9]{40})(?:&|#|$)/.exec(location.search);
-  if (m) ouvrirDossierPersonnel(m[1]);
+  if (m) { ouvrirDossierPersonnel(m[1]); return; }
+  const q = /[?&]pole=([A-Za-z-]+)(?:&|#|$)/.exec(location.search);
+  if (q) ouvrirPoleDirect(q[1]);
 })();
 </script>
 
