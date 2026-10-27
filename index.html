@@ -435,6 +435,8 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
 .bloc-ferme p { margin: 8px 0 0; }
 .ruban-ferme-grand { display: inline-block; background: #C62828; color: #fff; font-weight: 800; letter-spacing: .1em; border-radius: 8px; padding: 4px 14px; }
 .verrouille { pointer-events: none; opacity: .65; }
+.engagements { margin-top: 10px; }
+.engagements-titre { font-size: .95rem; margin: 0 0 8px; opacity: .9; }
 </style>
 </head>
 <body>
@@ -519,6 +521,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
         <div class="zoom-ligne"><span class="zoom-mot">Zoom</span><button type="button" class="btn-zoom" id="zoom-moins-portrait" aria-label="Zoom arrière">−</button><button type="button" class="btn-zoom" id="zoom-plus-portrait" aria-label="Zoom avant">+</button></div>
         <div class="nav-etapes"><button class="btn btn-retour" onclick="annulerPortrait()">Annuler</button><button class="btn btn-avant" onclick="garderPortrait()">Valider le portrait</button></div>
       </div>
+      <div id="vol-engagements" class="engagements"></div>
       <div class="message-erreur" id="erreur-benevole"></div>
       <div class="cand-progress" id="vol-progress" role="status" aria-live="polite">
         <div class="cp-titre">⏳ Envoi en cours : ne ferme pas cette page</div>
@@ -541,7 +544,8 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
         <div class="nav-etapes" id="cand-pdf-boite" style="margin-top:10px"><button class="btn btn-retour" type="button" id="cand-pdf" onclick="candPdf()">📄 Télécharger les conditions (PDF)</button></div>
         <div class="message-erreur" id="cand-conditions-vide" style="margin-top:10px">Les conditions de ce pôle ne sont pas encore publiées. Reviens bientôt.</div>
         <div class="consentement-boite" id="cand-terms-boite">
-          <div class="consentement-interieur"><label class="consentement"><input type="checkbox" id="cand_terms"><span>J’ai lu et j’accepte les conditions de participation et les critères de sélection du festival.</span></label></div>
+          <div class="consentement-interieur" id="cand-terms-unique"><label class="consentement"><input type="checkbox" id="cand_terms"><span>J’ai lu et j’accepte les conditions de participation et les critères de sélection du festival.</span></label></div>
+          <div id="cand-engagements" class="engagements"></div>
         </div>
       </div>
       <div class="message-erreur" id="erreur-cand-0"></div>
@@ -856,6 +860,11 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
         <input type="text" id="iban" autocomplete="off" inputmode="text" maxlength="42" placeholder="FR76 1234 5678 9012 3456 7890 123">
         <p class="aide">Pour te régler plus facilement. Seules les personnes qui gèrent les paiements peuvent le voir. Si tu n'as pas d'IBAN, laisse vide et préviens ta référente.</p>
       </div>
+      <div id="boite-accueil" style="display:none">
+        <h3 style="font-family:var(--police-titres);font-size:20px;margin:22px 0 6px">Ton accueil au festival</h3>
+        <p class="aide" id="accueil-intro"></p>
+        <div id="accueil-champs"></div>
+      </div>
       <div class="champ" id="boite-hygiene" style="display:none">
         <label class="etiquette obligatoire" for="hygiene_file">Justificatif d’hygiène alimentaire <span class="astuce">(PDF ou photo, 5 Mo maximum)</span></label>
         <input type="file" id="hygiene_file" accept="application/pdf,image/jpeg,image/png,image/webp">
@@ -922,7 +931,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.33-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.35-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec',
@@ -1016,7 +1025,7 @@ async function ouvrirDossierPersonnel(jeton) {
     return;
   }
   etat.jeton = jeton;
-  const puce = Array.from($('puces-categorie').querySelectorAll('.puce')).find(b => b.textContent === rep.pole);
+  const puce = Array.from($('puces-categorie').querySelectorAll('.puce')).find(b => b.textContent === nomPole(rep.pole));
   if (puce) puce.click();
   $('puces-categorie').classList.add('verrouille');
   const mettre = (id, v) => { const el = $(id); if (el && v) el.value = v; };
@@ -1031,6 +1040,7 @@ function aller(n) {
   majColibri(n);
   majFil(n);
   if (n === 'docs') afficherDocuments();
+  if (n === 'benevole') rendreCases($('vol-engagements'), (derniereConfig && derniereConfig.engagements_benevoles) || [], 'vol_eng_');
   if (n === 7) setTimeout(() => $('boite-consent').scrollIntoView({ behavior: 'smooth', block: 'center' }), 700);
   else window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1086,11 +1096,83 @@ function verifierCode() {
 }
 
 // ------------------ Etape 1 ------------------
+// Noms montrés aux personnes (les valeurs envoyées au serveur restent « Atelier » et « Artisan »).
+const NOMS_AFFICHES = { 'Atelier': 'Ateliers', 'Artisan': 'Artisanat' };
+function nomPole(n) { return NOMS_AFFICHES[n] || n; }
+// Accueil et invité (artistes et ateliers) : demandés dans le dossier final, après la sélection.
+const ACCUEIL_INVITE = [
+  { k: 'invite', l: 'Viens-tu avec un invité ?', t: 's', o: ['Oui', 'Non'], r: 1 },
+  { k: 'guest_last', l: 'Nom de ton invité', t: 't', r: 1, si: ['invite', 'Oui'] },
+  { k: 'guest_first', l: 'Prénom de ton invité', t: 't', r: 1, si: ['invite', 'Oui'] },
+  { k: 'guest_email', l: 'Email de ton invité', t: 't', type: 'email', r: 1, si: ['invite', 'Oui'] },
+  { k: 'guest_phone', l: 'Téléphone de ton invité', t: 't', type: 'tel', r: 1, si: ['invite', 'Oui'] }
+];
+const ACCUEIL_CHAMPS = {
+  'Artiste': [
+    { k: 'arrival_date', l: 'Date d’arrivée', t: 't', type: 'date', r: 1 },
+    { k: 'arrival_time', l: 'Heure d’arrivée', t: 't', type: 'time', r: 1 },
+    { k: 'transport', l: 'Moyen de transport', t: 's', o: ['Voiture', 'Train', 'Avion', 'Autre'], r: 1 },
+    { k: 'transport_details', l: 'Détails du voyage : numéro de vol ou de train, gare ou aéroport, horaires', t: 'a', r: 1, si: ['transport', ['Train', 'Avion']] },
+    { k: 'transfer', l: 'As-tu besoin d’un transfert depuis la gare ou l’aéroport ?', t: 's', o: ['Oui', 'Non'], r: 1 },
+    { k: 'transfer_details', l: 'Précise le transfert souhaité', t: 'a', r: 1, si: ['transfer', 'Oui'] },
+    { k: 'food_needs', l: 'Régime alimentaire et besoins en repas', t: 'a', r: 1, n: 'Écris « aucun » s’il n’y en a pas.' },
+    { k: 'allergies', l: 'Allergies ou intolérances alimentaires (facultatif)', t: 'a', n: 'Cette information sert uniquement à préparer tes repas.' }
+  ],
+  'Atelier': [
+    { k: 'arrival_date', l: 'Date d’arrivée au festival', t: 't', type: 'date', r: 1 },
+    { k: 'departure_date', l: 'Date de départ', t: 't', type: 'date', r: 1 }
+  ]
+};
+const ACCUEIL_NOTES = { 'Artiste': 'Ces informations préparent ton accueil : arrivée, transport, repas.', 'Atelier': 'Un seul invité est possible. Ses coordonnées peuvent être modifiées jusqu’au 21 mai 2027. Ton invité règle son camping à son arrivée.' };
+function accueilListe() { return (ACCUEIL_CHAMPS[etat.category] || []).concat(ACCUEIL_INVITE); }
+function accueilVisible(f) {
+  if (!f.si) return true;
+  const v = valeur('acc_' + f.si[0]), attendu = Array.isArray(f.si[1]) ? f.si[1] : [f.si[1]];
+  return attendu.indexOf(v) >= 0;
+}
+function majAccueil() { accueilListe().forEach(f => { const b = $('accb_' + f.k); if (b) b.style.display = accueilVisible(f) ? '' : 'none'; }); }
+function rendreAccueil() {
+  const zone = $('accueil-champs'), boite = $('boite-accueil');
+  if (['Artiste', 'Atelier'].indexOf(etat.category) < 0) { boite.style.display = 'none'; zone.textContent = ''; zone.dataset.cat = ''; return; }
+  boite.style.display = 'block';
+  if (zone.dataset.cat === etat.category) return;   // déjà dessiné : on garde ce qui a été saisi
+  zone.dataset.cat = etat.category; zone.textContent = '';
+  $('accueil-intro').textContent = ACCUEIL_NOTES[etat.category] || '';
+  accueilListe().forEach(f => {
+    const div = document.createElement('div'); div.className = 'champ'; div.id = 'accb_' + f.k;
+    const lab = document.createElement('label'); lab.className = 'etiquette' + (f.r ? ' obligatoire' : ''); lab.htmlFor = 'acc_' + f.k; lab.textContent = f.l; div.appendChild(lab);
+    let el;
+    if (f.t === 's') { el = document.createElement('select'); const o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Choisir'; el.appendChild(o0); f.o.forEach(x => { const o = document.createElement('option'); o.value = x; o.textContent = x; el.appendChild(o); }); }
+    else if (f.t === 'a') { el = document.createElement('textarea'); el.rows = 3; el.maxLength = 600; }
+    else { el = document.createElement('input'); el.type = f.type || 'text'; el.maxLength = 120; }
+    el.id = 'acc_' + f.k; el.addEventListener('input', majAccueil); el.addEventListener('change', majAccueil);
+    div.appendChild(el);
+    if (f.n) { const p = document.createElement('p'); p.className = 'aide'; p.textContent = f.n; div.appendChild(p); }
+    zone.appendChild(div);
+  });
+  majAccueil();
+}
+function problemeAccueil() {
+  if (['Artiste', 'Atelier'].indexOf(etat.category) < 0) return '';
+  for (const f of accueilListe()) {
+    if (!accueilVisible(f)) continue;
+    const v = valeur('acc_' + f.k);
+    if (f.r && !v) return 'À compléter : ' + f.l + '.';
+    if (f.type === 'email' && v && !/^\S+@\S+\.\S+$/.test(v)) return f.l + ' : cette adresse ne semble pas valide.';
+  }
+  if (etat.category === 'Atelier' && valeur('acc_departure_date') < valeur('acc_arrival_date')) return 'La date de départ doit être après la date d’arrivée.';
+  return '';
+}
+function accueilValeurs() {
+  const o = {};
+  accueilListe().forEach(f => { if (accueilVisible(f)) o[f.k] = valeur('acc_' + f.k); });
+  return o;
+}
 function creerPuces(conteneur, valeurs, auClic) {
   const c = $(conteneur);
   valeurs.forEach(v => {
     const b = document.createElement('button');
-    b.className = 'puce'; b.type = 'button'; b.textContent = v;
+    b.className = 'puce'; b.type = 'button'; b.textContent = conteneur === 'puces-categorie' ? nomPole(v) : v;
     b.onclick = () => {
       c.querySelectorAll('.puce').forEach(p => p.classList.remove('choisie'));
       b.classList.add('choisie');
@@ -1505,6 +1587,7 @@ async function afficherDocuments() {
   $('boite-assurance').style.display = etat.category === 'Artiste' ? 'none' : 'block';
   $('boite-iban').style.display = ['Artiste', 'Atelier'].indexOf(etat.category) >= 0 ? 'block' : 'none';
   $('boite-hygiene').style.display = etat.category === 'Stand / Miam Miam' ? 'block' : 'none';
+  rendreAccueil();
   return payant;
 }
 function verifierFichierDoc(file, maxMo, nom) {
@@ -1524,6 +1607,7 @@ function problemeDocuments(payant) {
   if (etat.category !== 'Artiste' && !assurance) return 'Ajoute ton attestation d’assurance responsabilité civile (PDF ou photo).';
   if (etat.category === 'Stand / Miam Miam' && !hygiene && !valeur('hygiene_note')) return 'Ajoute ton justificatif d’hygiène alimentaire, ou explique pourquoi tu en es exempté·e.';
   if (['Artiste', 'Atelier'].indexOf(etat.category) >= 0 && ibanNormaliser(valeur('iban')) && !ibanValide(valeur('iban'))) return 'Cet IBAN ne semble pas valide. Vérifie-le, ou laisse le champ vide et préviens ta référente.';
+  const pa = problemeAccueil(); if (pa) return pa;
   return '';
 }
 async function validerDocs() {
@@ -1663,6 +1747,7 @@ async function envoyer() {
     contract: contratData,
     insurance: assuranceData,
     iban: ['Artiste', 'Atelier'].indexOf(etat.category) >= 0 ? ibanNormaliser(valeur('iban')) : '',
+    accueil: ['Artiste', 'Atelier'].indexOf(etat.category) >= 0 ? accueilValeurs() : null,
     hygiene_file: hygieneData,
     hygiene_note: etat.category === 'Stand / Miam Miam' ? valeur('hygiene_note') : ''
   };
@@ -1867,12 +1952,15 @@ async function envoyerBenevole() {
     return erreur('benevole', 'Remplis tous les champs et choisis exactement deux pôles.');
   const erreurNaissance = verifierNaissanceClient(v('vol_birth'));
   if (erreurNaissance) return erreur('benevole', erreurNaissance);
+  const casesVol = Array.from(document.querySelectorAll('#vol-engagements input[type=checkbox]'));
+  if (!casesVol.length) return erreur('benevole', 'Les engagements n’ont pas pu se charger. Recharge la page et réessaie.');
+  if (casesVol.some(c => !c.checked)) return erreur('benevole', 'Coche toutes les cases d’engagement pour continuer.');
   if (!CONFIG.scriptUrl.startsWith('https://script.google.com/')) return erreur('benevole', 'Le nouveau script doit être déployé avant le premier envoi.');
   const btn = $('btn-benevole'); btn.disabled = true; btn.textContent = 'Envoi en cours… Garde cette page ouverte.'; volProgres(true);
   try {
     const res = await fetch(CONFIG.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({
       kind:'volunteer', submission_id:submissionIds.volunteer, access_code:CONFIG.code, honeypot:$('honeypot').value, email:v('vol_email'),
-      first_name:v('vol_first_name'), last_name:v('vol_last_name'), phone:v('vol_phone'), birth_date:v('vol_birth'),
+      first_name:v('vol_first_name'), last_name:v('vol_last_name'), phone:v('vol_phone'), birth_date:v('vol_birth'), engagements:casesVol.map(c => c.value),
       teams:teams, motivation:v('vol_motivation'), portrait:volunteerPortrait.portraitData, portrait_original:volunteerPortrait.portraitOriginal
     }) });
     const rep = await res.json();
@@ -1950,14 +2038,9 @@ const CAND_FIN = [{ k: 'other_needs', l: 'Autres besoins ou contraintes à signa
 // Réponses refusées pour les micros, appareils et instruments : un « aucun » est impossible (demande de Marylou).
 const CAND_AUCUN = /^\s*(aucun|aucune|rien|non|none|n\/a|sans objet|pas besoin)\s*\.?\s*$/i;
 // Un seul invité : ses quatre coordonnées s'affichent seulement si la réponse est Oui.
-function CAND_INVITE(note) {
-  return [
-    { k: 'invite', l: 'Viens-tu avec un invité ?', t: 'chips', o: ['Oui', 'Non'], r: 1, n: note || '' },
-    { k: 'guest_last', l: 'Nom de ton invité', t: 't', r: 1, si: ['invite', 'Oui'] },
-    { k: 'guest_first', l: 'Prénom de ton invité', t: 't', r: 1, si: ['invite', 'Oui'] },
-    { k: 'guest_email', l: 'Email de ton invité', t: 't', type: 'email', r: 1, si: ['invite', 'Oui'] },
-    { k: 'guest_phone', l: 'Téléphone de ton invité', t: 't', type: 'tel', r: 1, si: ['invite', 'Oui'] }
-  ];
+// Invité : seule la question Oui/Non est posée à la candidature (pour prévoir un pass). Les coordonnées viennent après la sélection, dans le dossier final.
+function CAND_INVITE() {
+  return [{ k: 'invite', l: 'Viens-tu avec un invité ?', t: 'chips', o: ['Oui', 'Non'], r: 1, n: 'Si tu es sélectionné·e, les coordonnées de ton invité te seront demandées dans le dossier final.' }];
 }
 // Électricité : appareils, puissance approximative et unité séparés (W ou kW, jamais kWh).
 const CAND_ELEC_W = [
@@ -1968,7 +2051,8 @@ const CAND_ELEC_W = [
 ];
 // Contacts : une ligne de texte, affichée seulement si le contact est renseigné dans CONFIG.contacts.
 function CAND_REFERENTE(pole) {
-  const c = CONFIG.contacts.referentes[pole];
+  const p = (typeof cand !== 'undefined' && cand && cand.config && cand.config.poles) ? cand.config.poles.find(x => x.nom === pole) : null;
+  const c = (p && p.contact) ? p.contact.nom + (p.contact.email ? ' : ' + p.contact.email : '') : CONFIG.contacts.referentes[pole];
   return c ? [{ k: 'ref_contact', t: 'info', l: 'Une question sur ce pôle ?', n: 'Écris à ' + c + '.' }] : [];
 }
 function CAND_FAB() {
@@ -1989,24 +2073,8 @@ function CAND_SECOND(toujours, contactRequis) {
   ];
 }
 function CAND_DUO() {
-  return [{ k: 'formula', l: 'Viens-tu seul·e ou à deux ?', t: 'chips', o: ['Solo (1 personne)', 'Duo (2 personnes)'], r: 1, n: 'Le forfait duo est de 280 €, camping de 5 nuits compris pour les deux personnes.' }].concat(CAND_SECOND(false, false));
+  return [{ k: 'formula', l: 'Viens-tu seul·e ou à deux ?', t: 'chips', o: ['Solo (1 personne)', 'Duo (2 personnes)'], r: 1, n: 'Forfait solo : 210 €. Forfait duo : 280 €, camping de 5 nuits compris pour les deux personnes.' }].concat(CAND_SECOND(false, false));
 }
-// Ateliers : dates d'arrivée et de départ.
-const CAND_DATES_ATELIER = [
-  { k: 'arrival_date', l: 'Date d’arrivée au festival', t: 't', type: 'date', r: 1 },
-  { k: 'departure_date', l: 'Date de départ', t: 't', type: 'date', r: 1, apres: 'arrival_date' }
-];
-// Artistes : accueil, voyage et repas.
-const CAND_ACCUEIL = [
-  { k: 'arrival_date', l: 'Date d’arrivée', t: 't', type: 'date', r: 1 },
-  { k: 'arrival_time', l: 'Heure d’arrivée', t: 't', type: 'time', r: 1 },
-  { k: 'transport', l: 'Moyen de transport', t: 'chips', o: ['Voiture', 'Train', 'Avion', 'Autre'], r: 1 },
-  { k: 'transport_details', l: 'Détails du voyage : numéro de vol ou de train, gare ou aéroport, horaires', t: 'a', r: 1, si: ['transport', ['Train', 'Avion']] },
-  { k: 'transfer', l: 'As-tu besoin d’un transfert depuis la gare ou l’aéroport ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
-  { k: 'transfer_details', l: 'Précise le transfert souhaité', t: 'a', r: 1, si: ['transfer', 'Oui'] },
-  { k: 'food_needs', l: 'Régime alimentaire et besoins en repas', t: 'a', r: 1, n: 'Écris « aucun » s’il n’y en a pas.' },
-  { k: 'allergies', l: 'Allergies ou intolérances alimentaires', t: 'a', n: 'Facultatif. Cette information sert uniquement à préparer tes repas.' }
-];
 const CAND_POLE = {
   'Artiste': [
     { k: 'artist_type', l: 'Type de proposition', t: 'chips', o: CONFIG.typesArtiste, r: 1 },
@@ -2016,7 +2084,7 @@ const CAND_POLE = {
     { k: 'instruments', l: 'Instruments utilisés', t: 't', r: 1, si: ['tech_sheet', 'Non'], rejet: CAND_AUCUN, n: 'Indique ce que tu utilises.' },
     { k: 'sound', l: 'Micros et appareils à brancher', t: 't', r: 1, si: ['tech_sheet', 'Non'], rejet: CAND_AUCUN, n: 'Indique ce qu’il faut brancher.' },
     { k: 'media_link', l: 'Lien vidéo ou audio', t: 't', r: 1 }
-  ].concat(CAND_FAB(), CAND_ERIC(), CAND_ELEC_W, CAND_ACCUEIL, CAND_INVITE('')),
+  ].concat(CAND_FAB(), CAND_ERIC(), CAND_ELEC_W, CAND_INVITE()),
   'Atelier': [
     { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
     { k: 'workshop_title', l: 'Intitulé de l’atelier', t: 't', r: 1 },
@@ -2037,7 +2105,7 @@ const CAND_POLE = {
     { k: 'constraints', l: 'Contraintes liées au bruit ou à la configuration de l’espace', t: 'a', r: 1, n: 'Écris « aucune » s’il n’y en a pas.' },
     { k: 'safety', l: 'Précautions de sécurité à prévoir', t: 'a', r: 1 },
     { k: 'motivation', l: 'Pourquoi souhaites-tu participer à Mantra Joie et qu’as-tu envie d’y partager ou apporter ?', t: 'a' }
-  ].concat(CAND_FAB(), CAND_ELEC_W, CAND_DATES_ATELIER, CAND_INVITE('Un seul invité, qui peut t’assister. Ses coordonnées sont à renseigner au plus tard le 21 mai. Ton invité règle son camping à son arrivée.')),
+  ].concat(CAND_FAB(), CAND_ELEC_W, CAND_INVITE()),
   'Artisan': [
     { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
     ...CAND_DUO(),
@@ -2107,11 +2175,10 @@ const CAND_POLE = {
     { k: 'siret', l: 'Ton numéro de SIRET', t: 't', r: 1, mode: 'numeric', n: '14 chiffres.' },
     { k: 'other_what', l: 'Dis-nous ce que tu proposes et ce dont tu as besoin', t: 'a', r: 1 }]
 };
-Object.keys(CAND_POLE).forEach(p => { CAND_POLE[p] = CAND_REFERENTE(p).concat(CAND_POLE[p]); });
 // Artisanat : 3 à 4 photos de produits, un fichier par photo. Les autres pôles : 1 à 6.
 function candMinPhotos() { return cand.pole === 'Artisan' ? 3 : 1; }
 function candMaxPhotos() { return cand.pole === 'Artisan' ? 4 : 6; }
-function candChamps() { return (CAND_POLE[cand.pole] || CAND_POLE['Autre']).concat(CAND_FIN); }
+function candChamps() { return CAND_REFERENTE(cand.pole).concat(CAND_POLE[cand.pole] || CAND_POLE['Autre']).concat(CAND_FIN); }
 
 function candVisible(f) {
   if (!f.si) return true;
@@ -2242,11 +2309,11 @@ function candAfficherPoles() {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'puce carte-pole' + (p.ouvert ? '' : ' ferme'); b.dataset.pole = p.nom;
     const coul = CAND_COULEURS[p.nom] || ['#E6E6EE', '#A5A5BD']; b.style.setProperty('--pole-fond', coul[0]); b.style.setProperty('--pole-bord', coul[1]);
     const icone = iconePole(p.nom); if (icone) b.appendChild(icone);
-    const nom = document.createElement('span'); nom.className = 'pole-nom'; nom.textContent = p.nom; b.appendChild(nom);
+    const nom = document.createElement('span'); nom.className = 'pole-nom'; nom.textContent = nomPole(p.nom); b.appendChild(nom);
     if (p.description) { const ligne = document.createElement('span'); ligne.className = 'pole-ligne'; ligne.textContent = p.description; b.appendChild(ligne); }
     if (!p.ouvert) {
       const ruban = document.createElement('span'); ruban.className = 'ruban-ferme'; ruban.textContent = 'FERMÉ'; b.appendChild(ruban);
-      b.setAttribute('aria-label', p.nom + ' : fermé. Touche pour lire pourquoi.');
+      b.setAttribute('aria-label', nomPole(p.nom) + ' : fermé. Touche pour lire pourquoi.');
       b.onclick = () => {
         $('cand-poles').querySelectorAll('.puce').forEach(x => x.classList.remove('choisie')); cand.pole = ''; $('cand-conditions').style.display = 'none';
         boiteFerme.textContent = ''; const rb = document.createElement('span'); rb.className = 'ruban-ferme-grand'; rb.textContent = 'FERMÉ'; const pm = document.createElement('p'); pm.textContent = p.message_ferme || ('Les candidatures pour le pôle ' + p.nom + ' sont fermées pour cette édition. Merci pour ton intérêt !'); boiteFerme.appendChild(rb); boiteFerme.appendChild(pm); boiteFerme.hidden = false;
@@ -2297,20 +2364,25 @@ function majSurtitresCand() {
   document.querySelectorAll('[data-etape-cand]').forEach((s) => {
     s.textContent = '';
     const ic = iconePole(cand.pole); if (ic) s.appendChild(ic);
-    s.appendChild(document.createTextNode('Candidature · ' + cand.pole + ' · étape ' + s.dataset.etapeCand + ' sur 3'));
+    s.appendChild(document.createTextNode('Candidature · ' + nomPole(cand.pole) + ' · étape ' + s.dataset.etapeCand + ' sur 3'));
   });
 }
 function candChoisirPole(nom) {
   cand.pole = nom; $('cand_terms').checked = false; majSurtitresCand();
   const p = cand.config.poles.find(x => x.nom === nom);
   let tarif = '';
-  if (p.payant && p.montant) tarif = 'Participation : ' + candMontant(p.montant) + (p.montant_duo ? ' en individuel, ' + candMontant(p.montant_duo) + ' en duo' : '') + '.\n\n';
+  if (p.offres && p.offres.length) tarif = 'Participation pour deux personnes : ' + p.offres.filter(o => o.montant).map(o => o.nom + ' ' + candMontant(o.montant)).join(', ') + '.\\n\\n';
+  else if (p.payant && p.montant) tarif = 'Participation : ' + candMontant(p.montant) + (p.montant_duo ? ' en individuel, ' + candMontant(p.montant_duo) + ' en duo' : '') + '.\n\n';
   const texte = (p.conditions || '').trim();
   $('cand-conditions-texte').textContent = texte ? tarif + texte : '';
   $('cand-conditions-texte').style.display = texte ? 'block' : 'none';
   $('cand-conditions-vide').style.display = texte ? 'none' : 'block';
   $('cand-conditions-vide').classList.add('visible');
-  $('cand-terms-boite').style.display = texte ? 'block' : 'none';
+  const eng = p.engagements || [];
+  cand.engagements = eng.map(e => e.id);
+  rendreCases($('cand-engagements'), eng, 'eng_');
+  $('cand-terms-unique').style.display = eng.length ? 'none' : '';
+  $('cand-terms-boite').style.display = (texte || eng.length) ? 'block' : 'none';
   $('cand-pdf-boite').style.display = texte ? 'flex' : 'none';
   $('cand-conditions').style.display = 'block';
 }
@@ -2329,6 +2401,21 @@ async function candPdf() {
   } catch (e) { erreur('cand-0', 'Le PDF n’a pas pu être préparé : ' + e.message + '\nLes conditions restent lisibles ci-dessus.'); }
   finally { btn.disabled = false; btn.textContent = avant; }
 }
+// Cases d'engagement : une case par engagement, jamais cochée d'avance. Le serveur garde la version, la date et le texte exact de ce qui a été coché.
+function rendreCases(zone, liste, prefixe) {
+  zone.textContent = '';
+  if (!liste.length) return;
+  const titre = document.createElement('p'); titre.className = 'engagements-titre';
+  titre.textContent = 'Pour continuer, coche chaque case. Cocher ne vaut ni sélection, ni inscription définitive, ni signature de contrat.';
+  zone.appendChild(titre);
+  liste.forEach(e => {
+    const div = document.createElement('div'); div.className = 'consentement-interieur';
+    const lab = document.createElement('label'); lab.className = 'consentement';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = prefixe + e.id; cb.value = e.id;
+    const sp = document.createElement('span'); sp.textContent = e.texte;
+    lab.appendChild(cb); lab.appendChild(sp); div.appendChild(lab); zone.appendChild(div);
+  });
+}
 function candSuite0() {
   // « Fermé » ne s'affiche que si la page a vraiment lu que c'est fermé. Pendant le chargement ou en cas d'échec, on le dit autrement.
   if (cand.chargement) return erreur('cand-0', 'Les pôles sont encore en chargement. Patiente quelques secondes, puis clique à nouveau sur Continuer.');
@@ -2338,7 +2425,9 @@ function candSuite0() {
   const p = cand.config.poles.find(x => x.nom === cand.pole);
   if (!p.ouvert) return erreur('cand-0', p.message_ferme || 'Les candidatures sont fermées pour ce pôle.');
   if (!(p.conditions || '').trim()) return erreur('cand-0', 'Les conditions de ce pôle ne sont pas encore publiées. Reviens bientôt.');
-  if (!$('cand_terms').checked) return erreur('cand-0', 'Coche la case pour accepter les conditions et les critères de sélection.');
+  const engagements = p.engagements || [];
+  if (engagements.length) { if (engagements.some(e => !$('eng_' + e.id) || !$('eng_' + e.id).checked)) return erreur('cand-0', 'Coche toutes les cases d’engagement pour continuer.'); }
+  else if (!$('cand_terms').checked) return erreur('cand-0', 'Coche la case pour accepter les conditions et les critères de sélection.');
   candRendre('cand-commun', CAND_COMMUN);
   aller('cand-1');
 }
@@ -2429,7 +2518,8 @@ async function candEnvoyer() {
       body: JSON.stringify({ kind: 'application', submission_id: cand.id, honeypot: $('honeypot').value, pole: cand.pole,
         formule: (/^Duo/.test(v.formula || '') || cand.pole === 'Stand / Miam Miam') ? 'Duo' : 'Individuel', name: v.name, first_name: v.first_name, last_name: v.last_name,
         email: v.email, phone: v.phone, past: v.past, past_years: v.past_years || '',
-        consent_terms: $('cand_terms').checked, consent_data: $('cand_data').checked, photos: cand.photos, answers: reponses }) });
+        consent_terms: (cand.engagements && cand.engagements.length) ? true : $('cand_terms').checked,
+        engagements: (cand.engagements || []).filter(id => $('eng_' + id) && $('eng_' + id).checked), consent_data: $('cand_data').checked, photos: cand.photos, answers: reponses }) });
     const rep = await res.json();
     if (!rep.ok) throw new Error(rep.error || 'Envoi refusé');
     clearInterval(candTimer); $('cp-rempl').style.width = '100%'; $('cp-etape').textContent = 'Terminé ✔';

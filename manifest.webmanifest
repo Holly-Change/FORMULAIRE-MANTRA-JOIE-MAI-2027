@@ -1,0 +1,20 @@
+{
+  "id": "./equipe.html",
+  "name": "Portail Festival Mantra Joie",
+  "short_name": "Mantra Joie",
+  "description": "Le portail des équipes du Festival Mantra Joie 2027 : candidatures, dossiers et emails.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./equipe.html",
+  "scope": "./equipe.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FFF7FC",
+  "theme_color": "#6B2C91",
+  "categories": ["productivity", "business"],
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

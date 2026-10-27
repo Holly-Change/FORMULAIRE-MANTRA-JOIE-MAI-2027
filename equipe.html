@@ -6,6 +6,13 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <title>Portail Festival - Mantra Joie 2027</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#6B2C91">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mantra Joie">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%231FA8C3%22/%3E%3Cstop offset=%221%22 stop-color=%22%230B2A47%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22url(%23g)%22/%3E%3Cpolygon points=%2232.0,8.0 34.3,26.5 42.6,21.4 37.5,29.7 56.0,32.0 37.5,34.3 42.6,42.6 34.3,37.5 32.0,56.0 29.7,37.5 21.4,42.6 26.5,34.3 8.0,32.0 26.5,29.7 21.4,21.4 29.7,26.5%22 fill=%22%23fff%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -581,10 +588,25 @@ li .ico-btn img { width: 24px; height: 24px; }
 .comptes-form:empty, .comptes-code:empty { display: none; }
 .comptes-poles label { display: block; }
 .code-initial { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 1.5rem; letter-spacing: .18em; background: #FFF8E1; border: 2px dashed #E0A93B; padding: 10px 16px; border-radius: 12px; display: inline-block; user-select: all; }
+
+.valeurs-table { border-collapse: collapse; width: 100%; font-size: .9rem; margin: 8px 0; }
+.valeurs-table th, .valeurs-table td { border: 1px solid rgba(110, 90, 170, 0.25); padding: 6px 8px; text-align: left; vertical-align: top; }
+.accueil-texte { white-space: pre-line; margin-top: 4px; }
+
+/* ---------- Application installable ---------- */
+.installer { margin: 14px auto 0; max-width: 460px; text-align: center; }
+.aide-ios { font-size: .92rem; margin: 10px 0 0; line-height: 1.45; }
+#splash { position: fixed; inset: 0; z-index: 9999; background: #FFF7FC; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: opacity .35s ease; }
+#splash[hidden] { display: none; }
+#splash.cache { opacity: 0; pointer-events: none; }
+#splash img { width: min(62vw, 280px); height: auto; margin-bottom: 8px; }
+#splash p { margin: 0; font-family: var(--police-titres); font-size: 1.6rem; color: var(--violet); font-weight: 700; }
+#splash .splash-sous { font-size: 1.05rem; font-weight: 400; opacity: .85; }
 </style>
 </head>
 <body>
 
+<div id="splash" hidden aria-hidden="true"><img src="assets/LOTUS%20PORTAL%20LOGO.png" alt=""><p>Portail Festival</p><p class="splash-sous">Mantra Joie 2027</p></div>
 <section id="ecran-connexion">
   <form class="connexion" id="form-connexion" autocomplete="off">
     <img class="lotus-connexion" src="assets/LOTUS%20PORTAL%20LOGO.png" alt="" onerror="this.remove()">
@@ -597,6 +619,10 @@ li .ico-btn img { width: 24px; height: 24px; }
     <a class="lien-formulaire-connexion" id="lien-formulaire-connexion" href="./" target="_blank" rel="noopener">Aller au formulaire public</a>
     <div class="signature" id="signature-connexion"></div>
   </form>
+  <div class="installer" id="installer" hidden>
+    <button class="btn btn-doux-clair" type="button" id="btn-installer">Installer l’application</button>
+    <p class="aide-ios" id="aide-ios" hidden>Sur iPhone ou iPad : touche le bouton Partager (le carré avec une flèche vers le haut), fais défiler, touche « Sur l’écran d’accueil », puis « Ajouter ».</p>
+  </div>
 </section>
 <section id="ecran-code" hidden>
   <form class="connexion" id="form-code" autocomplete="off">
@@ -733,7 +759,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.33-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.35-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 // Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
@@ -1053,7 +1079,7 @@ function fermeturesDepuis(r) {
   if (!r.ouvertures.candidatures) f.push('Candidatures');
   if (!r.ouvertures.formulaire_final) f.push('Dossier final');
   if (!r.ouvertures.benevoles) f.push('Bénévoles');
-  r.poles.forEach((p) => { if (!p.ouvert) f.push('Pôle ' + p.nom); });
+  r.poles.forEach((p) => { if (!p.ouvert) f.push('Pôle ' + nomPole(p.nom)); });
   return f;
 }
 // Bandeau rouge, impossible à rater : on voit tout de suite ce qui est fermé.
@@ -1239,7 +1265,7 @@ function appliquerRole() {
   document.querySelectorAll('button[data-vue="stats"]').forEach((b) => { b.hidden = ref; });
   document.querySelectorAll('button[data-vue="benevoles"]').forEach((b) => { b.hidden = ref && (compte.poles || []).indexOf('Bénévoles') < 0; });
   const qui = $('compte-qui');
-  if (qui) qui.textContent = compte.nom ? 'Connecté·e : ' + compte.nom + ' (' + (LIBELLE_ROLE[compte.role] || compte.role) + (ref && compte.poles.length ? ' : ' + compte.poles.join(', ') : '') + ')' : '';
+  if (qui) qui.textContent = compte.nom ? 'Connecté·e : ' + compte.nom + ' (' + (LIBELLE_ROLE[compte.role] || compte.role) + (ref && compte.poles.length ? ' : ' + compte.poles.map(nomPole).join(', ') : '') + ')' : '';
 }
 function construireCompte(zone) {
   const c = el('section', 'carte reglage-bloc'); c.id = 'reglage-compte';
@@ -1270,8 +1296,8 @@ function dessinerReglages() {
   const corps = el('div', 'reglages-corps');
   mise.appendChild(menu); mise.appendChild(corps); zone.appendChild(mise);
   const restreint = !!r.restreint;   // une référente ne reçoit que ses pôles
-  const defs = restreint ? [['compte', 'Mon compte']].concat(r.poles.map((p) => ['pole:' + p.nom, p.nom]))
-    : [['general', 'Général']].concat(r.poles.map((p) => ['pole:' + p.nom, p.nom])).concat([['benevoles', 'Bénévoles'], ['compte', 'Mon compte'], ['admin', 'Administration']]);
+  const defs = restreint ? [['compte', 'Mon compte']].concat(r.poles.map((p) => ['pole:' + p.nom, nomPole(p.nom)]))
+    : [['general', 'Général']].concat(r.poles.map((p) => ['pole:' + p.nom, nomPole(p.nom)])).concat([['benevoles', 'Bénévoles'], ['compte', 'Mon compte'], ['admin', 'Administration']]);
   const panneaux = {};
   const ouvrir = (id) => {
     reglagesPanneau = id;
@@ -1300,12 +1326,46 @@ function ligneFormulaire(r, f) {
 
 function champsEnregistrables(bloc, liste, apres) {
   const saisies = {};
-  liste.forEach((c) => { const x = champReglage(c[1], c[2], { nom: c[0], placeholder: c[3], long: !!c[4], lignes: c[4] || 4 }); saisies[c[0]] = x.saisie; bloc.appendChild(x.boite); });
+  liste.forEach((c) => { const x = champReglage(c[1], c[2], Object.assign({ nom: c[0], placeholder: c[3], long: !!c[4], lignes: c[4] || 4 }, c[5] || {})); saisies[c[0]] = x.saisie; bloc.appendChild(x.boite); });
   const s = el('div', '', ''); s.setAttribute('role', 'status');
   const b = el('button', 'btn', 'Enregistrer'); b.type = 'button';
   b.addEventListener('click', () => enregistrer(s, b, async () => { const v = {}; liste.forEach((c) => { v[c[0]] = saisies[c[0]].value; }); return gardeReglages(await appelReglages({ op: 'reglages_ecrire', valeurs: v })); }));
   bloc.appendChild(b); bloc.appendChild(s);
   return b;
+}
+
+// Remplit les pôles avec les textes, tarifs, liens et référentes du document validé (27 octobre). Aperçu d'abord, puis confirmation.
+function construireValeursValidees(z) {
+  const bloc = el('section', 'carte reglage-bloc'); bloc.id = 'reglage-valeurs-validees';
+  bloc.appendChild(el('h2', '', 'Textes et tarifs validés (27 octobre)'));
+  bloc.appendChild(el('p', 'compte', "Conditions de chaque pôle, forfaits solo et duo, liens de paiement, nom et email des référentes, tels qu'ils figurent dans le document validé. Tu vois d'abord ce qui changerait. Les valeurs que le document ne donne pas (par exemple le lien de paiement des desserts) ne sont pas touchées."));
+  const st = el('div', '', ''); st.setAttribute('role', 'status');
+  const zone = el('div', 'valeurs-apercu');
+  const bA = el('button', 'btn btn-doux-clair', 'Voir ce qui changerait'); bA.type = 'button'; bA.id = 'valeurs-apercu';
+  bA.addEventListener('click', async () => {
+    zone.textContent = '';
+    const r = await enregistrer(st, bA, () => appelReglages({ op: 'valeurs_validees_apercu' }), 'Voilà ce qui changerait');
+    if (!r || !r.ok) return;
+    const changes = r.lignes.filter((l) => l.change);
+    if (!changes.length) { zone.appendChild(el('p', 'message ok', 'Tout est déjà à jour : rien à changer.')); return; }
+    const tab = document.createElement('table'); tab.className = 'valeurs-table';
+    const tete = document.createElement('tr'); ['Pôle', 'Champ', 'Maintenant', 'Après'].forEach((t) => { const th = document.createElement('th'); th.textContent = t; tete.appendChild(th); }); tab.appendChild(tete);
+    const court = (s) => { const t = String(s || '').replace(/\s+/g, ' ').trim(); return t.length > 70 ? t.slice(0, 70) + '…' : (t || '(vide)'); };
+    changes.forEach((l) => { const tr = document.createElement('tr'); [nomPole(l.pole), l.libelle, court(l.actuel), court(l.nouveau)].forEach((t) => { const td = document.createElement('td'); td.textContent = t; tr.appendChild(td); }); tab.appendChild(tr); });
+    zone.appendChild(el('p', 'compte', changes.length + ' valeur(s) vont changer (les autres sont déjà bonnes). Les textes longs sont raccourcis ici.'));
+    zone.appendChild(tab);
+    const bV = el('button', 'btn btn-danger', 'Appliquer ces valeurs'); bV.type = 'button'; bV.id = 'valeurs-appliquer';
+    let sur = false;
+    bV.addEventListener('click', async () => {
+      if (!sur) { sur = true; bV.textContent = 'Confirmer : ces valeurs remplacent les actuelles'; return; }
+      const f = await enregistrer(st, bV, () => appelReglages({ op: 'valeurs_validees_appliquer' }), 'Valeurs appliquées');
+      if (f && f.ok) { zone.textContent = ''; zone.appendChild(el('p', 'message ok', f.appliquees + ' valeur(s) écrite(s). Vérifie chaque pôle dans son onglet Infos.')); gardeReglages(f); reglagesPanneau = 'general'; dessinerReglages(); }
+      else { sur = false; bV.textContent = 'Appliquer ces valeurs'; }
+    });
+    zone.appendChild(bV);
+  });
+  bloc.appendChild(bA); bloc.appendChild(st); bloc.appendChild(zone);
+  z.appendChild(bloc);
 }
 
 function construireGeneral(z, r) {
@@ -1321,6 +1381,16 @@ function construireGeneral(z, r) {
     ['lien_dossier_images', "Dossier Drive des visuels (bouton « Dossier images » dans le menu)", r.liens.lien_dossier_images, 'https://']]);
   bDL.id = 'reg-enregistrer-dates';
   z.appendChild(dl);
+  // Fenêtres d'ouverture des trois formulaires (facultatif)
+  const fe = blocReglages("Ouverture et fermeture des formulaires", "Facultatif : le formulaire s'ouvre et se ferme tout seul. Le premier jour et le dernier jour sont compris (heure de Paris). L'interrupteur « fermé » reste prioritaire. Laisse vide pour ne pas limiter.");
+  const dfen = (r.dates || {});
+  const bFE = champsEnregistrables(fe, [['candidatures_debut', 'Candidatures : premier jour', dfen.candidatures_debut, '', 0, { type: 'date' }], ['candidatures_fin', 'Candidatures : dernier jour', dfen.candidatures_fin, '', 0, { type: 'date' }],
+    ['formulaire_final_debut', 'Dossier final : premier jour', dfen.formulaire_final_debut, '', 0, { type: 'date' }], ['formulaire_final_fin', 'Dossier final : dernier jour', dfen.formulaire_final_fin, '', 0, { type: 'date' }],
+    ['benevoles_debut', 'Bénévoles : premier jour', dfen.benevoles_debut, '', 0, { type: 'date' }], ['benevoles_fin', 'Bénévoles : dernier jour', dfen.benevoles_fin, '', 0, { type: 'date' }]]);
+  bFE.id = 'reg-enregistrer-fenetres';
+  z.appendChild(fe);
+  // Textes, tarifs et référentes validés : on voit d'abord ce qui changerait
+  construireValeursValidees(z);
   // Contrat et récap : deux interrupteurs
   const ct = blocReglages('Contrat et récap', '');
   ct.appendChild(simpleOuiNon('Contrat obligatoire', "Quand c'est activé, l'email d'acceptation ne part pas sans le contrat de la personne. Tu l'ajoutes sur sa fiche, dans la carte « Contrat à envoyer ». Il n'est jamais téléchargeable depuis le formulaire.", r.contrat.obligatoire,
@@ -1355,7 +1425,7 @@ function construirePole(z, p, r) {
   z.appendChild(barre); noms.forEach((n) => z.appendChild(parties[n[0]]));
   // --- Infos
   const inf = parties.infos;
-  inf.appendChild(ligneOuverture({ cle: 'pole:' + p.nom, libelle: 'Candidatures du pôle ' + p.nom, ouvert: p.ouvert, message: p.message_ferme, defaut: r.message_pole_defaut.replace('{pole}', p.nom),
+  inf.appendChild(ligneOuverture({ cle: 'pole:' + p.nom, libelle: 'Candidatures du pôle ' + nomPole(p.nom), ouvert: p.ouvert, message: p.message_ferme, defaut: r.message_pole_defaut.replace('{pole}', p.nom),
     changer: async (neuf) => gardeReglages(await appelReglages({ op: 'pole_ecrire', nom: p.nom, champs: { ouvert: neuf ? 'OUI' : 'NON' } })),
     enregistrerMessage: async (txt) => gardeReglages(await appelReglages({ op: 'pole_ecrire', nom: p.nom, champs: { message_ferme: txt } })) }));
   const det = el('section', 'carte reglage-bloc'); det.dataset.pole = p.nom; det.appendChild(el('h2', '', 'Paiement, référente et conditions'));
@@ -1364,13 +1434,25 @@ function construirePole(z, p, r) {
   sel.value = p.payant === 'OUI' || p.payant === 'NON' ? p.payant : '';
   const lp = el('label', '', 'Payant ou gratuit'); const bp = el('div', 'champ-reglage'); bp.appendChild(lp); bp.appendChild(sel); det.appendChild(bp);
   const cs = {};
-  [['montant', 'Montant', p.montant, { placeholder: 'ex. 210' }], ['montant_duo', 'Montant en duo', p.montant_duo, { placeholder: 'ex. 250' }], ['lien', 'Lien de paiement (HelloAsso)', p.lien, { placeholder: 'https://' }],
-    ['referent', 'Nom de la référente', p.referent, {}], ['email_referent', 'Email de la référente (elle reçoit les réponses des personnes)', p.email_referent, { type: 'email' }],
+  const camion = p.nom === 'Stand / Miam Miam';   // deux offres : repas, et desserts et glaces (chacune pour deux personnes)
+  const liste = camion
+    ? [['montant', 'Montant : repas (pour deux personnes)', p.montant, { placeholder: 'ex. 550 €' }], ['lien', 'Lien de paiement : repas', p.lien, { placeholder: 'https://' }],
+       ['montant2', 'Montant : desserts et glaces (pour deux personnes)', p.montant2, { placeholder: 'ex. 450 €' }], ['lien2', 'Lien de paiement : desserts et glaces', p.lien2, { placeholder: 'https://' }]]
+    : [['montant', 'Montant', p.montant, { placeholder: 'ex. 210' }], ['montant_duo', 'Montant en duo', p.montant_duo, { placeholder: 'ex. 280' }], ['lien', 'Lien de paiement (HelloAsso)', p.lien, { placeholder: 'https://' }]];
+  liste.concat([['referent', 'Nom de la référente', p.referent, {}], ['email_referent', 'Email de la référente (elle reçoit les réponses des personnes)', p.email_referent, { type: 'email' }],
     ['description', 'Ligne courte sous le nom du pôle (première page du formulaire)', p.description, { placeholder: p.description_defaut || 'ex. Musique, chant, spectacle' }],
+    ['ouverture', "Premier jour des candidatures (facultatif, jour compris)", p.ouverture, { type: 'date' }], ['fermeture', "Dernier jour des candidatures (facultatif, jour compris)", p.fermeture, { type: 'date' }],
     ['conditions', 'Conditions de participation (texte complet)', p.conditions, { long: true, lignes: 8 }]
-  ].forEach((c) => { const x = champReglage(c[1], c[2], Object.assign({ nom: 'pole-' + slug(p.nom) + '-' + c[0] }, c[3])); cs[c[0]] = x.saisie; x.saisie.dataset.champ = c[0]; det.appendChild(x.boite); });
+  ]).forEach((c) => { const x = champReglage(c[1], c[2], Object.assign({ nom: 'pole-' + slug(p.nom) + '-' + c[0] }, c[3])); cs[c[0]] = x.saisie; x.saisie.dataset.champ = c[0]; det.appendChild(x.boite); });
+  det.appendChild(el('p', 'aide-statut', "Les dates ouvrent et ferment le pôle toutes seules (heure de Paris). L'interrupteur « fermé » ci-dessus reste prioritaire. Laisse vide pour ne pas limiter."));
+  const selC = document.createElement('select'); selC.dataset.champ = 'afficher_contact';
+  [['', 'Non'], ['OUI', 'Oui, montrer'], ['NON', 'Non']].forEach((o, i) => { if (i === 2) return; const op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; selC.appendChild(op); });
+  selC.value = p.afficher_contact === 'OUI' ? 'OUI' : '';
+  const bC = el('div', 'champ-reglage'); bC.appendChild(el('label', '', "Montrer le nom et l'email de la référente sur le formulaire public")); bC.appendChild(selC);
+  bC.appendChild(el('p', 'aide-statut', "À activer seulement quand elle est d'accord : son email devient visible de tout le monde."));
+  det.appendChild(bC);
   const sP = el('div', '', ''); sP.setAttribute('role', 'status'); const bP = el('button', 'btn', 'Enregistrer'); bP.type = 'button'; bP.dataset.enregistrerPole = p.nom;
-  bP.addEventListener('click', () => enregistrer(sP, bP, async () => { const ch = { payant: sel.value }; Object.keys(cs).forEach((k) => { ch[k] = cs[k].value; }); return gardeReglages(await appelReglages({ op: 'pole_ecrire', nom: p.nom, champs: ch })); }));
+  bP.addEventListener('click', () => enregistrer(sP, bP, async () => { const ch = { payant: sel.value, afficher_contact: selC.value }; Object.keys(cs).forEach((k) => { ch[k] = cs[k].value; }); return gardeReglages(await appelReglages({ op: 'pole_ecrire', nom: p.nom, champs: ch })); }));
   det.appendChild(bP); det.appendChild(sP); inf.appendChild(det);
   // --- À fournir : une liste à cocher
   const fo = parties.fournir; const ck = el('section', 'carte reglage-bloc'); ck.dataset.fournir = p.nom;
@@ -1397,7 +1479,7 @@ function construirePole(z, p, r) {
   ck.appendChild(bF); ck.appendChild(sF); fo.appendChild(ck);
   // --- Emails : les 6 emails de ce pôle
   const em = parties.emails; const bl = el('section', 'carte reglage-bloc'); bl.dataset.emailsPole = p.nom;
-  bl.appendChild(el('h2', '', 'Les emails du pôle ' + p.nom));
+  bl.appendChild(el('h2', '', 'Les emails du pôle ' + nomPole(p.nom)));
   bl.appendChild(el('p', 'compte', "Chaque email part dans un cas précis. Si tu changes un texte, il ne change que pour ce pôle. « Utiliser le texte commun » annule ton changement."));
   p.textes.forEach((t) => bl.appendChild(detailTexte({
     cle: t.cle, portee: 'pole-' + slug(p.nom), libelle: t.libelle, objet: t.objet, corps: t.corps, defaut: t.commun, personnalise: t.personnalise, badge: t.personnalise ? 'Texte de ce pôle' : 'Texte commun',
@@ -2031,8 +2113,11 @@ function puce(texte, classe) {
   s.textContent = texte;
   return s;
 }
+// Noms montrés aux personnes (les valeurs gardées restent « Atelier » et « Artisan »).
+const NOMS_AFFICHES = { 'Atelier': 'Ateliers', 'Artisan': 'Artisanat' };
+function nomPole(n) { return NOMS_AFFICHES[n] || n; }
 function puceCategorie(pole) {
-  const s = puce(pole);
+  const s = puce(nomPole(pole));
   const c = COULEURS_POLES[pole];
   if (c) { s.style.background = c[0]; s.style.color = c[1]; }
   return s;
@@ -2111,7 +2196,7 @@ $('recherche').addEventListener('input', dessinerCandidatures);
 function boutonFiltre(zone, nom, nombre, actif, classe, action) {
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'filtre' + (classe ? ' ' + classe : ''); b.setAttribute('aria-pressed', String(actif));
-  b.appendChild(document.createTextNode(nom));
+  b.appendChild(document.createTextNode(nomPole(nom)));
   const c = document.createElement('span'); c.className = 'n'; c.textContent = String(nombre); b.appendChild(c);
   b.addEventListener('click', action);
   zone.appendChild(b);
@@ -2737,6 +2822,13 @@ function dessinerDetail(d, listes, mode) {
       }
       cs.appendChild(ligneIban);
     }
+    // Accueil et invité (artistes et ateliers) : demandés au dossier final.
+    if (d.accueil_requis) {
+      const ligneAcc = el('div', 'preuve doc-accueil');
+      ligneAcc.appendChild(el('strong', '', 'Accueil et invité'));
+      if (d.accueil) ligneAcc.appendChild(el('div', 'accueil-texte', d.accueil)); else ligneAcc.appendChild(el('span', 'meta', ' Pas encore renseigné.'));
+      cs.appendChild(ligneAcc);
+    }
   }
   zone.appendChild(cs);
 
@@ -2959,6 +3051,40 @@ sondeAsset('REFRESH LOADING.png', 'a-roue-img');
 sondeAsset('RIGHT ARROW.png', 'a-fleche');
 SONDES_ICONES.forEach((s) => sondeAsset(s[0], s[1]));
 if (jeton) { charger(); } else { montrerConnexion(''); }
+
+/* ---------- Application installable (PWA) ---------- */
+// Le bouton ne s'affiche que sous le formulaire de connexion, jamais en mode application, et ne propose l'installation que quand la personne le touche
+// (aucune fenêtre qui s'ouvre toute seule). Android : la vraie fenêtre d'installation du navigateur. iPhone et iPad : trois gestes expliqués en français.
+(function () {
+  const bloc = $('installer'), bouton = $('btn-installer'), aide = $('aide-ios'), splash = $('splash');
+  const autonome = () => (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  let invite = null;
+  const maj = () => { bloc.hidden = autonome() || !(invite || ios); };
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); invite = e; maj(); });
+  window.addEventListener('appinstalled', () => { invite = null; bloc.hidden = true; });
+  bouton.addEventListener('click', async () => {
+    if (invite) {
+      const proposition = invite; invite = null;          // une proposition ne sert qu'une fois
+      try { proposition.prompt(); await proposition.userChoice; } catch (err) { /* refusé ou indisponible */ }
+      bloc.hidden = true;                                  // pas de relance : le bouton revient seulement à la prochaine ouverture
+      return;
+    }
+    if (ios) aide.hidden = !aide.hidden;
+  });
+  maj();
+  // Écran de démarrage aux couleurs du festival : seulement quand l'application est ouverte depuis l'écran d'accueil.
+  if (splash && autonome()) {
+    splash.hidden = false;
+    const fermer = () => { splash.classList.add('cache'); setTimeout(() => { splash.hidden = true; }, 400); };
+    if (document.readyState === 'complete') setTimeout(fermer, 500); else window.addEventListener('load', () => setTimeout(fermer, 500));
+    setTimeout(fermer, 4000);                              // filet de sécurité
+  }
+  // Service worker : seulement en https, sans jamais bloquer la page s'il ne peut pas démarrer.
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js', { scope: './equipe.html' }).catch(() => { /* sans effet sur le portail */ }); });
+  }
+})();
 </script>
 </body>
 </html>
