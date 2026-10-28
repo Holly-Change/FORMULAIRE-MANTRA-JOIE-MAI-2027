@@ -628,6 +628,16 @@ li .ico-btn img { width: 24px; height: 24px; }
 .apercu-email { width: 100%; min-height: 340px; border: 1px solid rgba(110, 90, 170, 0.25); border-radius: 12px; background: #fff; }
 .sauv-dossier { margin: 8px 0; }
 .compte-mail { font-size: .92rem; opacity: .9; }
+
+/* ---------- v3.37 : ajouter une personne, étiquette « Invitée », export, icône œil ---------- */
+.puce.invitee { background: #E3F3E6; color: #1E6B3A; }
+.outils-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 10px 0 4px; }
+.carte-ajout { background: rgba(255, 255, 255, 0.85); border-radius: 16px; padding: 16px; margin: 10px 0 14px; box-shadow: 0 6px 18px rgba(60, 40, 120, 0.08); }
+.carte-ajout h2 { margin: 0 0 6px; font-size: 1.15rem; }
+.carte-ajout select, .carte-ajout textarea { width: 100%; box-sizing: border-box; font: inherit; padding: 10px; border-radius: 10px; border: 1.5px solid rgba(11, 42, 71, 0.15); background: #fff; }
+.carte-ajout .rang { margin: 10px 0 0; }
+.carte-ajout .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.oeil svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; display: block; }
 </style>
 </head>
 <body>
@@ -724,8 +734,11 @@ li .ico-btn img { width: 24px; height: 24px; }
           <div><h1>Candidatures</h1><p id="sous-titre">Toutes les candidatures reçues</p></div>
         </div>
         <div class="outils"><input class="recherche" id="recherche" type="search" placeholder="Chercher un projet, un nom, un email" aria-label="Chercher"></div>
+        <div class="outils-actions"><button class="btn btn-doux-clair" id="btn-ajouter-personne" type="button">+ Ajouter une personne</button><button class="btn btn-doux-clair" id="btn-export-csv" type="button">Exporter la liste (CSV)</button><span class="meta" id="export-etat" role="status"></span></div>
+        <div id="ajout-personne" class="carte-ajout" hidden></div>
         <div class="groupe-filtres"><span class="etiquette">Catégorie</span><div class="filtres" id="filtres-categorie" role="group" aria-label="Filtrer par catégorie"></div></div>
         <div class="groupe-filtres"><span class="etiquette">Sélection</span><div class="filtres" id="filtres-statut" role="group" aria-label="Filtrer par sélection"></div></div>
+        <div class="groupe-filtres" id="groupe-origine" hidden><span class="etiquette">Origine</span><div class="filtres" id="filtres-origine" role="group" aria-label="Filtrer par origine"></div></div>
         <p class="compte" id="compte"></p>
         <div class="liste" id="liste"></div>
       </div>
@@ -785,8 +798,8 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.36-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDijNiQcr9nCf5jDzpIpgs53d4P2SaeEUdDQMhONfuyuB94qWTr4AGE-XUhWm4Iccilw/exec';
+const VERSION_PAGE = 'v3.37-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 // Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
 // Pour changer une icône : modifie seulement le nom du fichier ici. Si le fichier manque, l'icône disparaît sans casser la page.
@@ -867,6 +880,8 @@ let bEquipe = 'Toutes', bStatut = 'Tous';
 let detailGenre = 'candidature', detailTab = '';
 let filtreCategorie = 'Toutes';
 let filtreStatut = 'Tous';
+let filtreOrigine = 'Toutes';
+let derniereListe = [];
 
 try { jeton = sessionStorage.getItem('equipe_jeton') || ''; } catch (e) { jeton = ''; }
 
@@ -1107,14 +1122,16 @@ function boutonDocument(libelle, url, ctx) {
   const boite = el('span', 'doc-ouvrir'); boite.appendChild(b); boite.appendChild(etat);
   return boite;
 }
-// Un œil pour voir le code qu'on tape.
+// Un œil pour voir le code qu'on tape : un trait fin, barré quand le code est montré.
+const ICONE_OEIL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const ICONE_OEIL_BARRE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></svg>';
 function ajouterOeil(saisie) {
   if (!saisie || !saisie.parentNode || saisie.dataset.oeil) return;
   saisie.dataset.oeil = '1';
   const boite = document.createElement('div'); boite.className = 'champ-oeil';
   saisie.parentNode.insertBefore(boite, saisie); boite.appendChild(saisie);
-  const b = document.createElement('button'); b.type = 'button'; b.className = 'oeil'; b.setAttribute('aria-label', 'Afficher le code'); b.textContent = '👁';
-  b.addEventListener('click', () => { const montre = saisie.type === 'password'; saisie.type = montre ? 'text' : 'password'; b.setAttribute('aria-label', montre ? 'Cacher le code' : 'Afficher le code'); b.textContent = montre ? '🙈' : '👁'; });
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'oeil'; b.setAttribute('aria-label', 'Afficher le code'); b.innerHTML = ICONE_OEIL;
+  b.addEventListener('click', () => { const montre = saisie.type === 'password'; saisie.type = montre ? 'text' : 'password'; b.setAttribute('aria-label', montre ? 'Cacher le code' : 'Afficher le code'); b.innerHTML = montre ? ICONE_OEIL_BARRE : ICONE_OEIL; });
   boite.appendChild(b);
 }
 ['mot-de-passe', 'code-ancien', 'code-nouveau', 'code-confirme'].forEach((i) => ajouterOeil($(i)));
@@ -2329,6 +2346,91 @@ function dessinerAccueil() {
 /* ---------- Candidatures ---------- */
 $('recherche').addEventListener('input', dessinerCandidatures);
 
+/* ---------- Ajouter une personne déjà acceptée (invitée) ---------- */
+const POLES_AVEC_DUO = ['Artisan', 'Bien-être', "L'Antre deux mondes"];
+function polesAjoutables() {
+  const tous = ORDRE_POLES.filter((p) => p !== 'Bénévoles');
+  return compte.role === 'referente' ? tous.filter((p) => (compte.poles || []).indexOf(p) >= 0) : tous;
+}
+function ouvrirAjoutPersonne() {
+  const zone = $('ajout-personne'); zone.hidden = false; zone.innerHTML = '';
+  zone.appendChild(el('h2', '', 'Ajouter une personne déjà acceptée'));
+  zone.appendChild(el('p', 'meta', "Pas de candidature : la fiche est créée directement à « Accepté ». L'email « Ta place est confirmée » est préparé, il part quand tu presses Envoyer."));
+  const poles = polesAjoutables();
+  if (!poles.length) { zone.appendChild(el('p', 'message ko', "Aucun pôle ne t'est attribué pour ajouter quelqu'un.")); return; }
+  const selPole = document.createElement('select'); selPole.id = 'ajout-pole';
+  poles.forEach((p) => { const o = document.createElement('option'); o.value = p; o.textContent = nomPole(p); selPole.appendChild(o); });
+  const bPole = el('div', 'rang'); bPole.appendChild(el('label', '', 'Pôle')); bPole.firstChild.htmlFor = 'ajout-pole'; bPole.appendChild(selPole); zone.appendChild(bPole);
+  const f = {};
+  [['prenom', 'Prénom', ''], ['nom', 'Nom', ''], ['projet', 'Nom du projet ou de l’activité (facultatif : sinon prénom et nom)', ''], ['email', 'Email', 'email'], ['email_confirmer', 'Email, encore une fois', 'email'], ['telephone', 'Téléphone (facultatif)', 'tel']].forEach((c) => {
+    const x = champReglage(c[1], '', { nom: 'ajout-' + c[0], type: c[2] || 'text' }); f[c[0]] = x.saisie; x.saisie.id = 'ajout-' + c[0]; zone.appendChild(x.boite);
+  });
+  const rangDuo = el('div', 'rang'); rangDuo.id = 'ajout-rang-duo'; rangDuo.appendChild(el('label', '', 'Solo ou duo ?'));
+  const selDuo = document.createElement('select'); selDuo.id = 'ajout-formule'; ['Solo', 'Duo'].forEach((v) => { const o = document.createElement('option'); o.value = v; o.textContent = v; selDuo.appendChild(o); }); rangDuo.appendChild(selDuo); zone.appendChild(rangDuo);
+  const rangCamion = el('div', 'rang'); rangCamion.id = 'ajout-rang-camion'; rangCamion.appendChild(el('label', '', 'Catégorie du food truck'));
+  const selCamion = document.createElement('select'); selCamion.id = 'ajout-food'; ['Food truck repas', 'Food truck desserts et glaces'].forEach((v) => { const o = document.createElement('option'); o.value = v; o.textContent = v; selCamion.appendChild(o); }); rangCamion.appendChild(selCamion); zone.appendChild(rangCamion);
+  const rangNote = el('div', 'rang'); rangNote.appendChild(el('label', '', 'Note pour l’équipe (facultatif)'));
+  const note = document.createElement('textarea'); note.id = 'ajout-note'; note.rows = 2; note.maxLength = 500; rangNote.appendChild(note); zone.appendChild(rangNote);
+  const adapter = () => { rangDuo.hidden = POLES_AVEC_DUO.indexOf(selPole.value) < 0; rangCamion.hidden = selPole.value !== 'Stand / Miam Miam'; };
+  selPole.addEventListener('change', adapter); adapter();
+  const etat = el('div', ''); etat.setAttribute('role', 'status'); etat.id = 'ajout-etat';
+  const actions = el('div', 'actions');
+  const valider = el('button', 'btn', 'Ajouter et ouvrir sa fiche'); valider.type = 'button'; valider.id = 'ajout-valider';
+  const annuler = el('button', 'btn btn-doux-clair', 'Annuler'); annuler.type = 'button'; annuler.id = 'ajout-annuler';
+  actions.appendChild(valider); actions.appendChild(annuler); zone.appendChild(actions); zone.appendChild(etat);
+  let confirmerDoublon = false;
+  f.email.addEventListener('input', () => { confirmerDoublon = false; valider.textContent = 'Ajouter et ouvrir sa fiche'; });
+  annuler.addEventListener('click', () => { zone.hidden = true; zone.innerHTML = ''; });
+  valider.addEventListener('click', async () => {
+    etat.className = ''; etat.textContent = '';
+    const corps = { op: 'personne_ajouter', token: jeton, pole: selPole.value, prenom: f.prenom.value, nom: f.nom.value, projet: f.projet.value, email: f.email.value, email_confirmer: f.email_confirmer.value, telephone: f.telephone.value, formule: selDuo.value, food_type: selCamion.value, note: note.value, confirmer_doublon: confirmerDoublon };
+    valider.disabled = true;
+    let r = null;
+    try { r = await appel(corps); } catch (err) { r = { ok: false, error: 'Connexion impossible. Réessaie dans un instant.' }; }
+    valider.disabled = false;
+    if (sessionExpiree(r)) return;
+    if (r && r.doublon) {
+      confirmerDoublon = true; valider.textContent = 'Ajouter quand même';
+      etat.className = 'message ko';
+      etat.textContent = 'Cette adresse est déjà dans le Portail : ' + (r.existants || []).map((x) => x.projet + ' (' + nomPole(x.pole) + ', ' + (x.selection || '—') + ')').join(' ; ') + '. Vérifie qu\'il ne s\'agit pas de la même personne, puis ajoute quand même si tu veux.';
+      return;
+    }
+    if (!r || !r.ok) { etat.className = 'message ko'; etat.textContent = (r && r.error) || "L'ajout n'a pas pu se faire."; return; }
+    derniereMajVue = Date.now();
+    try { await charger(); } catch (err) { /* la liste se mettra à jour plus tard */ }
+    if (r.avertissements && r.avertissements.length) {
+      etat.className = 'message ok'; etat.textContent = 'Personne ajoutée. Attention : ' + r.avertissements.join(' ');
+      actions.innerHTML = '';
+      const ouvrir = el('button', 'btn', 'Ouvrir sa fiche'); ouvrir.type = 'button'; ouvrir.id = 'ajout-ouvrir'; ouvrir.addEventListener('click', () => { zone.hidden = true; zone.innerHTML = ''; ouvrirFiche('candidature', r.id); });
+      actions.appendChild(ouvrir);
+      return;
+    }
+    zone.hidden = true; zone.innerHTML = '';
+    ouvrirFiche('candidature', r.id);
+  });
+  f.prenom.focus();
+}
+$('btn-ajouter-personne').addEventListener('click', ouvrirAjoutPersonne);
+/* ---------- Export de la liste en CSV (celle qui est affichée, filtres compris) ---------- */
+function celluleCsv(v) {
+  let s = String(v == null ? '' : v).replace(/\r?\n/g, ' ');
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;   // une cellule qui commence par = + - @ serait prise pour une formule par un tableur
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+function exporterCsv(nom, entetes, lignes) {
+  const texte = '\uFEFF' + [entetes].concat(lignes).map((l) => l.map(celluleCsv).join(';')).join('\r\n');
+  const blob = new Blob([texte], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nom; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  return texte;
+}
+$('btn-export-csv').addEventListener('click', () => {
+  const jour = new Date().toISOString().slice(0, 10);
+  const lignes = derniereListe.map((i) => [i.date, nomPole(i.pole), i.projet, i.formule, i.prenom, i.nom, i.email, i.telephone, statutDe(i), i.dossier_final, i.paiement, i.confirmation, i.origine === 'Invitée' ? 'Invitée' : 'Candidature']);
+  exporterCsv('candidatures-' + jour + '.csv', ['Date', 'Pôle', 'Projet', 'Formule', 'Prénom', 'Nom', 'Email', 'Téléphone', 'Sélection', 'Dossier final', 'Paiement', 'Confirmation', 'Origine'], lignes);
+  $('export-etat').textContent = lignes.length + ' ligne' + (lignes.length > 1 ? 's' : '') + ' exportée' + (lignes.length > 1 ? 's' : '') + '.';
+});
+
 function boutonFiltre(zone, nom, nombre, actif, classe, action) {
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'filtre' + (classe ? ' ' + classe : ''); b.setAttribute('aria-pressed', String(actif));
@@ -2344,7 +2446,16 @@ function dessinerCandidatures() {
   categories().forEach((p) => {
     boutonFiltre(zc, p, items.filter((i) => i.pole === p).length, filtreCategorie === p, '', () => { filtreCategorie = p; dessinerCandidatures(); dessinerSousMenu(); });
   });
-  const parCat = items.filter((i) => filtreCategorie === 'Toutes' || i.pole === filtreCategorie);
+  const nbInvitees = items.filter((i) => i.origine === 'Invitée').length;
+  $('groupe-origine').hidden = !nbInvitees;
+  if (!nbInvitees) filtreOrigine = 'Toutes';
+  const zo = $('filtres-origine'); zo.innerHTML = '';
+  if (nbInvitees) {
+    boutonFiltre(zo, 'Toutes', items.length, filtreOrigine === 'Toutes', 'origine', () => { filtreOrigine = 'Toutes'; dessinerCandidatures(); });
+    boutonFiltre(zo, 'Invitées', nbInvitees, filtreOrigine === 'Invitées', 'origine', () => { filtreOrigine = 'Invitées'; dessinerCandidatures(); });
+    boutonFiltre(zo, 'Candidatures reçues', items.length - nbInvitees, filtreOrigine === 'Candidatures reçues', 'origine', () => { filtreOrigine = 'Candidatures reçues'; dessinerCandidatures(); });
+  }
+  const parCat = items.filter((i) => (filtreCategorie === 'Toutes' || i.pole === filtreCategorie) && (filtreOrigine === 'Toutes' || (filtreOrigine === 'Invitées') === (i.origine === 'Invitée')));
   const zs = $('filtres-statut'); zs.innerHTML = '';
   boutonFiltre(zs, 'Tous', parCat.length, filtreStatut === 'Tous', 'statut', () => { filtreStatut = 'Tous'; dessinerCandidatures(); });
   STATUTS.forEach((s) => {
@@ -2358,6 +2469,7 @@ function dessinerCandidatures() {
     if (!mot) return true;
     return normaliser([i.projet, i.prenom, i.nom, i.email, i.pole].join(' ')).indexOf(mot) >= 0;
   });
+  derniereListe = visibles;
   $('compte').textContent = visibles.length + ' candidature' + (visibles.length > 1 ? 's' : '') + ' sur ' + items.length;
   const liste = $('liste'); liste.innerHTML = '';
   if (!visibles.length) {
@@ -2375,8 +2487,9 @@ function dessinerCandidatures() {
     const p2 = document.createElement('div'); p2.className = 'puces';
     p2.appendChild(puceCategorie(i.pole));
     if (i.formule === 'Duo') p2.appendChild(puce('Duo'));
+    if (i.origine === 'Invitée') p2.appendChild(puce('Invitée', 'invitee'));
     c2.appendChild(p2);
-    const date = document.createElement('div'); date.className = 'meta'; date.textContent = 'Reçue le ' + i.date; c2.appendChild(date);
+    const date = document.createElement('div'); date.className = 'meta'; date.textContent = (i.origine === 'Invitée' ? 'Ajoutée le ' : 'Reçue le ') + i.date; c2.appendChild(date);
     const c3 = document.createElement('div'); c3.className = 'puces';
     const statut = statutDe(i);
     c3.appendChild(puce(statut, classeSelection(statut)));
@@ -2801,7 +2914,7 @@ function dessinerDetail(d, listes, mode) {
   entete.appendChild(titreFiche);
   const puces = el('div', 'puces');
   if (genre === 'benevole') (d.equipes || []).forEach((t) => puces.appendChild(puce(equipeCourte(t), 'equipe')));
-  else { puces.appendChild(puceCategorieIcone(d.pole)); if (d.formule === 'Duo') puces.appendChild(puce('Duo')); }
+  else { puces.appendChild(puceCategorieIcone(d.pole)); if (d.formule === 'Duo') puces.appendChild(puce('Duo')); if (d.origine === 'Invitée') puces.appendChild(puce('Invitée', 'invitee')); }
   entete.appendChild(puces);
   if (sousTexte) entete.appendChild(el('p', 'fiche-soustitre', sousTexte));
   const infos = el('ul', 'fiche-infos');
