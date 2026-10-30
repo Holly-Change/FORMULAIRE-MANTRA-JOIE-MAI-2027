@@ -5,7 +5,7 @@
    - toucher à une requête vers un autre site (le script Google, les polices) : les données du portail et les réponses de l'API ne passent jamais par ici ;
    - garder une réponse d'erreur, ni une réponse qui interdit le stockage.
    La page est toujours demandée au réseau d'abord : on ne voit une copie gardée que sans réseau, donc jamais une vieille page avec un script à jour. */
-const VERSION = 'v3.37-2027';
+const VERSION = 'v3.42-2027';
 const CACHE = 'portail-mantra-' + VERSION;
 const PAGE = './equipe.html';
 const ENVELOPPE = [PAGE, './manifest.webmanifest', './assets/icon-192.png', './assets/icon-512.png', './assets/apple-touch-icon.png'];

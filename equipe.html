@@ -637,7 +637,57 @@ li .ico-btn img { width: 24px; height: 24px; }
 .carte-ajout select, .carte-ajout textarea { width: 100%; box-sizing: border-box; font: inherit; padding: 10px; border-radius: 10px; border: 1.5px solid rgba(11, 42, 71, 0.15); background: #fff; }
 .carte-ajout .rang { margin: 10px 0 0; }
 .carte-ajout .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+/* v3.42 : l'ajout d'une personne est sur l'Accueil, bien visible */
+.carte-ajouter { position: relative; overflow: hidden; padding-left: 28px; }
+.carte-ajouter::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 7px; background: linear-gradient(180deg, var(--magenta), var(--violet), var(--turquoise-vif)); }
+.ajouter-entete { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.ajouter-rond { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; flex: none; color: #fff; background: linear-gradient(135deg, var(--magenta), var(--violet)); box-shadow: 0 8px 18px rgba(107, 44, 145, 0.28); }
+.ajouter-rond svg { width: 28px; height: 28px; }
+.ajouter-texte { flex: 1 1 260px; min-width: 0; }
+.ajouter-texte h2 { margin: 0; font-size: 1.3rem; color: var(--navy); }
+.ajouter-texte p { margin: 4px 0 0; color: var(--doux); font-size: .95rem; line-height: 1.45; }
+.btn-ajouter { background: linear-gradient(100deg, var(--magenta), var(--violet)); color: #fff; border-color: transparent; padding: 14px 28px; font-size: 1.02rem; min-height: 48px; box-shadow: 0 8px 20px rgba(181, 32, 127, 0.28); transition: transform .15s ease, box-shadow .15s ease; }
+.btn-ajouter:hover { transform: translateY(-1px); box-shadow: 0 12px 24px rgba(181, 32, 127, 0.34); }
+.btn-ajouter:focus-visible { outline: 3px solid var(--turquoise-clair); outline-offset: 3px; }
+.carte-ajouter .carte-ajout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; margin: 20px 0 0; padding: 22px; border: 1px solid var(--ligne); border-radius: 20px; background: rgba(255, 255, 255, 0.92); box-shadow: 0 10px 28px rgba(60, 40, 120, 0.10); }
+.carte-ajouter .carte-ajout[hidden] { display: none; }
+.carte-ajouter .carte-ajout > h2, .carte-ajouter .carte-ajout > .meta, .carte-ajouter .carte-ajout > .lien-aide, .carte-ajouter .carte-ajout > .rang, .carte-ajouter .carte-ajout > .actions, .carte-ajouter .carte-ajout > .message, .carte-ajouter .carte-ajout > #ajout-etat, .carte-ajouter .carte-ajout > .progression { grid-column: 1 / -1; }
+.carte-ajouter .carte-ajout > h2 { font-size: 1.15rem; color: var(--violet); margin: 0; }
+.carte-ajouter .carte-ajout > .rang, .carte-ajouter .carte-ajout > .actions { margin: 0; }
+.carte-ajouter .carte-ajout input[type=text], .carte-ajouter .carte-ajout input[type=email] { width: 100%; box-sizing: border-box; font: inherit; padding: 11px 12px; border-radius: 12px; border: 1.5px solid rgba(11, 42, 71, 0.15); background: #fff; }
+.carte-ajouter .carte-ajout input:focus, .carte-ajouter .carte-ajout select:focus, .carte-ajouter .carte-ajout textarea:focus { outline: 3px solid var(--turquoise-clair); outline-offset: 1px; border-color: var(--turquoise-vif); }
+.carte-ajouter .carte-ajout .actions .btn:first-child { background: linear-gradient(100deg, var(--magenta), var(--violet)); color: #fff; border-color: transparent; }
+@media (max-width: 640px) { .carte-ajouter { padding-left: 22px; } .btn-ajouter { width: 100%; } .carte-ajouter .carte-ajout { grid-template-columns: 1fr; padding: 16px; } }
+@media (prefers-reduced-motion: reduce) { .btn-ajouter { transition: none; } .btn-ajouter:hover { transform: none; } }
 .oeil svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.progression { margin-top: 14px; }
+.barre-progres { height: 8px; border-radius: 999px; background: var(--ligne); overflow: hidden; }
+.barre-progres span { display: block; height: 100%; width: 40%; border-radius: 999px; background: linear-gradient(100deg, #D3A6D0, #7FE3E8); animation: va-et-vient 1.3s ease-in-out infinite; }
+@keyframes va-et-vient { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
+.progression-texte { margin: 8px 0 0; font-weight: 700; color: var(--violet); }
+@media (prefers-reduced-motion: reduce) { .barre-progres span { animation: none; width: 60%; } }
+.alerte-contrat { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: var(--p-or, #FBEFCF); color: var(--p-or-t, #6B4A08); border-radius: 14px; padding: 12px 14px; margin: 10px 0; font-weight: 700; }
+.alerte-contrat.ok { background: var(--p-vert, #D8F1E0); color: var(--p-vert-t, #17562F); }
+.ico-btn { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -4px; margin-right: 8px; flex: none; }
+.btn-install { display: block; width: 100%; font-weight: 800; padding: 14px 18px; }
+.installer-menu { margin: 8px 0 6px; } .installer-menu .aide-ios { font-size: .85rem; margin: 6px 2px 0; }
+.aide-installer { margin: 8px 2px 0; font-size: .92rem; opacity: .85; }
+.aide-connexion { margin: 14px 0 0; font-size: .92rem; text-align: center; }
+.lien-aide { font-size: .9rem; font-weight: 700; white-space: nowrap; }
+.barre-retour { position: sticky; top: 0; z-index: 6; padding: 10px 16px 6px; background: linear-gradient(180deg, rgba(246,241,251,.97), rgba(246,241,251,0)); }
+.barre-retour .btn { padding: 10px 18px; }
+.note-info { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: var(--p-turq, #D3EEF1); color: var(--p-turq-t, #07505E); border-radius: 14px; padding: 12px 14px; margin: 10px 0; font-weight: 700; }
+.compte-ligne { display: block; background: rgba(255,255,255,.7); border: 1px solid rgba(110,90,170,.2); border-radius: 16px; padding: 14px 16px; margin: 12px 0; }
+.compte-tete { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.compte-tete strong { font-size: 1.1rem; }
+.compte-detail { margin: 6px 0 0; font-size: .95rem; }
+.compte-pastilles { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
+.compte-pastilles .puce-compte { display: inline-block; padding: 2px 11px; border-radius: 999px; font-size: .85rem; font-weight: 700; background: var(--p-vert, #D8F1E0); color: var(--p-vert-t, #17562F); }
+.compte-pastilles .puce-compte.alerte { background: var(--p-or, #FBEFCF); color: var(--p-or-t, #6B4A08); }
+.compte-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; padding-top: 12px; border-top: 1px solid rgba(110,90,170,.18); }
+.compte-actions .compte-supprimer { margin-left: auto; color: #9B1C1C; border-color: #E6B3B3; }
+@media (max-width: 640px) { .compte-actions .btn { flex: 1 1 100%; } .compte-actions .compte-supprimer { margin-left: 0; } }
+.flash-champ { box-shadow: 0 0 0 4px var(--turquoise-vif, #1FA8C3) !important; }
 </style>
 </head>
 <body>
@@ -647,7 +697,8 @@ li .ico-btn img { width: 24px; height: 24px; }
   <form class="connexion" id="form-connexion" autocomplete="off">
     <img class="lotus-connexion" src="assets/LOTUS%20PORTAL%20LOGO.png" alt="" onerror="this.remove()">
     <h1>Portail Festival</h1>
-    <p>Mantra Joie 2027. Entre le mot de passe de l'équipe pour voir les candidatures.</p>
+    <p>Mantra Joie 2027. Entre ton code pour voir les candidatures.</p>
+    <p class="aide-connexion">Besoin d’aide ? <a href="manual.html" target="_blank" rel="noopener">Ouvrir le manuel</a></p>
     <label for="mot-de-passe">Mot de passe</label>
     <input id="mot-de-passe" type="password" autocomplete="current-password" required>
     <button class="btn" type="submit" id="btn-connexion">Se connecter</button>
@@ -656,7 +707,8 @@ li .ico-btn img { width: 24px; height: 24px; }
     <div class="signature" id="signature-connexion"></div>
   </form>
   <div class="installer" id="installer" hidden>
-    <button class="btn btn-doux-clair" type="button" id="btn-installer">Installer l’application</button>
+    <button class="btn btn-doux-clair btn-install" type="button" id="btn-installer"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" class="ico-btn"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>Installer l’application</button>
+    <p class="aide-installer">Installe le Portail sur ton écran d’accueil : il s’ouvre en plein écran, comme une application.</p>
     <p class="aide-ios" id="aide-ios" hidden>Sur iPhone ou iPad : touche le bouton Partager (le carré avec une flèche vers le haut), fais défiler, touche « Sur l’écran d’accueil », puis « Ajouter ».</p>
   </div>
 </section>
@@ -706,7 +758,12 @@ li .ico-btn img { width: 24px; height: 24px; }
     </nav>
     <div class="bas">
       <div class="version" id="version"></div>
+      <div class="installer-menu" id="installer-menu" hidden>
+        <button class="btn btn-doux-clair btn-install" type="button" id="btn-installer-menu"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" class="ico-btn"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>Installer l’application</button>
+        <p class="aide-ios" id="aide-ios-menu" hidden>Sur iPhone ou iPad : touche le bouton Partager, fais défiler, touche « Sur l’écran d’accueil », puis « Ajouter ».</p>
+      </div>
       <p class="compte-qui" id="compte-qui"></p>
+      <a class="btn btn-doux" id="lien-manuel" href="manual.html" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" class="ico-btn"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M9 7h6"/></svg>Manuel</a>
       <a class="btn btn-doux" id="lien-formulaire" href="./" target="_blank" rel="noopener">Formulaire public</a>
       <button class="btn btn-doux" type="button" id="btn-actualiser">Actualiser</button>
       <button class="btn btn-doux" type="button" id="btn-deconnexion">Se déconnecter</button>
@@ -715,12 +772,21 @@ li .ico-btn img { width: 24px; height: 24px; }
   </aside>
 
   <main>
+    <div class="barre-retour" id="barre-retour" hidden><button class="btn btn-doux" type="button" id="btn-retour">← Accueil</button></div>
     <section id="vue-accueil" hidden>
       <div class="hero" id="hero">
         <div class="titre"><h1 id="hero-titre">Mantra Joie 2027</h1><p class="sous">Portail Festival</p></div>
       </div>
       <div class="totaux" id="totaux"></div>
       <div id="bandeau-ferme" class="message-important" role="status" hidden></div>
+      <div class="bloc carte-ajouter" id="carte-ajouter">
+        <div class="ajouter-entete">
+          <span class="ajouter-rond" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.6"/><path d="M2.5 20c.6-3.7 3.2-5.6 6.5-5.6s5.9 1.9 6.5 5.6"/><path d="M19 8v6M16 11h6"/></svg></span>
+          <div class="ajouter-texte"><h2>Ajouter une personne</h2><p>Pour quelqu’un que tu as déjà accepté. Sa fiche est créée tout de suite, et l’email « Ta place est confirmée » est préparé.</p></div>
+          <button class="btn btn-ajouter" id="btn-ajouter-personne" type="button">+ Ajouter une personne</button>
+        </div>
+        <div id="ajout-personne" class="carte-ajout" hidden></div>
+      </div>
       <div class="bloc">
         <div class="entete"><h2>Dernières candidatures</h2><button class="lien-bouton" type="button" id="voir-toutes">Voir toutes les candidatures</button></div>
         <div id="recentes"></div>
@@ -734,8 +800,7 @@ li .ico-btn img { width: 24px; height: 24px; }
           <div><h1>Candidatures</h1><p id="sous-titre">Toutes les candidatures reçues</p></div>
         </div>
         <div class="outils"><input class="recherche" id="recherche" type="search" placeholder="Chercher un projet, un nom, un email" aria-label="Chercher"></div>
-        <div class="outils-actions"><button class="btn btn-doux-clair" id="btn-ajouter-personne" type="button">+ Ajouter une personne</button><button class="btn btn-doux-clair" id="btn-export-csv" type="button">Exporter la liste (CSV)</button><span class="meta" id="export-etat" role="status"></span></div>
-        <div id="ajout-personne" class="carte-ajout" hidden></div>
+        <div class="outils-actions"><button class="btn btn-doux-clair" id="btn-export-csv" type="button">Exporter la liste (CSV)</button><span class="meta" id="export-etat" role="status"></span></div>
         <div class="groupe-filtres"><span class="etiquette">Catégorie</span><div class="filtres" id="filtres-categorie" role="group" aria-label="Filtrer par catégorie"></div></div>
         <div class="groupe-filtres"><span class="etiquette">Sélection</span><div class="filtres" id="filtres-statut" role="group" aria-label="Filtrer par sélection"></div></div>
         <div class="groupe-filtres" id="groupe-origine" hidden><span class="etiquette">Origine</span><div class="filtres" id="filtres-origine" role="group" aria-label="Filtrer par origine"></div></div>
@@ -798,7 +863,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.37-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.42-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 // Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
@@ -876,7 +941,7 @@ let statsDetail = null, statsEnCours = false;
 let sectionOuverte = '';   // une seule section du menu est dépliée à la fois
 let erreurListes = { participants: false, benevoles: false };
 let pCategorie = 'Toutes', pFinal = 'Tous';
-let bEquipe = 'Toutes', bStatut = 'Tous';
+let bEquipe = 'Toutes', bStatut = 'Tous', bContratManquant = false;
 let detailGenre = 'candidature', detailTab = '';
 let filtreCategorie = 'Toutes';
 let filtreStatut = 'Tous';
@@ -945,7 +1010,14 @@ $('form-connexion').addEventListener('submit', async (e) => {
   }
 });
 
-$('btn-deconnexion').addEventListener('click', () => { oublierJeton(); items = []; statsDetail = null; statsServeur = null; sectionOuverte = ''; montrerConnexion(''); });
+// Déconnexion complète : le serveur termine la session et la session administrateur, puis la page repart de zéro (aucune donnée de la personne précédente ne reste en mémoire).
+function rechargerPage() { location.reload(); }
+$('btn-deconnexion').addEventListener('click', async () => {
+  const t = jeton, a = adminJeton;
+  try { await Promise.race([appel({ op: 'logout', token: t, admin_token: a }), new Promise((r) => setTimeout(r, 1500))]); } catch (err) { /* hors ligne : la session expirera seule */ }
+  oublierJeton(); adminJeton = ''; adminDonnees = null; reglagesDonnees = null; participants = null; benevoles = null; items = []; statsDetail = null; statsServeur = null; sectionOuverte = '';
+  rechargerPage();
+});
 $('btn-actualiser').addEventListener('click', () => { participants = null; benevoles = null; statsDetail = null; reglagesDonnees = null; charger(); });
 
 async function charger() {
@@ -1083,7 +1155,7 @@ document.querySelectorAll('[data-vue]').forEach((b) => b.addEventListener('click
   if (estSection && sectionOuverte === nom && vue === nom && filtresParDefaut) { sectionOuverte = ''; dessinerSousMenu(); return; }
   if (b.dataset.vue === 'candidatures') { filtreCategorie = 'Toutes'; filtreStatut = 'Tous'; $('recherche').value = ''; }
   if (b.dataset.vue === 'participants') { pCategorie = 'Toutes'; pFinal = 'Tous'; $('recherche-p').value = ''; }
-  if (b.dataset.vue === 'benevoles') { bEquipe = 'Toutes'; bStatut = 'Tous'; $('recherche-b').value = ''; }
+  if (b.dataset.vue === 'benevoles') { bEquipe = 'Toutes'; bStatut = 'Tous'; bContratManquant = false; $('recherche-b').value = ''; }
   naviguer(b.dataset.vue);
 }));
 $('voir-toutes').addEventListener('click', () => { filtreCategorie = 'Toutes'; filtreStatut = 'Tous'; $('recherche').value = ''; naviguer('candidatures'); });
@@ -1111,7 +1183,14 @@ function boutonDocument(libelle, url, ctx) {
     try {
       const r = await appel({ op: 'fichier_ouvrir', token: jeton, id: ctx.id, tab: ctx.tab || '', url: url });
       if (sessionExpiree(r)) { if (fenetre) fenetre.close(); return; }
-      if (!r || !r.ok) { if (fenetre) fenetre.close(); etat.className = 'message ko'; etat.textContent = ' ' + ((r && r.error) || "Impossible d'ouvrir ce document."); return; }
+      if (!r || !r.ok) {
+        if (fenetre) fenetre.close(); etat.className = 'message ko'; etat.textContent = ' ' + ((r && r.error) || "Impossible d'ouvrir ce document.");
+        if (r && /8 Mo/.test(r.error || '') && /^https:\/\/(drive|docs)\.google\.com\//.test(url)) {   // trop gros pour passer par le Portail : un lien direct vers le fichier
+          etat.appendChild(document.createTextNode(' '));
+          const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.className = 'lien-drive'; a.textContent = 'Ouvrir dans le Drive'; etat.appendChild(a);
+        }
+        return;
+      }
       const octets = Uint8Array.from(atob(r.contenu), (c) => c.charCodeAt(0));
       const adresse = URL.createObjectURL(new Blob([octets], { type: r.mime }));
       if (fenetre) fenetre.location.href = adresse; else window.location.href = adresse;
@@ -1148,6 +1227,15 @@ function manquantsPole(p) {
   if (vide(p.conditions)) m.push(['conditions', 'Conditions de participation']);
   return m;
 }
+// Un bouton « ← Retour » toujours visible, qui dit où il mène : de la fiche à sa liste, de la liste à l'accueil.
+function majBarreRetour() {
+  const b = $('barre-retour'); if (!b) return;
+  b.hidden = vue === 'accueil';
+  const noms = { candidatures: 'Candidatures', participants: 'Participants', benevoles: 'Bénévoles' };
+  const cible = vue === 'detail' ? ({ candidature: 'candidatures', participant: 'participants', benevole: 'benevoles' }[detailGenre] || 'candidatures') : 'accueil';
+  b.dataset.cible = cible; $('btn-retour').textContent = '← ' + (cible === 'accueil' ? 'Accueil' : noms[cible]);
+}
+$('btn-retour').addEventListener('click', () => { naviguer($('barre-retour').dataset.cible || 'accueil'); });
 // Le bouton retour du téléphone remonte d'un écran dans le Portail au lieu de fermer l'application.
 let histoireRestauration = false;
 function histoireSuivre_() {
@@ -1181,6 +1269,7 @@ function naviguer(nom) {
   $('vue-stats').hidden = vue !== 'stats';
   $('vue-reglages').hidden = vue !== 'reglages';
   $('vue-detail').hidden = vue !== 'detail';
+  majBarreRetour();
   const actif = vue === 'detail' ? ({ candidature: 'candidatures', participant: 'participants', benevole: 'benevoles' })[detailGenre] : vue;
   document.querySelectorAll('[data-vue]').forEach((b) => {
     if (b.dataset.vue === actif) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
@@ -1324,6 +1413,17 @@ function menuMots(zoneTexte, mots) {
   return boite;
 }
 
+// « Ajouter le lien » : ouvre les Réglages au bon endroit et met le champ en évidence.
+async function ouvrirReglageLien(inf) {
+  reglagesPanneau = inf.ou === 'pole' && inf.pole ? inf.pole : 'general';
+  if (inf.ou === 'pole' && inf.pole) REGLAGES_SOUS_ONGLETS[inf.pole] = 'infos';
+  naviguer('reglages');
+  try { if (reglagesDonnees) dessinerReglages(); else await chargerReglages(); } catch (err) { /* le champ se trouvera à la main */ }
+  const lab = [...document.querySelectorAll('#vue-reglages label')].find((l) => l.textContent.indexOf(inf.libelle) >= 0);
+  const champ = lab && (lab.control || (lab.parentNode && lab.parentNode.querySelector('input, textarea')));
+  if (champ) { champ.scrollIntoView({ behavior: 'smooth', block: 'center' }); champ.focus(); champ.classList.add('flash-champ'); setTimeout(() => champ.classList.remove('flash-champ'), 3000); }
+}
+function lienAide(ancre, texte) { const a = el('a', 'lien-aide', texte || 'Comment faire ?'); a.href = 'manual.html#' + ancre; a.target = '_blank'; a.rel = 'noopener'; return a; }
 let reglagesPanneau = 'general';
 const REGLAGES_SOUS_ONGLETS = {};   // pôle -> 'infos' | 'fournir' | 'emails'
 
@@ -1401,7 +1501,7 @@ function appliquerRole() {
 }
 function construireCompte(zone) {
   const c = el('section', 'carte reglage-bloc'); c.id = 'reglage-compte';
-  c.appendChild(el('h2', '', 'Mon compte'));
+  c.appendChild(el('h2', '', 'Mon compte')); c.appendChild(lienAide('r-changer-code'));
   c.appendChild(el('p', 'compte', compte.nom + ' : ' + (LIBELLE_ROLE[compte.role] || compte.role) + (compte.role === 'referente' ? '. Tes pôles : ' + (compte.poles || []).join(', ') + '.' : '. Tu vois tous les pôles.')));
   const a = champReglage('Mon code actuel', '', { type: 'password', nom: 'compte-actuel' });
   const n = champReglage('Mon nouveau code (8 caractères au moins)', '', { type: 'password', nom: 'compte-nouveau' });
@@ -1511,7 +1611,7 @@ function construireGeneral(z, r) {
   const dl = blocReglages('Dates et liens', 'Ces dates et ces liens se remplissent tout seuls dans les emails.');
   const bDL = champsEnregistrables(dl, [['date_reponses', 'Date des réponses', r.dates.date_reponses, 'ex. 15 janvier 2027'], ['date_limite_dossier', 'Date limite du dossier final', r.dates.date_limite_dossier, 'ex. 31 janvier 2027'],
     ['lien_faq', 'Lien de la FAQ', r.liens.lien_faq, 'https://'], ['lien_infos_pratiques', 'Lien des infos pratiques', r.liens.lien_infos_pratiques, 'https://'],
-    ['lien_whatsapp', 'Lien du groupe WhatsApp', r.liens.lien_whatsapp, 'https://'], ['lien_formulaire_final', 'Lien du formulaire du dossier final', r.liens.lien_formulaire_final, 'https://'],
+    ['lien_whatsapp', 'Lien du groupe WhatsApp (général, si un pôle n’a pas le sien)', r.liens.lien_whatsapp, 'https://'], ['lien_whatsapp_benevoles', 'Lien du groupe WhatsApp des bénévoles', r.liens.lien_whatsapp_benevoles, 'https://'], ['lien_formulaire_final', 'Lien du formulaire du dossier final', r.liens.lien_formulaire_final, 'https://'],
     ['lien_dossier_images', "Dossier Drive des visuels (bouton « Dossier images » dans le menu)", r.liens.lien_dossier_images, 'https://']]);
   bDL.id = 'reg-enregistrer-dates';
   z.appendChild(dl);
@@ -1562,7 +1662,7 @@ function construirePole(z, p, r) {
   inf.appendChild(ligneOuverture({ cle: 'pole:' + p.nom, libelle: 'Candidatures du pôle ' + nomPole(p.nom), ouvert: p.ouvert, message: p.message_ferme, defaut: r.message_pole_defaut.replace('{pole}', p.nom),
     changer: async (neuf) => gardeReglages(await appelReglages({ op: 'pole_ecrire', nom: p.nom, champs: { ouvert: neuf ? 'OUI' : 'NON' } })),
     enregistrerMessage: async (txt) => gardeReglages(await appelReglages({ op: 'pole_ecrire', nom: p.nom, champs: { message_ferme: txt } })) }));
-  const det = el('section', 'carte reglage-bloc'); det.dataset.pole = p.nom; det.appendChild(el('h2', '', 'Paiement, référente et conditions'));
+  const det = el('section', 'carte reglage-bloc'); det.dataset.pole = p.nom; det.appendChild(el('h2', '', 'Paiement, référente et conditions')); det.appendChild(lienAide('r-pole'));
   const sel = document.createElement('select'); sel.dataset.champ = 'payant';
   [['', 'À choisir'], ['OUI', 'Payant'], ['NON', 'Gratuit']].forEach((o) => { const op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; sel.appendChild(op); });
   sel.value = p.payant === 'OUI' || p.payant === 'NON' ? p.payant : '';
@@ -1574,6 +1674,7 @@ function construirePole(z, p, r) {
        ['montant2', 'Food truck DESSERTS ET GLACES : montant pour deux personnes', p.montant2, { placeholder: 'ex. 450 €' }], ['lien2', 'Food truck DESSERTS ET GLACES : lien de paiement', p.lien2, { placeholder: 'https://' }]]
     : [['montant', 'Montant', p.montant, { placeholder: 'ex. 210' }], ['montant_duo', 'Montant en duo', p.montant_duo, { placeholder: 'ex. 280' }], ['lien', 'Lien de paiement (HelloAsso)', p.lien, { placeholder: 'https://' }]];
   liste.concat([['referent', 'Nom de la référente', p.referent, {}], ['email_referent', 'Email de la référente (elle reçoit les réponses des personnes)', p.email_referent, { type: 'email' }],
+    ['whatsapp', 'Lien du groupe WhatsApp du pôle (facultatif)', p.whatsapp, { placeholder: 'https://chat.whatsapp.com/…' }],
     ['description', 'Ligne courte sous le nom du pôle (première page du formulaire)', p.description, { placeholder: p.description_defaut || 'ex. Musique, chant, spectacle' }],
     ['ouverture', "Premier jour des candidatures (facultatif, jour compris)", p.ouverture, { type: 'date' }], ['fermeture', "Dernier jour des candidatures (facultatif, jour compris)", p.fermeture, { type: 'date' }],
     ['conditions', 'Conditions de participation (texte complet)', p.conditions, { long: true, lignes: 8 }]
@@ -1596,7 +1697,7 @@ function construirePole(z, p, r) {
   det.appendChild(bP); det.appendChild(sP); inf.appendChild(det);
   // --- À fournir : une liste à cocher
   const fo = parties.fournir; const ck = el('section', 'carte reglage-bloc'); ck.dataset.fournir = p.nom;
-  ck.appendChild(el('h2', '', 'Ce que la personne doit préparer'));
+  ck.appendChild(el('h2', '', 'Ce que la personne doit préparer')); ck.appendChild(lienAide('r-documents-liste'));
   ck.appendChild(el('p', 'compte', "Cette liste est écrite dans l'email d'acceptation. Tout est coché au départ : décoche ce qui ne s'applique pas à ton pôle, et ajoute tes propres lignes si besoin."));
   const standard = String(p.a_preparer_defaut || '').split('\n').filter(Boolean);
   const actuelles = String(p.a_preparer || p.a_preparer_defaut || '').split('\n').map((l) => l.trim()).filter(Boolean);
@@ -1619,7 +1720,7 @@ function construirePole(z, p, r) {
   ck.appendChild(bF); ck.appendChild(sF); fo.appendChild(ck);
   // --- Emails : les 6 emails de ce pôle
   const em = parties.emails; const bl = el('section', 'carte reglage-bloc'); bl.dataset.emailsPole = p.nom;
-  bl.appendChild(el('h2', '', 'Les emails du pôle ' + nomPole(p.nom)));
+  bl.appendChild(el('h2', '', 'Les emails du pôle ' + nomPole(p.nom))); bl.appendChild(lienAide('r-email-perso'));
   bl.appendChild(el('p', 'compte', "Chaque email part dans un cas précis. Si tu changes un texte, il ne change que pour ce pôle. « Utiliser le texte commun » annule ton changement."));
   p.textes.forEach((t) => bl.appendChild(detailTexte({
     cle: t.cle, portee: 'pole-' + slug(p.nom), libelle: t.libelle, objet: t.objet, corps: t.corps, defaut: t.commun, personnalise: t.personnalise, badge: t.personnalise ? 'Texte de ce pôle' : 'Texte commun',
@@ -1641,7 +1742,7 @@ function construireBenevoles(z, r) {
   bEm.addEventListener('click', () => enregistrer(sEm, bEm, async () => gardeReglages(await appelReglages({ op: 'reglages_ecrire', valeurs: { email_benevoles: eb.saisie.value } }))));
   ad.appendChild(bEm); ad.appendChild(sEm); z.appendChild(ad);
   const li = blocReglages('Liste dorée et liste noire', "Une adresse email par ligne. Quand l'email d'un bénévole est dans une liste, une étoile (liste dorée) ou un carré noir (liste noire) apparaît à côté de son nom.");
-  const bLi = champsEnregistrables(li, [['liste_doree', 'Liste dorée (★)', r.listes.doree, 'une adresse par ligne', 6], ['liste_noire', 'Liste noire (■)', r.listes.noire, 'une adresse par ligne', 6]]);
+  const bLi = champsEnregistrables(li, [['liste_doree', 'Liste dorée (★)', r.listes.doree, 'une adresse par ligne', 6], ['liste_noire', 'Liste noire (■)', r.listes.noire, 'une adresse par ligne', 6], ['emails_de_test', 'Adresses de test (réutilisables sans avertissement ni limite)', r.listes.test, 'une adresse par ligne', 4]]);
   bLi.id = 'reg-enregistrer-listes'; z.appendChild(li);
   const tx = blocReglages('Emails des bénévoles', 'Les 4 emails envoyés aux bénévoles. Ils ne dépendent d\'aucun pôle.');
   r.textes.filter((t) => /^benevole_/.test(t.cle)).forEach((t) => tx.appendChild(detailTexte({
@@ -1674,7 +1775,7 @@ async function appelAdmin(corps) {
 }
 function dessinerAdmin() {
   const adm = $('reglage-admin'); if (!adm) return; adm.textContent = '';
-  adm.appendChild(el('h2', '', 'Administration'));
+  adm.appendChild(el('h2', '', 'Administration')); adm.appendChild(lienAide('r-reel'));
   adm.appendChild(el('p', 'compte', "Réservé à Holly. Cette partie a son propre mot de passe : le mot de passe de l'équipe ne l'ouvre pas."));
   if (adminMessage) { adm.appendChild(el('p', 'message ko', adminMessage)); adminMessage = ''; }
   if (!reglagesDonnees.admin_defini) { adm.appendChild(el('p', 'message ko', "Le mot de passe administrateur n'est pas encore défini. Dans le Google Sheet : menu Portail, « Définir le mot de passe administrateur ».")); return; }
@@ -1796,14 +1897,20 @@ function dessinerComptes(adm) {
   };
   const dessiner = (r) => {
     etat = r; liste.textContent = '';
+    const bN = el('button', 'btn', 'Créer un compte'); bN.type = 'button'; bN.id = 'compte-nouveau'; bN.addEventListener('click', () => { code.textContent = ''; formulaire('Nouveau compte', null); });
+    liste.appendChild(bN);
     if (!r.comptes.length) liste.appendChild(el('p', 'compte', "Aucun compte pour l'instant : tout le monde se connecte avec le mot de passe commun et voit tout."));
     r.comptes.forEach((c) => {
       const l = el('div', 'compte-ligne'); l.dataset.compteId = c.id;
-      l.appendChild(el('strong', '', c.nom));
-      l.appendChild(el('span', 'sauv-type' + (c.role === 'maitre' ? '' : ' sauv-speciale'), c.role === 'maitre' ? 'organisatrice principale' : 'référente : ' + (c.poles.join(', ') || 'aucun pôle')));
-      if (c.email) l.appendChild(el('span', 'compte-mail', ' ' + c.email));
-      if (c.invite_le) l.appendChild(el('span', 'meta', ' (invitation envoyée le ' + c.invite_le + ')'));
-      if (c.doit_changer) l.appendChild(el('span', 'meta', ' (n\'a pas encore choisi son code)'));
+      const tete = el('div', 'compte-tete'); tete.appendChild(el('strong', '', c.nom));
+      tete.appendChild(el('span', 'sauv-type' + (c.role === 'maitre' ? '' : ' sauv-speciale'), c.role === 'maitre' ? 'organisatrice principale' : 'référente : ' + (c.poles.join(', ') || 'aucun pôle')));
+      l.appendChild(tete);
+      l.appendChild(el('p', 'compte-detail' + (c.email ? ' compte-mail' : ''), c.email ? c.email : 'Pas d’adresse email : ajoute-la avec « Modifier » pour pouvoir envoyer l’invitation.'));
+      const pastilles = el('div', 'compte-pastilles');
+      if (c.invite_le) pastilles.appendChild(el('span', 'puce-compte', 'Invitation envoyée le ' + c.invite_le));
+      if (c.doit_changer) pastilles.appendChild(el('span', 'puce-compte alerte', 'Code de départ pas encore changé'));
+      else pastilles.appendChild(el('span', 'puce-compte', 'Code personnel choisi'));
+      l.appendChild(pastilles);
       const bM = el('button', 'btn btn-doux-clair', 'Modifier'); bM.type = 'button'; bM.dataset.compteModifier = c.id; bM.addEventListener('click', () => formulaire('Modifier ' + c.nom, c));
       const bR = el('button', 'btn btn-doux-clair', 'Nouveau code de départ'); bR.type = 'button'; bR.dataset.compteReinit = c.id;
       let surR = false;
@@ -1827,10 +1934,10 @@ function dessinerComptes(adm) {
         const rep = await enregistrer(st, bS, () => appelAdmin({ op: 'compte_supprimer', id: c.id }), 'Compte supprimé');
         if (rep && rep.ok) { code.textContent = ''; dessiner(rep); } else { surS = false; bS.textContent = 'Supprimer'; }
       });
-      l.appendChild(bM); l.appendChild(bI); l.appendChild(bR); l.appendChild(bS); liste.appendChild(l);
+      if (c.email) bI.className = 'btn'; bS.className = 'btn btn-doux-clair compte-supprimer';
+      const actions = el('div', 'compte-actions'); actions.appendChild(bI); actions.appendChild(bM); actions.appendChild(bR); actions.appendChild(bS);
+      l.appendChild(actions); liste.appendChild(l);
     });
-    const bN = el('button', 'btn', 'Créer un compte'); bN.type = 'button'; bN.id = 'compte-nouveau'; bN.addEventListener('click', () => { code.textContent = ''; formulaire('Nouveau compte', null); });
-    liste.appendChild(bN);
     if (r.mot_de_passe_commun && r.comptes.length) {
       const avert = el('p', 'message ko', "Le mot de passe commun marche encore : celui qui le connaît voit tout (sans l'IBAN). Quand chaque personne a son compte, désactive-le.");
       const bC = el('button', 'btn btn-danger', 'Désactiver le mot de passe commun'); bC.type = 'button'; bC.id = 'compte-desactiver-commun';
@@ -2300,6 +2407,7 @@ function icone(nom) {
 
 /* ---------- Accueil ---------- */
 function dessinerAccueil() {
+  const carteAjout = $('carte-ajouter'); if (carteAjout) carteAjout.hidden = !polesAjoutables().length;   // personne à qui ajouter : la carte disparaît
   const zone = $('totaux');
   zone.innerHTML = '';
   const cartes = [
@@ -2352,9 +2460,20 @@ function polesAjoutables() {
   const tous = ORDRE_POLES.filter((p) => p !== 'Bénévoles');
   return compte.role === 'referente' ? tous.filter((p) => (compte.poles || []).indexOf(p) >= 0) : tous;
 }
+// Une barre qui défile et un message qui change : on voit que ça travaille et ce qui se passe, sans pourcentage inventé.
+function progression(zone, messages) {
+  zone.className = ''; zone.textContent = '';
+  const boite = el('div', 'progression'); boite.setAttribute('role', 'status');
+  const barre = el('div', 'barre-progres'); barre.appendChild(el('span', ''));
+  const texte = el('p', 'progression-texte', messages[0]);
+  boite.appendChild(barre); boite.appendChild(texte); zone.appendChild(boite);
+  const delais = [0, 3000, 6500, 12000]; const minuteurs = [];
+  messages.forEach((m, i) => { if (i > 0) minuteurs.push(setTimeout(() => { texte.textContent = m; }, delais[i] || 12000)); });
+  return () => { minuteurs.forEach(clearTimeout); zone.textContent = ''; };
+}
 function ouvrirAjoutPersonne() {
   const zone = $('ajout-personne'); zone.hidden = false; zone.innerHTML = '';
-  zone.appendChild(el('h2', '', 'Ajouter une personne déjà acceptée'));
+  zone.appendChild(el('h2', '', 'Les infos de la personne')); zone.appendChild(lienAide('r-ajouter'));
   zone.appendChild(el('p', 'meta', "Pas de candidature : la fiche est créée directement à « Accepté ». L'email « Ta place est confirmée » est préparé, il part quand tu presses Envoyer."));
   const poles = polesAjoutables();
   if (!poles.length) { zone.appendChild(el('p', 'message ko', "Aucun pôle ne t'est attribué pour ajouter quelqu'un.")); return; }
@@ -2362,7 +2481,7 @@ function ouvrirAjoutPersonne() {
   poles.forEach((p) => { const o = document.createElement('option'); o.value = p; o.textContent = nomPole(p); selPole.appendChild(o); });
   const bPole = el('div', 'rang'); bPole.appendChild(el('label', '', 'Pôle')); bPole.firstChild.htmlFor = 'ajout-pole'; bPole.appendChild(selPole); zone.appendChild(bPole);
   const f = {};
-  [['prenom', 'Prénom', ''], ['nom', 'Nom', ''], ['projet', 'Nom du projet ou de l’activité (facultatif : sinon prénom et nom)', ''], ['email', 'Email', 'email'], ['email_confirmer', 'Email, encore une fois', 'email'], ['telephone', 'Téléphone (facultatif)', 'tel']].forEach((c) => {
+  [['prenom', 'Prénom', ''], ['nom', 'Nom', ''], ['email', 'Email', 'email'], ['email_confirmer', 'Email, encore une fois', 'email']].forEach((c) => {
     const x = champReglage(c[1], '', { nom: 'ajout-' + c[0], type: c[2] || 'text' }); f[c[0]] = x.saisie; x.saisie.id = 'ajout-' + c[0]; zone.appendChild(x.boite);
   });
   const rangDuo = el('div', 'rang'); rangDuo.id = 'ajout-rang-duo'; rangDuo.appendChild(el('label', '', 'Solo ou duo ?'));
@@ -2383,11 +2502,13 @@ function ouvrirAjoutPersonne() {
   annuler.addEventListener('click', () => { zone.hidden = true; zone.innerHTML = ''; });
   valider.addEventListener('click', async () => {
     etat.className = ''; etat.textContent = '';
-    const corps = { op: 'personne_ajouter', token: jeton, pole: selPole.value, prenom: f.prenom.value, nom: f.nom.value, projet: f.projet.value, email: f.email.value, email_confirmer: f.email_confirmer.value, telephone: f.telephone.value, formule: selDuo.value, food_type: selCamion.value, note: note.value, confirmer_doublon: confirmerDoublon };
-    valider.disabled = true;
+    const corps = { op: 'personne_ajouter', token: jeton, pole: selPole.value, prenom: f.prenom.value, nom: f.nom.value, email: f.email.value, email_confirmer: f.email_confirmer.value, formule: selDuo.value, food_type: selCamion.value, note: note.value, confirmer_doublon: confirmerDoublon };
+    valider.disabled = true; annuler.disabled = true; const texteBouton = valider.textContent; valider.textContent = 'Ajout en cours…';
+    const arreter = progression(etat, ['Création de la fiche…', 'Création du dossier dans le Drive…', 'Préparation de l’email « Ta place est confirmée »…', 'Encore quelques secondes, le Drive est un peu lent…']);
     let r = null;
     try { r = await appel(corps); } catch (err) { r = { ok: false, error: 'Connexion impossible. Réessaie dans un instant.' }; }
-    valider.disabled = false;
+    arreter();
+    valider.disabled = false; annuler.disabled = false; valider.textContent = texteBouton;
     if (sessionExpiree(r)) return;
     if (r && r.doublon) {
       confirmerDoublon = true; valider.textContent = 'Ajouter quand même';
@@ -2397,7 +2518,9 @@ function ouvrirAjoutPersonne() {
     }
     if (!r || !r.ok) { etat.className = 'message ko'; etat.textContent = (r && r.error) || "L'ajout n'a pas pu se faire."; return; }
     derniereMajVue = Date.now();
-    try { await charger(); } catch (err) { /* la liste se mettra à jour plus tard */ }
+    // La ligne arrive dans la réponse : on l'ajoute à la liste sans rien recharger (recharger la liste prenait plusieurs secondes).
+    if (r.item) { items.unshift(r.item); dessinerCandidatures(); dessinerSousMenu(); dessinerAccueil(); }
+    else { try { await charger(); } catch (err) { /* la liste se mettra à jour plus tard */ } }
     if (r.avertissements && r.avertissements.length) {
       etat.className = 'message ok'; etat.textContent = 'Personne ajoutée. Attention : ' + r.avertissements.join(' ');
       actions.innerHTML = '';
@@ -2599,8 +2722,10 @@ function dessinerBenevoles() {
   const zs = $('filtres-b-statut'); zs.innerHTML = '';
   boutonFiltre(zs, 'Tous', parEquipe.length, bStatut === 'Tous', 'statut', () => { bStatut = 'Tous'; dessinerBenevoles(); });
   STATUTS.forEach((s) => boutonFiltre(zs, s, parEquipe.filter((i) => statutDe(i) === s).length, bStatut === s, 'statut', () => { bStatut = s; dessinerBenevoles(); }));
+  const contratManque = (i) => statutDe(i) === 'Accepté' && !i.contrat_signe;   // accepté, mais pas encore de contrat signé reçu
+  boutonFiltre(zs, 'Contrat manquant', parEquipe.filter(contratManque).length, bContratManquant, 'statut', () => { bContratManquant = !bContratManquant; dessinerBenevoles(); });
   const mot = normaliser($('recherche-b').value);
-  const visibles = parEquipe.filter((i) => (bStatut === 'Tous' || statutDe(i) === bStatut) && (!mot || normaliser([i.nom, i.email, i.equipes.join(' ')].join(' ')).indexOf(mot) >= 0));
+  const visibles = parEquipe.filter((i) => (bStatut === 'Tous' || statutDe(i) === bStatut) && (!bContratManquant || contratManque(i)) && (!mot || normaliser([i.nom, i.email, i.equipes.join(' ')].join(' ')).indexOf(mot) >= 0));
   $('compte-b').textContent = visibles.length + ' bénévole' + (visibles.length > 1 ? 's' : '') + ' sur ' + benevoles.length;
   liste.innerHTML = '';
   if (!visibles.length) { const v = document.createElement('div'); v.className = 'vide'; v.textContent = benevoles.length ? 'Aucun bénévole ne correspond. Change les filtres ou la recherche.' : "Aucune candidature de bénévole pour l'instant."; liste.appendChild(v); return; }
@@ -2615,6 +2740,7 @@ function dessinerBenevoles() {
     const c3 = document.createElement('div'); c3.className = 'puces';
     if (i.sans_suivi) c3.appendChild(puce('Pas encore de suivi', 'sans-suivi'));
     else c3.appendChild(puce(statutDe(i), classeSelection(statutDe(i))));
+    if (statutDe(i) === 'Accepté') c3.appendChild(i.contrat_signe ? puce('Contrat reçu', 'equipe') : puce('Contrat manquant', 'sans-suivi'));
     if (i.email_a_envoyer) c3.appendChild(puce('Email à envoyer', 'a-envoyer'));
     const c4 = document.createElement('div'); c4.className = 'liens';
     c4.appendChild(ouvrirLigne('benevole', i));
@@ -2674,6 +2800,8 @@ function roue(texte) {
 function carte(titre) {
   const c = el('section', 'carte');
   c.appendChild(el('h2', '', titre));
+  const aide = { 'Contrat à envoyer (le nôtre)': 'r-contrat' }[titre];   // le lien « Comment faire ? » vers la recette du manuel
+  if (aide) c.appendChild(lienAide(aide));
   return c;
 }
 
@@ -2781,6 +2909,26 @@ function carteGroupe(g) {
   const liste = el('div', 'copies');
   g.champs.forEach((champ) => liste.appendChild(boiteCopie(champ.label, champ.value, { lien: !!champ.lien })));
   c.appendChild(liste);
+  return c;
+}
+function carteContratBenevole(d) {
+  const c = carte('Contrat signé du bénévole');
+  if (d.contrat_signe) {
+    c.appendChild(el('p', 'compte', 'Reçu le ' + d.contrat_signe.date + '.'));
+    const a = lienSur(d.contrat_signe.url, 'Ouvrir le contrat signé'); if (a) c.appendChild(a);
+    return c;
+  }
+  c.appendChild(el('p', 'compte', 'Pas encore reçu. Le bénévole l’envoie avec le lien de son email de bienvenue. Tu peux lui renvoyer ce lien par un email de rappel.'));
+  const b = el('button', 'btn', 'Relancer'); b.type = 'button'; b.id = 'btn-relancer-contrat';
+  const s = el('p', 'aide-statut', ''); s.setAttribute('role', 'status');
+  b.addEventListener('click', async () => {
+    if (!confirm('Envoyer un rappel à ' + (d.prenom || d.projet) + ' ?')) return;
+    b.disabled = true; s.textContent = 'Envoi…';
+    try { const r = await appel({ op: 'benevole_contrat_relancer', token: jeton, id: d.id }); if (sessionExpiree(r)) return; s.textContent = r.ok ? 'Rappel envoyé.' : (r.error || 'Envoi impossible.'); }
+    catch (e) { s.textContent = 'Envoi impossible : vérifie ta connexion.'; }
+    b.disabled = false;
+  });
+  c.appendChild(b); c.appendChild(s); c.appendChild(lienAide('r-contrat-benevole'));
   return c;
 }
 function carteMotivation(texte) {
@@ -2962,13 +3110,14 @@ function dessinerDetail(d, listes, mode) {
   const cartesExtra = [];
   if (genre === 'participant') (d.groupes || []).forEach((g) => cartesExtra.push(carteGroupe(g)));
   if (genre === 'benevole' && d.motivation) cartesExtra.push(carteMotivation(d.motivation));
+  if (genre === 'benevole' && d.contrat_requis) cartesExtra.push(carteContratBenevole(d));
 
   // Statuts
   const cs = carte(genre === 'participant' ? 'Suivi du dossier' : 'Suivi');
   const boutons = el('div', 'statuts-boutons'); boutons.setAttribute('role', 'group'); boutons.setAttribute('aria-label', 'Sélection');
   const autres = el('div', 'autres-statuts');
   const message = el('p', 'message'); message.setAttribute('role', 'status');
-  const emailZone = el('section', 'carte email-pret');
+  const emailZone = el('section', 'carte email-pret'); emailZone.dataset.aide = 'r-acceptation';
   let statuts = d.statuts;
 
   function verrouiller(oui) {
@@ -3038,7 +3187,18 @@ function dessinerDetail(d, listes, mode) {
     } finally { redessinerStatuts(); verrouiller(false); redessinerAlerte(); }
   }
   const alerte = el('p', 'alerte');
-  function redessinerAlerte() { alerte.textContent = statuts.alerte || ''; }
+  function redessinerAlerte() {
+    alerte.textContent = statuts.alerte || '';
+    if (/Email « [a-z_]+ » impossible/.test(statuts.alerte || '')) {
+      const b = el('button', 'btn btn-doux-clair', 'Réessayer'); b.type = 'button'; b.id = 'alerte-reessayer';
+      b.addEventListener('click', async () => {
+        b.disabled = true; let r;
+        try { r = await appel({ op: 'email_reessayer', token: jeton, id: d.id }); } catch (err) { r = { ok: false, error: 'Le serveur ne répond pas. Réessaie.' }; }
+        if (r && r.ok) ouvrirFiche(genre, d.id); else { b.disabled = false; message.className = 'message ko'; message.textContent = (r && r.error) || 'Impossible de réessayer.'; }
+      });
+      alerte.appendChild(document.createTextNode(' ')); alerte.appendChild(b);
+    }
+  }
   cs.appendChild(boutons); cs.appendChild(autres); cs.appendChild(message); cs.appendChild(alerte);
   if (genre === 'participant') {
     // Documents déposés dans le formulaire final : contrat signé (tout le monde) et preuve de paiement (pôles payants)
@@ -3047,9 +3207,10 @@ function dessinerDetail(d, listes, mode) {
       if (!doc[2]) return;
       const ligneDoc = el('div', 'preuve ' + (doc[0] === 'Contrat signé' ? 'doc-contrat' : (doc[0] === 'Preuve de paiement' ? 'doc-preuve' : (doc[0] === 'Assurance responsabilité civile' ? 'doc-assurance' : 'doc-hygiene'))));
       ligneDoc.appendChild(el('strong', '', doc[0]));
-      const lienDoc = (doc[1] && /^https:\/\/(drive|docs)\.google\.com\//.test(String(doc[1]))) ? boutonDocument('Ouvrir le document', doc[1], { id: d.id, tab: d.tab }) : null;
+      const lienDoc = (doc[0] !== 'Preuve de paiement' && doc[1] && /^https:\/\/(drive|docs)\.google\.com\//.test(String(doc[1]))) ? boutonDocument('Ouvrir le document', doc[1], { id: d.id, tab: d.tab }) : null;
       if (lienDoc) ligneDoc.appendChild(lienDoc);
       if (doc[3]) ligneDoc.appendChild(el('span', 'meta', ' ' + doc[3]));
+      else if (doc[0] === 'Preuve de paiement' && doc[1]) ligneDoc.appendChild(el('span', 'meta', 'Reçue : le bouton pour l’ouvrir est à côté de « Paiement », plus haut.'));
       else if (!lienDoc) ligneDoc.appendChild(el('span', 'meta', 'Aucun document déposé.'));
       cs.appendChild(ligneDoc);
     });
@@ -3087,7 +3248,7 @@ function dessinerDetail(d, listes, mode) {
   // Email prêt
   function redessinerEmail(pret) {
     emailZone.innerHTML = '';
-    emailZone.appendChild(el('h2', '', 'Email'));
+    emailZone.appendChild(el('h2', '', 'Email')); emailZone.appendChild(lienAide('r-acceptation'));
     if (!pret) { emailZone.appendChild(el('p', 'meta', "Aucun email prêt. Change un statut pour en préparer un.")); return; }
     emailZone.appendChild(el('p', 'titre-pret', 'Prêt : ' + pret.libelle));
     if (pret.erreur) { emailZone.appendChild(el('p', 'message ko', pret.erreur)); return; }
@@ -3102,6 +3263,23 @@ function dessinerDetail(d, listes, mode) {
     const lo = el('label', 'etiq', 'Objet'); lo.htmlFor = 'mail-objet';
     const objet = document.createElement('input'); objet.type = 'text'; objet.id = 'mail-objet'; objet.className = 'champ-mail'; objet.maxLength = 200; objet.value = pret.objet_modifiable;
     const lc = el('label', 'etiq', 'Texte de l\u2019email'); lc.htmlFor = 'mail-corps';
+    if (pret.cle === 'acceptee' && genre === 'candidature' && !/@example\.org$/i.test(String(d.email || ''))) {
+      const av = el('div', 'alerte-contrat' + (d.contrat_joint ? ' ok' : '')); av.id = 'mail-alerte-contrat';
+      if (d.contrat_joint) av.appendChild(el('span', '', '✓ Contrat joint : ' + (d.contrat_joint.nom || '')));
+      else {
+        av.appendChild(el('span', '', '⚠ Aucun contrat n’est ajouté. L’email partirait sans contrat : ajoute-le dans la carte « Contrat à envoyer (le nôtre) » avant de l’envoyer.'));
+        const aller = el('button', 'btn btn-doux-clair', 'Aller à la carte contrat'); aller.type = 'button'; aller.id = 'mail-aller-contrat';
+        aller.addEventListener('click', () => { const c = document.querySelector('.carte-contrat'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+        av.appendChild(aller);
+      }
+      emailZone.appendChild(av);
+    }
+    (pret.infos || []).forEach((inf) => {
+      const n = el('div', 'note-info'); n.dataset.cle = inf.cle;
+      n.appendChild(el('span', '', 'ℹ ' + inf.libelle + ' n’est pas renseigné : cette ligne n’apparaîtra pas dans l’email.'));
+      const b = el('button', 'btn btn-doux-clair', 'Ajouter le lien'); b.type = 'button'; b.dataset.ajouterLien = inf.cle;
+      b.addEventListener('click', () => ouvrirReglageLien(inf)); n.appendChild(b); emailZone.appendChild(n);
+    });
     const corps = document.createElement('textarea'); corps.id = 'mail-corps'; corps.className = 'champ-mail'; corps.maxLength = 20000; corps.value = pret.corps;
     emailZone.appendChild(lo); emailZone.appendChild(objet); emailZone.appendChild(lc);
     if (pret.corps_html) {
@@ -3334,21 +3512,23 @@ if (jeton) { charger(); } else { montrerConnexion(''); }
 // (aucune fenêtre qui s'ouvre toute seule). Android : la vraie fenêtre d'installation du navigateur. iPhone et iPad : trois gestes expliqués en français.
 (function () {
   const bloc = $('installer'), bouton = $('btn-installer'), aide = $('aide-ios'), splash = $('splash');
+  const blocM = $('installer-menu'), boutonM = $('btn-installer-menu'), aideM = $('aide-ios-menu');
   const autonome = () => (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
   const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   let invite = null;
-  const maj = () => { bloc.hidden = autonome() || !(invite || ios); };
+  const maj = () => { bloc.hidden = blocM.hidden = autonome() || !(invite || ios); };
   window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); invite = e; maj(); });
-  window.addEventListener('appinstalled', () => { invite = null; bloc.hidden = true; });
-  bouton.addEventListener('click', async () => {
+  window.addEventListener('appinstalled', () => { invite = null; bloc.hidden = blocM.hidden = true; });
+  const cliquer = async () => {
     if (invite) {
       const proposition = invite; invite = null;          // une proposition ne sert qu'une fois
       try { proposition.prompt(); await proposition.userChoice; } catch (err) { /* refusé ou indisponible */ }
-      bloc.hidden = true;                                  // pas de relance : le bouton revient seulement à la prochaine ouverture
+      bloc.hidden = blocM.hidden = true;                   // pas de relance : le bouton revient seulement à la prochaine ouverture
       return;
     }
-    if (ios) aide.hidden = !aide.hidden;
-  });
+    if (ios) { aide.hidden = !aide.hidden; aideM.hidden = aide.hidden; }
+  };
+  bouton.addEventListener('click', cliquer); boutonM.addEventListener('click', cliquer);
   maj();
   // Écran de démarrage aux couleurs du festival : seulement quand l'application est ouverte depuis l'écran d'accueil.
   if (splash && autonome()) {

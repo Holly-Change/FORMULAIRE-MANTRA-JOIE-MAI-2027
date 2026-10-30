@@ -437,6 +437,12 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
 .verrouille { pointer-events: none; opacity: .65; }
 .engagements, #vol-engagements { margin-top: 10px; display: flex; flex-direction: column; gap: 12px; }
 .engagements-titre { background: #fff; color: #1C1B3A; padding: 12px 14px; border-radius: 14px; border-left: 5px solid #D6248C; font-size: 1rem; font-weight: 600; line-height: 1.45; margin: 0; opacity: 1; }
+.langue { display: flex; gap: 6px; justify-content: flex-end; margin: 0 0 10px; }
+.langue button { border: 1.5px solid rgba(107, 44, 145, 0.35); background: #fff; color: #2B1A5E; border-radius: 999px; min-width: 46px; height: 38px; font: inherit; font-weight: 700; cursor: pointer; }
+.langue button[aria-pressed="true"] { background: #6B2C91; color: #fff; border-color: #6B2C91; }
+.langue button:focus-visible { outline: 3px solid #7FE3E8; outline-offset: 2px; }
+.note-en { display: none; font-size: .92rem; line-height: 1.45; background: #FBEFCF; color: #6B4A08; border-radius: 12px; padding: 10px 14px; margin: 0 0 12px; }
+html[lang=en] .note-en { display: block; }
 </style>
 </head>
 <body>
@@ -465,10 +471,16 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
   </div>
 
   <main class="carte">
+    <div class="langue" id="langue" role="group" aria-label="Langue / Language"><button type="button" data-lang="fr" aria-pressed="true" lang="fr">FR</button><button type="button" data-lang="en" aria-pressed="false" lang="en">EN</button></div>
+    <p class="note-en" lang="en">Some legal texts (conditions, commitments, contract) and the emails we send are in French only. Our team is happy to answer any question in English.</p>
     <div class="fil-inscription" id="fil-inscription" hidden>
       <h1 class="titre-inscription">Je complète mon inscription</h1>
       <div class="categorie-choisie" id="fil-categorie" hidden></div>
       <div class="onglets-inscription" id="onglets-inscription" role="tablist" aria-label="Les étapes de ton inscription"></div>
+      <div class="brouillon-barre" id="brouillon-barre" style="display:none;margin:10px 0 0">
+        <button type="button" id="btn-brouillon" style="background:#fff;border:2px solid #8E3DA6;color:#2B1A5E;border-radius:999px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer;min-height:44px">Enregistrer et continuer plus tard</button>
+        <p id="brouillon-statut" role="status" style="margin:8px 0 0;font-size:.92rem;color:#2B1A5E">Tes réponses écrites sont aussi enregistrées toutes seules. Les fichiers (photos, contrat, preuve de paiement) ne le sont pas : tu les ajouteras en revenant.</p>
+      </div>
     </div>
 
     <!-- ============ ECRAN 0 : BIENVENUE ============ -->
@@ -491,6 +503,24 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
     <section class="ecran" id="ecran-ouverture" aria-live="polite">
       <h2>Ouverture de ton dossier…</h2>
       <p class="aide"><span class="tourne"></span> Cela peut prendre quelques secondes, merci de patienter.</p>
+    </section>
+
+    <section class="ecran" id="ecran-contrat" aria-live="polite">
+      <h2>Envoyer mon contrat signé ✍️</h2>
+      <div id="contrat-formulaire">
+        <p class="aide" id="contrat-bonjour">Une photo nette ou un PDF suffit. Seule l’équipe du festival le voit.</p>
+        <div class="champ">
+          <label class="etiquette obligatoire" for="contrat_benevole_file">Mon contrat signé <span class="astuce">(PDF, JPG ou PNG, 10 Mo au maximum)</span></label>
+          <input type="file" id="contrat_benevole_file" accept="application/pdf,image/jpeg,image/png">
+        </div>
+        <div class="message-erreur" id="erreur-contrat"></div>
+        <button class="btn" type="button" id="btn-contrat-benevole">Envoyer mon contrat</button>
+      </div>
+      <div id="contrat-merci" style="display:none">
+        <p><strong>Merci, ton contrat est bien reçu 💛</strong></p>
+        <p class="aide" id="contrat-recu-le"></p>
+        <p class="aide">Tu peux fermer cette page. Si tu t’es trompé·e de fichier, rouvre ce lien et envoie le bon : il remplace le précédent.</p>
+      </div>
     </section>
 
     <section class="ecran" id="ecran-ferme">
@@ -545,6 +575,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
       <div class="puces" id="cand-poles" style="margin-top:14px"></div>
       <div id="cand-conditions" style="display:none">
         <h3 style="font-family:var(--police-titres);font-size:20px;margin-top:22px">Conditions de participation</h3>
+        <p class="note-en" lang="en">The conditions and commitments below are the legally binding text, in French.</p>
         <div class="conditions" id="cand-conditions-texte"></div>
         <div class="nav-etapes" id="cand-pdf-boite" style="margin-top:10px"><button class="btn btn-retour" type="button" id="cand-pdf" onclick="candPdf()">📄 Télécharger les conditions (PDF)</button></div>
         <div class="message-erreur" id="cand-conditions-vide" style="margin-top:10px">Les conditions de ce pôle ne sont pas encore publiées. Reviens bientôt.</div>
@@ -826,7 +857,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
         <div id="tech-atelier" style="display:none">
           <label class="etiquette" for="workshop_duration">Durée de l’atelier (en min)</label><input id="workshop_duration" type="text">
           <label class="etiquette" for="workshop_capacity">Nombre maximum de participant·es</label><input id="workshop_capacity" type="number" min="1">
-          <label class="etiquette" for="workshop_audio">Besoin d’un micro ou d’une enceinte fournie par le festival ?</label><select id="workshop_audio"><option value="">Choisir</option><option>Non</option><option>Micro</option><option>Enceinte</option><option>Micro et enceinte</option></select>
+          <label class="etiquette" for="workshop_audio">Besoin d’un micro et d’une enceinte fournis par le festival ?</label><select id="workshop_audio"><option value="">Choisir</option><option>Non</option><option>Micro et enceinte</option></select>
           <label class="etiquette" for="workshop_electricity">Besoin d’électricité ? Si oui, pour quels appareils ?</label><textarea id="workshop_electricity" rows="2"></textarea>
           <label class="etiquette" for="workshop_kw">Puissance électrique totale nécessaire (en kW) <span class="astuce">(additionne la puissance de tous tes appareils, indiquée en W sur leur étiquette : 1 000 W = 1 kW. Exemple : une bouilloire de 2 000 W et une lampe de 20 W font environ 2 kW. Si l'étiquette indique des ampères (A), multiplie par 230 pour obtenir des W. Laisse vide si tu n'as pas besoin d'électricité)</span></label><input id="workshop_kw" type="number" min="0" step="0.1" placeholder="Ex. : 1,5">
         </div>
@@ -863,7 +894,7 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
         <textarea id="insurance_note" rows="2" maxlength="500"></textarea>
       </div>
       <div class="champ" id="boite-iban" style="display:none">
-        <label class="etiquette" for="iban">Ton IBAN <span class="astuce">(facultatif)</span></label>
+        <label class="etiquette" for="iban">Ton IBAN <span class="astuce">(obligatoire)</span></label>
         <input type="text" id="iban" autocomplete="off" inputmode="text" maxlength="42" placeholder="FR76 1234 5678 9012 3456 7890 123">
         <p class="aide">Pour te régler plus facilement. Seules les personnes qui gèrent les paiements peuvent le voir. Si tu n'as pas d'IBAN, laisse vide et préviens ta référente.</p>
       </div>
@@ -938,20 +969,20 @@ body::after { content: ""; position: fixed; right: -6px; bottom: -8px; width: mi
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.37-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.42-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec',
   categories: ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'],
-  typesArtiste: ['DJ ecstatic', 'Cercle de chants', 'Spectacle', 'Concert', 'Musicien accompagnant', 'Danse'],
+  typesArtiste: ['DJ ecstatic', 'Cercle de chants', 'Spectacle', 'Concert', 'Musicien volant', 'Danse'],
   couleursConfettis: ['#A44FC4', '#6E5BD0', '#2BB8C4', '#F0663C', '#E0A93B'],
   festivalDebut: '2027-05-26',   // l'âge minimum des bénévoles se compte à cette date
   ageMinimumBenevole: 18,
   // Contacts affichés dans les formulaires. Vide : rien ne s'affiche. À remplir quand la personne a donné son accord.
   contacts: {
     referentes: { 'Artiste': '', 'Atelier': '', 'Bien-être': '', 'Artisan': '', "L'Antre deux mondes": '', 'Stand / Miam Miam': '' },   // ex. 'Solène : solene@exemple.fr'
-    fab: 'fabienrenda@gmail.com',    // responsable technique (Artiste et Atelier) : email ou téléphone
-    eric: '+33 6 11 25 20 81'    // contact sur place pour les artistes : téléphone
+    fab: '',    // responsable technique : donné par le script seulement à une personne qui ouvre son lien personnel (plus écrit dans cette page publique)
+    eric: ''    // contact sur place pour les artistes : idem
   }
 };
 
@@ -1031,13 +1062,67 @@ async function ouvrirDossierPersonnel(jeton) {
   }
   // La configuration (contrat obligatoire, etc.) est déjà en train de se charger depuis l'ouverture de la page (candPrefetch) : les deux requêtes partent en même temps.
   etat.jeton = jeton;
-  const puce = Array.from($('puces-categorie').querySelectorAll('.puce')).find(b => b.textContent === nomPole(rep.pole));
+  if (rep.contacts) { CONFIG.contacts.fab = String(rep.contacts.fab || ''); CONFIG.contacts.eric = String(rep.contacts.eric || ''); }
+  const puce = Array.from($('puces-categorie').querySelectorAll('.puce')).find(b => frTexte(b) === nomPole(rep.pole));
   if (puce) puce.click();
   $('puces-categorie').classList.add('verrouille');
   const mettre = (id, v) => { const el = $(id); if (el && v) el.value = v; };
   mettre('name', rep.projet); mettre('first_name', rep.prenom); mettre('last_name', rep.nom); mettre('email', rep.email); mettre('phone', rep.telephone);
+  $('brouillon-barre').style.display = 'block';
+  if (rep.brouillon) {   // des réponses déjà enregistrées : on les remet, et on laisse revenir à l'étape où la personne s'était arrêtée
+    brouillonEnAttente = rep.brouillon; brouillonAppliquer(rep.brouillon);
+    $('brouillon-statut').textContent = 'Tes réponses enregistrées le ' + (rep.brouillon_le || '') + ' sont remplies. Vérifie et continue. Les fichiers (photos, contrat, preuve de paiement) sont à ajouter de nouveau.';
+  }
   aller(1);
+  brouillonDernier = JSON.stringify(brouillonCollecter());   // l'état de départ : rien n'est renvoyé tant que rien n'a changé
+  if (rep.brouillon && rep.brouillon.etape) { const k = ETAPES.map(String).indexOf(String(rep.brouillon.etape)); if (k > 0) { etapeMax = Math.max(etapeMax, k); majFil(etapeCourante); } }
+  clearInterval(brouillonTimer); brouillonTimer = setInterval(() => brouillonEnvoyer(false), 30000);
 }
+// ------------------ Enregistrer et continuer plus tard (brouillon sous le lien personnel) ------------------
+let brouillonEnAttente = null, brouillonDernier = '', brouillonTimer = null;
+function brouillonCollecter() {
+  const champs = {};
+  const sel = ['1', '2', '3', '4', 'tech', 'docs', '7'].map(e => '#ecran-' + e + ' input, #ecran-' + e + ' select, #ecran-' + e + ' textarea').join(',');
+  document.querySelectorAll(sel).forEach(el => {
+    if (!el.id || ['file', 'password', 'hidden'].indexOf(el.type) >= 0 || el.id === 'honeypot' || el.id === 'access_code') return;
+    if (el.type === 'checkbox' || el.type === 'radio') { if (el.checked) champs[el.id] = true; }
+    else if (String(el.value || '') !== '') champs[el.id] = String(el.value).slice(0, 6000);
+  });
+  return { v: 1, champs: champs, membres: Array.from(document.querySelectorAll('.membre')).map(el => ({ p: el.querySelector('.membre-prenom').value, n: el.querySelector('.membre-nom').value, b: el.querySelector('.membre-bio').value })), etat: { artist_type: etat.artist_type, video: etat.video }, etape: String(etapeCourante) };
+}
+function brouillonAppliquer(b) {
+  if (!b || !b.champs) return;
+  const c = b.champs;
+  if (c['nombre-membres'] && $('nombre-membres')) { $('nombre-membres').value = c['nombre-membres']; try { actualiserMembres(); } catch (e) { /* facultatif */ } }
+  Object.keys(c).forEach(id => {
+    if (/^acc_/.test(id)) return;   // le bloc d'accueil est dessiné plus tard : voir brouillonAccueil()
+    const el = $(id); if (!el || el.type === 'file') return;
+    if (el.type === 'checkbox' || el.type === 'radio') el.checked = !!c[id]; else el.value = c[id];
+    el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  (b.membres || []).forEach((m, i) => { const ligne = document.querySelectorAll('.membre')[i]; if (!ligne) return; ligne.querySelector('.membre-prenom').value = m.p || ''; ligne.querySelector('.membre-nom').value = m.n || ''; ligne.querySelector('.membre-bio').value = m.b || ''; });
+  if (b.etat && b.etat.artist_type) { const p = Array.from($('puces-type').querySelectorAll('.puce')).find(x => frTexte(x) === b.etat.artist_type); if (p) p.click(); }
+  if (b.etat && b.etat.video) { const p = document.querySelector('#duo-video .puce[data-valeur="' + b.etat.video + '"]'); if (p) p.click(); }
+}
+function brouillonAccueil() {
+  if (!brouillonEnAttente) return;
+  const c = brouillonEnAttente.champs || {};
+  Object.keys(c).filter(id => /^acc_/.test(id)).forEach(id => { const el = $(id); if (el && el.value === '') el.value = c[id]; });
+  majAccueil();
+}
+async function brouillonEnvoyer(manuel) {
+  if (!etat.jeton || envoiEnCours) return;
+  const b = brouillonCollecter(), s = JSON.stringify(b), st = $('brouillon-statut');
+  if (!manuel && s === brouillonDernier) return;
+  if (manuel) st.textContent = 'Enregistrement…';
+  try {
+    const r = await (await fetch(CONFIG.scriptUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ kind: 'dossier_brouillon', token: etat.jeton, brouillon: b }), keepalive: s.length < 60000 })).json();
+    if (r && r.ok) { brouillonDernier = s; st.textContent = 'Enregistré le ' + r.enregistre_le + '. Tu peux fermer cette page et revenir avec le même lien : tes réponses écrites seront là. Les fichiers sont à ajouter de nouveau.'; }
+    else if (manuel) st.textContent = (r && r.error) || 'Enregistrement impossible pour le moment.';
+  } catch (e) { if (manuel) st.textContent = 'Enregistrement impossible : vérifie ta connexion et réessaie.'; }
+}
+$('btn-brouillon').addEventListener('click', () => brouillonEnvoyer(true));
+document.addEventListener('visibilitychange', () => { if (document.hidden) brouillonEnvoyer(false); });
 // Liens directs vers un pôle (pour les boutons du site) : ?pole=artisanat, ?pole=food-truck, ?pole=benevoles...
 const POLES_LIENS = { artiste: 'Artiste', artistes: 'Artiste', atelier: 'Atelier', ateliers: 'Atelier', workshop: 'Atelier', workshops: 'Atelier', 'bien-etre': 'Bien-être', bienetre: 'Bien-être', 'healing-space': 'Bien-être', artisan: 'Artisan', artisans: 'Artisan', artisanat: 'Artisan', antre: "L'Antre deux mondes", 'antre-deux-mondes': "L'Antre deux mondes", 'food-truck': 'Stand / Miam Miam', 'food-trucks': 'Stand / Miam Miam', foodtruck: 'Stand / Miam Miam', stand: 'Stand / Miam Miam', autre: 'Autre' };
 async function ouvrirPoleDirect(slug) {
@@ -1046,7 +1131,7 @@ async function ouvrirPoleDirect(slug) {
   const pole = POLES_LIENS[s];
   if (!pole) { aller(0); return; }
   await ouvrirCandidature();   // le même chemin que le bouton « Candidater »
-  const b = Array.from($('cand-poles').querySelectorAll('.puce')).find(x => x.textContent.indexOf(nomPole(pole)) >= 0);
+  const b = Array.from($('cand-poles').querySelectorAll('.puce')).find(x => frTexte(x).indexOf(nomPole(pole)) >= 0);
   if (b) b.click();
 }
 
@@ -1091,6 +1176,7 @@ function effacerErreur(n) {
 
 // ------------------ Ecran 0 ------------------
 // IBAN : contrôle de forme (pays + clé modulo 97). Ne prouve pas que le compte existe.
+function ibanObligatoire() { return ['Artiste', 'Atelier'].indexOf(etat.category) >= 0 && !!derniereConfig && derniereConfig.iban_obligatoire === true; }   // le serveur l'exige de toute façon : ici on ne bloque que si la configuration est connue
 function ibanNormaliser(s) { return String(s || '').replace(/[\s.-]+/g, '').toUpperCase(); }
 function ibanValide(s) {
   const v = ibanNormaliser(s);
@@ -1117,37 +1203,60 @@ function verifierCode() {
 const NOMS_AFFICHES = { 'Atelier': 'Ateliers', 'Artisan': 'Artisanat' };
 function nomPole(n) { return NOMS_AFFICHES[n] || n; }
 // Accueil et invité (artistes et ateliers) : demandés dans le dossier final, après la sélection.
-const ACCUEIL_INVITE = [
+const FETE = { min: '2027-05-24', max: '2027-06-02' };   // le calendrier s'ouvre sur les dates du festival : personne ne défile depuis aujourd'hui
+const SI_INV = ['invite', 'Oui'];
+const ACC_INVITE = [
   { k: 'invite', l: 'Viens-tu avec un invité ?', t: 's', o: ['Oui', 'Non'], r: 1 },
-  { k: 'guest_last', l: 'Nom de ton invité', t: 't', r: 1, si: ['invite', 'Oui'] },
-  { k: 'guest_first', l: 'Prénom de ton invité', t: 't', r: 1, si: ['invite', 'Oui'] },
-  { k: 'guest_email', l: 'Email de ton invité (facultatif)', t: 't', type: 'email', si: ['invite', 'Oui'] },
-  { k: 'guest_phone', l: 'Téléphone de ton invité', t: 't', type: 'tel', r: 1, si: ['invite', 'Oui'] }
+  { k: 'guest_last', l: 'Nom de ton invité', t: 't', r: 1, sis: [SI_INV] },
+  { k: 'guest_first', l: 'Prénom de ton invité', t: 't', r: 1, sis: [SI_INV] },
+  { k: 'guest_email', l: 'Email de ton invité (facultatif)', t: 't', type: 'email', sis: [SI_INV] },
+  { k: 'guest_phone', l: 'Téléphone de ton invité', t: 't', type: 'tel', r: 1, sis: [SI_INV] },
+  { k: 'guest_same_arrival', l: 'Ton invité arrive-t-il en même temps que toi ?', t: 's', o: ['Oui', 'Non'], r: 1, sis: [SI_INV] }
+];
+const ACC_INVITE_DEPART = [
+  { k: 'guest_same_departure', l: 'Ton invité repart-il en même temps que toi ?', t: 's', o: ['Oui', 'Non'], r: 1, sis: [SI_INV] }
 ];
 const ACCUEIL_CHAMPS = {
   'Artiste': [
-    { k: 'arrival_date', l: 'Date d’arrivée', t: 't', type: 'date', r: 1 },
-    { k: 'arrival_time', l: 'Heure d’arrivée', t: 't', type: 'time', r: 1 },
-    { k: 'transport', l: 'Moyen de transport', t: 's', o: ['Voiture', 'Train', 'Avion', 'Autre'], r: 1 },
-    { k: 'transport_details', l: 'Détails du voyage : numéro de vol ou de train, gare ou aéroport, horaires', t: 'a', r: 1, si: ['transport', ['Train', 'Avion']] },
-    { k: 'transfer', l: 'As-tu besoin d’un transfert depuis la gare ou l’aéroport ?', t: 's', o: ['Oui', 'Non'], r: 1 },
-    { k: 'transfer_details', l: 'Précise le transfert souhaité', t: 'a', r: 1, si: ['transfer', 'Oui'] },
+    { k: 'arrival_date', l: 'Quel jour arrives-tu ?', t: 't', type: 'date', r: 1 },
+    { k: 'transport', l: 'Comment viens-tu ?', t: 's', o: ['Voiture', 'Train', 'Avion', 'Autre'], r: 1 },
+    { k: 'transport_details', l: 'Numéro de ton vol ou de ton train', t: 'a', r: 1, sis: [['transport', ['Train', 'Avion']]] },
+    { k: 'transfer', l: 'Où arrives-tu ?', t: 's', o: [['Non', 'Directement au festival'], ['Oui', 'Il faut venir me chercher (gare ou aéroport)']], r: 1 },
+    { k: 'transfer_details', l: 'Où doit-on venir te chercher ? Nom de la gare ou de l’aéroport', t: 'a', r: 1, sis: [['transfer', 'Oui']] },
+    { k: 'arrival_time', l: 'À quelle heure arrives-tu au festival ?', t: 't', type: 'time', r: 1 }
+  ].concat(ACC_INVITE, [
+    { k: 'guest_arrival_date', l: 'Quel jour arrive ton invité ?', t: 't', type: 'date', r: 1, sis: [SI_INV, ['guest_same_arrival', 'Non']] },
+    { k: 'guest_arrival_time', l: 'À quelle heure arrive ton invité ?', t: 't', type: 'time', r: 1, sis: [SI_INV, ['guest_same_arrival', 'Non']] },
+    { k: 'departure_date', l: 'Quel jour repars-tu ?', t: 't', type: 'date', r: 1 },
+    { k: 'departure_time', l: 'À quelle heure quittes-tu le festival ?', t: 't', type: 'time', r: 1 },
+    { k: 'departure_station', l: 'Si tu repars en train ou en avion : de quelle gare ou de quel aéroport ? (facultatif)', t: 't' },
+    { k: 'departure_station_time', l: 'À quelle heure dois-tu être à la gare ou à l’aéroport ?', t: 't', type: 'time', r: 1, sis: [['departure_station', '*']] }
+  ], ACC_INVITE_DEPART, [
+    { k: 'guest_departure_date', l: 'Quel jour repart ton invité ?', t: 't', type: 'date', r: 1, sis: [SI_INV, ['guest_same_departure', 'Non']] },
+    { k: 'guest_departure_time', l: 'À quelle heure repart ton invité ?', t: 't', type: 'time', r: 1, sis: [SI_INV, ['guest_same_departure', 'Non']] },
     { k: 'food_needs', l: 'Régime alimentaire et besoins en repas', t: 'a', r: 1, n: 'Écris « aucun » s’il n’y en a pas.' },
     { k: 'allergies', l: 'Allergies ou intolérances alimentaires (facultatif)', t: 'a', n: 'Cette information sert uniquement à préparer tes repas.' }
-  ],
+  ]),
   'Atelier': [
     { k: 'arrival_date', l: 'Date d’arrivée au festival', t: 't', type: 'date', r: 1 },
     { k: 'departure_date', l: 'Date de départ', t: 't', type: 'date', r: 1 }
-  ]
+  ].concat(ACC_INVITE, [
+    { k: 'guest_arrival_date', l: 'Quel jour arrive ton invité ?', t: 't', type: 'date', r: 1, sis: [SI_INV, ['guest_same_arrival', 'Non']] }
+  ], ACC_INVITE_DEPART, [
+    { k: 'guest_departure_date', l: 'Quel jour repart ton invité ?', t: 't', type: 'date', r: 1, sis: [SI_INV, ['guest_same_departure', 'Non']] }
+  ])
 };
-const ACCUEIL_NOTES = { 'Artiste': 'Ces informations préparent ton accueil : arrivée, transport, repas.', 'Atelier': 'Un seul invité est possible. Ses coordonnées peuvent être modifiées jusqu’au 21 mai 2027. Ton invité règle son camping à son arrivée.' };
-function accueilListe() { return (ACCUEIL_CHAMPS[etat.category] || []).concat(ACCUEIL_INVITE); }
+const ACCUEIL_NOTES = { 'Artiste': 'Ces informations préparent ton accueil : arrivée, transport, départ, repas.', 'Atelier': 'Un seul invité est possible. Ses coordonnées peuvent être modifiées jusqu’au 21 mai 2027. Ton invité règle son camping à son arrivée.' };
+function accueilListe() { return ACCUEIL_CHAMPS[etat.category] || []; }
 function accueilVisible(f) {
-  if (!f.si) return true;
-  const v = valeur('acc_' + f.si[0]), attendu = Array.isArray(f.si[1]) ? f.si[1] : [f.si[1]];
-  return attendu.indexOf(v) >= 0;
+  const conds = f.sis || (f.si ? [f.si] : []);
+  return conds.every(c => { const v = valeur('acc_' + c[0]), attendu = Array.isArray(c[1]) ? c[1] : [c[1]]; return attendu.indexOf('*') >= 0 ? v !== '' : attendu.indexOf(v) >= 0; });
 }
-function majAccueil() { accueilListe().forEach(f => { const b = $('accb_' + f.k); if (b) b.style.display = accueilVisible(f) ? '' : 'none'; }); }
+function majAccueil() {
+  accueilListe().forEach(f => { const b = $('accb_' + f.k); if (b) b.style.display = accueilVisible(f) ? '' : 'none'; });
+  const bt = $('accb_arrival_time');   // l'heure demandée n'est pas la même selon qu'on vient la chercher ou non
+  if (bt) bt.querySelector('label').textContent = valeur('acc_transfer') === 'Oui' ? 'À quelle heure arrives-tu à la gare ou à l’aéroport ?' : 'À quelle heure arrives-tu au festival ?';
+}
 function rendreAccueil() {
   const zone = $('accueil-champs'), boite = $('boite-accueil');
   if (['Artiste', 'Atelier'].indexOf(etat.category) < 0) { boite.style.display = 'none'; zone.textContent = ''; zone.dataset.cat = ''; return; }
@@ -1164,15 +1273,16 @@ function rendreAccueil() {
     const div = document.createElement('div'); div.className = 'champ'; div.id = 'accb_' + f.k;
     const lab = document.createElement('label'); lab.className = 'etiquette' + (f.r ? ' obligatoire' : ''); lab.htmlFor = 'acc_' + f.k; lab.textContent = f.l; div.appendChild(lab);
     let el;
-    if (f.t === 's') { el = document.createElement('select'); const o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Choisir'; el.appendChild(o0); f.o.forEach(x => { const o = document.createElement('option'); o.value = x; o.textContent = x; el.appendChild(o); }); }
+    if (f.t === 's') { el = document.createElement('select'); const o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Choisir'; el.appendChild(o0); f.o.forEach(x => { const o = document.createElement('option'); o.value = Array.isArray(x) ? x[0] : x; o.textContent = Array.isArray(x) ? x[1] : x; el.appendChild(o); }); }
     else if (f.t === 'a') { el = document.createElement('textarea'); el.rows = 3; el.maxLength = 600; }
-    else { el = document.createElement('input'); el.type = f.type || 'text'; el.maxLength = 120; }
+    else { el = document.createElement('input'); el.type = f.type || 'text'; el.maxLength = 120; if (f.type === 'date') { el.min = FETE.min; el.max = FETE.max; } }
     el.id = 'acc_' + f.k; el.addEventListener('input', majAccueil); el.addEventListener('change', majAccueil);
     div.appendChild(el);
     if (f.n) { const p = document.createElement('p'); p.className = 'aide'; p.textContent = f.n; div.appendChild(p); }
     zone.appendChild(div);
   });
   majAccueil();
+  brouillonAccueil();   // les réponses d'un brouillon pour l'accueil sont remises quand le bloc est dessiné
 }
 function problemeAccueil() {
   if (['Artiste', 'Atelier'].indexOf(etat.category) < 0) return '';
@@ -1182,7 +1292,12 @@ function problemeAccueil() {
     if (f.r && !v) return 'À compléter : ' + f.l + '.';
     if (f.type === 'email' && v && !/^\S+@\S+\.\S+$/.test(v)) return f.l + ' : cette adresse ne semble pas valide.';
   }
-  if (etat.category === 'Atelier' && valeur('acc_departure_date') < valeur('acc_arrival_date')) return 'La date de départ doit être après la date d’arrivée.';
+  const ar = valeur('acc_arrival_date'), de = valeur('acc_departure_date');
+  if (ar && de && de < ar) return 'La date de départ doit être après la date d’arrivée.';
+  if (valeur('acc_invite') === 'Oui') {
+    const ga = valeur('acc_guest_same_arrival') === 'Non' ? valeur('acc_guest_arrival_date') : ar, gd = valeur('acc_guest_same_departure') === 'Non' ? valeur('acc_guest_departure_date') : de;
+    if (ga && gd && gd < ga) return 'Le départ de ton invité doit être après son arrivée.';
+  }
   return '';
 }
 function accueilValeurs() {
@@ -1220,7 +1335,7 @@ creerPuces('puces-categorie', CONFIG.categories, v => {
   $('portraits-participants').style.display = groupeActif() ? 'block' : 'none';
   actualiserMembres();
   ['tech-artiste','tech-atelier','tech-stand'].forEach(id => $(id).style.display = 'none');
-  if (artiste || v === 'Atelier' || v === 'Bien-être' || v === 'Artisan')
+  if (artiste || v === 'Atelier' || v === 'Bien-être' || v === 'Artisan' || v === 'Stand / Miam Miam')
     $(artiste ? 'tech-artiste' : v === 'Atelier' ? 'tech-atelier' : 'tech-stand').style.display = 'block';
   if (!artiste) etat.artist_type = '';
 });
@@ -1604,10 +1719,11 @@ async function afficherDocuments() {
   $('paiement-info').textContent = payant === null ? 'Si ta participation est payante, ajoute ici ta preuve de paiement.' : '';
   $('docs-et-paiement').style.display = payant === false ? 'none' : 'inline';
   $('docs-et-assurance').style.display = etat.category === 'Artiste' ? 'none' : 'inline';
-  $('boite-contrat').querySelector('label').classList.toggle('obligatoire', cfg.contrat_obligatoire !== false);
+  $('boite-contrat').querySelector('label').classList.toggle('obligatoire', cfg.contrat_obligatoire !== false || etat.category === 'Atelier');
   // L'attestation d'assurance est demandée à tous les pôles sauf Artiste.
   $('boite-assurance').style.display = etat.category === 'Artiste' ? 'none' : 'block';
   $('boite-iban').style.display = ['Artiste', 'Atelier'].indexOf(etat.category) >= 0 ? 'block' : 'none';
+  const astuceIban = $('boite-iban').querySelector('.astuce'); if (astuceIban) astuceIban.textContent = ibanObligatoire() ? '(obligatoire)' : '(facultatif)';
   $('boite-hygiene').style.display = etat.category === 'Stand / Miam Miam' ? 'block' : 'none';
   rendreAccueil();
   return payant;
@@ -1621,13 +1737,14 @@ function verifierFichierDoc(file, maxMo, nom) {
 // Retourne le message à montrer, ou '' si les documents sont en ordre.
 function problemeDocuments(payant) {
   const contrat = $('contract_file').files[0], preuve = $('payment_proof').files[0], assurance = $('insurance_file').files[0], hygiene = $('hygiene_file').files[0];
-  const contratObligatoire = !derniereConfig || derniereConfig.contrat_obligatoire !== false;
+  const contratObligatoire = !derniereConfig || derniereConfig.contrat_obligatoire !== false || etat.category === 'Atelier';   // pour les Workshops, toujours
   if (contratObligatoire && !contrat) return 'Ajoute ton contrat signé (PDF ou image).';
   if (payant === true && !preuve) return 'Ajoute la preuve de ton paiement (capture d’écran ou PDF).';
   const mauvais = verifierFichierDoc(contrat, 10, 'Le contrat') || verifierFichierDoc(preuve, 5, 'La preuve de paiement') || verifierFichierDoc(assurance, 5, 'L’attestation d’assurance') || verifierFichierDoc(hygiene, 5, 'Le justificatif d’hygiène');
   if (mauvais) return mauvais;
   if (etat.category !== 'Artiste' && !assurance && valeur('insurance_note').length < 10) return 'Ajoute ton attestation d’assurance responsabilité civile (PDF ou photo), ou explique pourquoi tu n’en as pas (une phrase).';
   if (etat.category === 'Stand / Miam Miam' && !hygiene && !valeur('hygiene_note')) return 'Ajoute ton justificatif d’hygiène alimentaire, ou explique pourquoi tu en es exempté·e.';
+  if (ibanObligatoire() && !ibanNormaliser(valeur('iban'))) return 'Ajoute ton IBAN : il est obligatoire, le versement se fait par virement bancaire.';
   if (['Artiste', 'Atelier'].indexOf(etat.category) >= 0 && ibanNormaliser(valeur('iban')) && !ibanValide(valeur('iban'))) return 'Cet IBAN ne semble pas valide. Vérifie-le, ou laisse le champ vide et préviens ta référente.';
   const pa = problemeAccueil(); if (pa) return pa;
   return '';
@@ -1738,6 +1855,7 @@ async function envoyer() {
   catch(e) { envoiEnCours = false; return erreur(7, 'Pièce jointe : ' + (e && e.message ? e.message : String(e))); }
   // Cles identiques au schema partage, copiees telles quelles
   const donnees = {
+    kind: 'participant',   // sans ce type, le serveur ne regardait pas le lien personnel et réclamait le code partagé
     submission_id: submissionIds.participant,
     access_code: etat.jeton ? '' : valeur('access_code').toUpperCase(),
     dossier_token: etat.jeton || '',
@@ -2029,7 +2147,7 @@ function confettis() {
 }
 </script>
 <script>
-(function () { if (/[?&](?:d=[a-f0-9]{40}|pole=[A-Za-z-]+)(?:&|#|$)/.test(location.search)) { var a = document.getElementById('ecran-0'), o = document.getElementById('ecran-ouverture'); if (a) a.classList.remove('actif'); if (o) o.classList.add('actif'); } })();
+(function () { if (/[?&](?:d=[a-f0-9]{40}|c=[a-f0-9]{40}|pole=[A-Za-z-]+)(?:&|#|$)/.test(location.search)) { var a = document.getElementById('ecran-0'), o = document.getElementById('ecran-ouverture'); if (a) a.classList.remove('actif'); if (o) o.classList.add('actif'); } })();
 </script>
 <script>
 /* ================================================================
@@ -2104,6 +2222,8 @@ function CAND_DUO(solo) {
 const CAND_POLE = {
   'Artiste': [
     { k: 'artist_type', l: 'Type de proposition', t: 'chips', o: CONFIG.typesArtiste, r: 1 },
+    { k: 'volants', l: 'Souhaites-tu être accompagné·e par un ou plusieurs musiciens volants ?', t: 'chips', o: ['Oui', 'Non'], r: 1, sauf: ['artist_type', 'Musicien volant'] },
+    { k: 'volants_qui', l: 'Lesquels ? Écris leurs noms, ou les instruments que tu souhaites.', t: 'a', r: 1, si: ['volants', 'Oui'], sauf: ['artist_type', 'Musicien volant'] },
     { k: 'members', l: 'Les personnes du groupe (une ligne par personne : prénom, nom, rôle)', t: 'a', r: 1 },
     { k: 'tech_sheet', l: 'As-tu une fiche technique ?', t: 'chips', o: ['Oui', 'Non'], r: 1 },
     { k: 'tech_sheet_link', l: 'Lien vers ta fiche technique', t: 't', r: 1, si: ['tech_sheet', 'Oui'], n: 'Dépose-la sur Drive, Dropbox ou WeTransfer et colle le lien ici. Tu pourras aussi la déposer à l’inscription finale.' },
@@ -2570,7 +2690,135 @@ async function candEnvoyer() {
   } finally { btn.disabled = false; btn.textContent = 'Envoyer ma candidature 🕊️'; candProgres(false); }
 }
 
+
+// ------------------ English / Français ------------------
+// Le français reste la langue de départ. L'anglais est un habillage : on remplace l'AFFICHAGE d'un texte français connu par sa version anglaise.
+// Rien de ce qui est envoyé au serveur ne change (valeurs des listes, catégories, champs : tout reste en français). Les textes juridiques
+// (conditions, engagements, contrat) et les emails restent en français.
+const I18N_EN = {"Je complète mon inscription":"Complete my registration","Enregistrer et continuer plus tard":"Save and continue later","Tes réponses écrites sont aussi enregistrées toutes seules. Les fichiers (photos, contrat, preuve de paiement) ne le sont pas : tu les ajouteras en revenant.":"Your written answers are also saved automatically. Files (photos, contract, proof of payment) are not: you will add them again when you come back.","Festival Mantra Joie 2027":"Mantra Joie Festival 2027","Bienvenue ! 🌈":"Welcome! 🌈","Quel bonheur de t'accueillir dans l'aventure Mantra Joie ! 🌈":"What a joy to welcome you to the Mantra Joie adventure! 🌈","Candidater ✨":"Apply ✨","Tu souhaites participer au festival comme artiste, atelier, artisan, bien-être ou stand ? Dépose ta candidature ici.":"Would you like to take part in the festival as an artist, workshop, craftsperson, wellbeing practitioner or stall? Submit your application here.","Candidater":"Apply","Devenir bénévole 💛":"Become a volunteer 💛","Tu souhaites rejoindre l'équipe du festival ? Présente-toi ici.":"Would you like to join the festival team? Introduce yourself here.","Devenir bénévole":"Become a volunteer","Participants ✨":"Participants ✨","Tu es déjà inscrit·e et validé·e ? Complète tes informations pour ta participation et nos supports de communication.":"Already registered and accepted? Complete your information for your participation and our communication materials.","Compléter mon inscription":"Complete my registration","Votre site web":"Your website","Ouverture de ton dossier…":"Opening your file…","Cela peut prendre quelques secondes, merci de patienter.":"This can take a few seconds, thank you for your patience.","Envoyer mon contrat signé ✍️":"Send my signed contract ✍️","Une photo nette ou un PDF suffit. Seule l’équipe du festival le voit.":"A clear photo or a PDF is enough. Only the festival team can see it.","Mon contrat signé":"My signed contract","(PDF, JPG ou PNG, 10 Mo au maximum)":"(PDF, JPG or PNG, 10 MB maximum)","Envoyer mon contrat":"Send my contract","Merci, ton contrat est bien reçu 💛":"Thank you, your contract has been received 💛","Tu peux fermer cette page. Si tu t’es trompé·e de fichier, rouvre ce lien et envoie le bon : il remplace le précédent.":"You can close this page. If you sent the wrong file, reopen this link and send the right one: it replaces the previous one.","FERMÉ":"CLOSED","Retour à l'accueil":"Back to home","Ce formulaire est réservé aux personnes déjà inscrites et validées.":"This form is for people who are already registered and accepted.","Tu as reçu un lien personnel par email ? Ouvre-le directement : ton dossier se remplit pour toi, sans code.":"Did you receive a personal link by email? Open it directly: your file fills itself in, no code needed.","Ouverture de ton dossier personnel...":"Opening your personal file...","Ton code d'accès":"Your access code","(dans le message reçu)":"(in the message you received)","Retour":"Back","Continuer":"Continue","Quel bonheur que tu aies envie de rejoindre l'aventure ! Ensemble, faisons vibrer Mantra Joie 💛":"What a joy that you want to join the adventure! Together, let's make Mantra Joie vibrate 💛","Choisis deux pôles dans lesquels tu as, de préférence, des compétences.":"Choose two teams in which you preferably have skills.","Email":"Email","Nom":"Last name","Prénom":"First name","Téléphone":"Phone","En France, indique ton numéro habituel. Ajoute l'indicatif seulement pour un numéro étranger.":"In France, give your usual number. Add the country code only for a foreign number.","Deux pôles préférés":"Two preferred teams","Date de naissance":"Date of birth","Il faut avoir 18 ans révolus à la date du festival (26 mai 2027) pour être bénévole.":"You must be 18 or older on the date of the festival (26 May 2027) to be a volunteer.","Motivation et compétences":"Motivation and skills","Ton portrait":"Your portrait","(facultatif, à recadrer ici)":"(optional, crop it here)","Recadrer le portrait":"Crop the portrait","✋ Clique et déplace la photo":"✋ Click and drag the photo","Zoom":"Zoom","Annuler":"Cancel","Valider le portrait":"Confirm the portrait","⏳ Envoi en cours : ne ferme pas cette page":"⏳ Sending: do not close this page","Envoyer ma candidature 💛":"Send my application 💛","Candidature · étape 1 sur 3":"Application · step 1 of 3","Choisis ton pôle":"Choose your category","Lis les conditions avant de continuer : elles s’affichent en entier juste en dessous.":"Read the conditions before continuing: they are shown in full just below.","Conditions de participation":"Conditions of participation","📄 Télécharger les conditions (PDF)":"📄 Download the conditions (PDF)","Les conditions de ce pôle ne sont pas encore publiées. Reviens bientôt.":"The conditions for this category are not published yet. Please come back soon.","J’ai lu et j’accepte les conditions de participation et les critères de sélection du festival.":"I have read and accept the conditions of participation and the selection criteria of the festival.","Candidature · étape 2 sur 3":"Application · step 2 of 3","Qui es-tu ?":"Who are you?","Candidature · étape 3 sur 3":"Application · step 3 of 3","Ta proposition":"Your proposal","Photos ou exemples de ta proposition (1 à 6)":"Photos or examples of your proposal (1 to 6)","Ajouter des photos":"Add photos","Utilisation de tes données":"Use of your data","J’ai pris connaissance de cette information.":"I have read this information.","Envoyer ma candidature 🕊️":"Send my application 🕊️","Étape 1 sur 7":"Step 1 of 7","Ta catégorie":"Your category","Ton type":"Your type","Combien de personnes composent le groupe ?":"How many people are in the group?","(1 à 4, toi compris·e si tu participes)":"(1 to 4, including you if you take part)","1 personne":"1 person","2 personnes":"2 people","3 personnes":"3 people","4 personnes":"4 people","Chacun·e aura sa bio et son portrait.":"Each person will have their own bio and portrait.","La personne à contacter est différente de la personne inscrite":"The contact person is different from the registered person","Le nom sous lequel on te présentera au public":"The name under which you will be presented to the public","(il apparaîtra sur le site du festival et dans le programme : ton nom de scène, de marque, de stand, de ta pratique de bien-être ou de ton atelier. Si tu n'as pas de nom d'activité, écris ton prénom et ton nom)":"(it will appear on the festival website and in the programme: your stage name, brand name, stall name, the name of your wellbeing practice or workshop. If you have no activity name, write your first and last name)","Ton prénom":"Your first name","Ton nom de famille":"Your last name","Prénoms, noms et bios":"First names, last names and bios","(les portraits seront ajoutés à l'étape photos)":"(portraits will be added in the photos step)","Ton titre ou ton activité":"Your title or activity","(ex : « Céramiste », « Facilitatrice de cercles de femmes », « Cuisine vivante »)":"(e.g. “Ceramicist”, “Women’s circle facilitator”, “Living food cuisine”)","Ton email":"Your email","(jamais publié, juste pour te joindre si besoin)":"(never published, only to reach you if needed)","Ton téléphone":"Your phone","(jamais publié)":"(never published)","Ajoute l'indicatif uniquement si ton numéro est étranger.":"Add the country code only if your number is foreign.","Étape 2 sur 7":"Step 2 of 7","Tes mots":"Your words","Ton sous-titre ou ton inspiration":"Your subtitle or inspiration","(une petite phrase poétique qui apparaîtra sous ton nom sur le site du festival. Par exemple : « Des chants qui ouvrent le coeur » ou « Le souffle comme un voyage intérieur »)":"(a short poetic line that will appear under your name on the festival website. For example: “Songs that open the heart” or “Breath as an inner journey”)","Ta phrase courte":"Your short sentence","C'est elle qui peut apparaître dans les résultats de recherche Google sous ta page. Une ou deux phrases qui donnent envie de cliquer. Astuce : garde les mêmes mots que ton titre (les boutons ci-dessous les insèrent d'un clic), c'est ce qui aide ta page à être trouvée.":"It may appear in Google search results under your page. One or two sentences that make people want to click. Tip: keep the same words as your title (the buttons below insert them in one click), it helps.","+ Nom et titre":"+ Name and title","+ Sous-titre":"+ Subtitle","0 caractère · minimum 70 pour que Google puisse l'utiliser":"0 characters · at least 70 for Google to use it","Ton texte de présentation":"Your presentation text","Raconte qui tu es et ce que tu apportes. Au moins 300 caractères conseillés, et plus long est très bien aussi. Glisser les mots de ton titre une ou deux fois dans le texte aide ta page à être trouvée.":"Tell us who you are and what you bring. At least 300 characters recommended, and longer is fine too. Using the words of your title once or twice in the text helps your page get found.","0 caractère · le trait marque le minimum conseillé de 300":"0 characters · the line marks the recommended minimum of 300","Ta bio":"Your bio","(optionnel : ton parcours, en quelques lignes)":"(optional: your background, in a few lines)","Étape 3 sur 7":"Step 3 of 7","Tes photos":"Your photos","Ta photo principale":"Your main photo","(elle sera aussi l'image de partage WhatsApp et Facebook)":"(it will also be the WhatsApp and Facebook sharing image)","Choisis ta plus belle photo":"Choose your best photo","puis recadre-la comme tu veux":"then crop it as you like","Changer de photo":"Change photo","Valider la photo principale":"Confirm the main photo","Parfait, elle est prête ✨":"Perfect, it is ready ✨","Changer":"Change","Jusqu'à 6 photos en plus":"Up to 6 more photos","(optionnel : tu choisis le format de chacune)":"(optional: you choose the format of each one)","Ajouter une photo":"Add a photo","Valider cette photo":"Confirm this photo","Portraits des personnes":"Portraits of the people","Étape 4 sur 7":"Step 4 of 7","Tes liens":"Your links","Tout est optionnel : mets ce que tu veux qu'on relie à ta page.":"Everything is optional: add whatever you want linked to your page.","Instagram":"Instagram","Facebook":"Facebook","Site web":"Website","Autre lien":"Other link","(SoundCloud, Spotify, Bandcamp…)":"(SoundCloud, Spotify, Bandcamp…)","🔍 Tester mes liens":"🔍 Test my links","Une vidéo sur ta page ?":"A video on your page?","(facultatif)":"(optional)","Oui 🎬":"Yes 🎬","Non merci":"No thanks","Le lien YouTube ou Vimeo":"The YouTube or Vimeo link","Étape 5 sur 7":"Step 5 of 7","Besoins techniques":"Technical needs","Durée de la prestation (en min)":"Duration of the performance (in min)","Nombre de personnes sur scène":"Number of people on stage","Instruments, micros ou appareils à brancher à la sonorisation":"Instruments, microphones or devices to plug into the sound system","Fiche technique existante":"Existing technical sheet","(facultatif, PDF, 5 Mo maximum)":"(optional, PDF, 5 MB maximum)","Durée de l’atelier (en min)":"Duration of the workshop (in min)","Nombre maximum de participant·es":"Maximum number of participants","Besoin d’un micro et d’une enceinte fournis par le festival ?":"Do you need a microphone and a speaker provided by the festival?","Choisir":"Choose","Non":"No","Micro et enceinte":"Microphone and speaker","Besoin d’électricité ? Si oui, pour quels appareils ?":"Do you need electricity? If so, for which devices?","Puissance électrique totale nécessaire (en kW)":"Total electrical power needed (in kW)","(additionne la puissance de tous tes appareils, indiquée en W sur leur étiquette : 1 000 W = 1 kW. Exemple : une bouilloire de 2 000 W et une lampe de 20 W font environ 2 kW. Si l'étiquette indique des ampères (A), multiplie par 230 pour obtenir des W. Laisse vide si tu n'as pas besoin d'électricité)":"(add up the power of all your devices, shown in W on their label: 1,000 W = 1 kW. Example: a 2,000 W kettle and a 20 W lamp make about 2 kW. If the label shows amps (A), multiply by 2","Surface nécessaire, tente personnelle comprise":"Space needed, including your personal tent","Autres besoins ou contraintes à signaler ?":"Any other needs or constraints to mention?","Étape 6 sur 7":"Step 6 of 7","Tes documents 📎":"Your documents 📎","Ajoute ton contrat signé":"Add your signed contract","et la preuve de ton paiement":"and proof of your payment","et ton attestation d'assurance":"and your insurance certificate",". PDF ou image (JPG, PNG, WebP).":". PDF or image (JPG, PNG, WebP).","Ton contrat signé":"Your signed contract","(PDF ou image, 10 Mo maximum)":"(PDF or image, 10 MB maximum)","Preuve de ton paiement":"Proof of your payment","(capture d'écran ou PDF de ta confirmation HelloAsso ou de ton virement, 5 Mo maximum)":"(screenshot or PDF of your HelloAsso confirmation or of your transfer, 5 MB maximum)","Ton attestation d'assurance responsabilité civile":"Your public liability insurance certificate","(PDF ou photo, 5 Mo maximum)":"(PDF or photo, 5 MB maximum)","Pas d’attestation ? Explique pourquoi":"No certificate? Explain why","(une phrase suffit)":"(one sentence is enough)","Ton IBAN":"Your IBAN","(obligatoire)":"(required)","Pour te régler plus facilement. Seules les personnes qui gèrent les paiements peuvent le voir. Si tu n'as pas d'IBAN, laisse vide et préviens ta référente.":"So that we can pay you more easily. Only the people who handle payments can see it. If you have no IBAN, leave it empty and tell your referent.","Ton accueil au festival":"Your welcome at the festival","Justificatif d’hygiène alimentaire":"Food hygiene certificate","Merci de joindre votre attestation de formation, diplôme ou justificatif de dispense. Si vous êtes exempté, merci de le préciser.":"Please attach your training certificate, diploma or exemption document. If you are exempt, please say so.","Si tu es exempté·e, précise pourquoi":"If you are exempt, say why","Étape 7 sur 7":"Step 7 of 7","Ton récapitulatif 👀":"Your summary 👀","Vérifie tes informations pour préparer ta participation et nos supports de communication.":"Check your information so we can prepare your participation and our communication materials.","⚠️ Avant d'envoyer, une chose importante":"⚠️ Before sending, one important thing","J'autorise le festival à utiliser ces textes et photos pour sa communication (site web, réseaux sociaux, supports imprimés) et je confirme avoir les droits sur ces contenus.":"I authorise the festival to use these texts and photos for its communication (website, social networks, printed materials) and I confirm that I own the rights to this content.","Envoi en cours… Merci de garder cette page ouverte pendant le traitement de tes informations.":"Sending… Please keep this page open while your information is being processed.","Envoyer ma page 🕊️":"Send my page 🕊️","Merci ! 🎉":"Thank you! 🎉","Tes informations ont bien été reçues. Elles nous aideront à préparer ta participation et les supports de communication du festival : site, réseaux sociaux, affiches…":"Your information has been received. It will help us prepare your participation and the festival's communication materials: website, social networks, posters…","À très vite au festival ! 🌈":"See you very soon at the festival! 🌈","Festival Mantra Joie · Tes infos servent à préparer ta participation et à te contacter. ·":"Mantra Joie Festival · Your information is used to prepare your participation and to contact you. ·","Créé par":"Created by","Holly Berridge":"Holly Berridge","portail":"portal","Festival Mantra Joie":"Mantra Joie Festival","Les étapes de ton inscription":"The steps of your registration","Zoom arrière":"Zoom out","Zoom avant":"Zoom in","Ex. : Des chants qui ouvrent le coeur":"E.g.: Songs that open the heart","Aperçu de ta photo principale":"Preview of your main photo","@toncompte ou le lien":"@youraccount or the link","Le lien de ta page":"The link to your page","tonsite.fr":"yoursite.com","https://…":"https://…","Ex. 45 minutes":"E.g. 45 minutes","Largeur (m)":"Width (m)","Largeur en mètres":"Width in metres","Profondeur (m)":"Depth (m)","Profondeur en mètres":"Depth in metres","As-tu besoin d’électricité ?":"Do you need electricity?","Quels appareils, et leur puissance en watts si tu la connais ?":"Which devices, and their power in watts if you know it?","Largeur nécessaire, tente comprise (en mètres)":"Width needed, tent included (in metres)","Profondeur nécessaire, tente comprise (en mètres)":"Depth needed, tent included (in metres)","Nom du projet, du groupe, de l’activité ou du stand":"Name of the project, group, activity or stall","As-tu déjà participé au Festival Mantra Joie / Ecstatic Fest ?":"Have you already taken part in the Mantra Joie Festival / Ecstatic Fest?","Quelle(s) année(s) ?":"Which year(s)?","Ton activité en une phrase":"Your activity in one sentence","Liens pour découvrir ton travail (site, réseaux, vidéo)":"Links to discover your work (website, social networks, video)","Viens-tu avec un invité ?":"Are you coming with a guest?","Quels appareils ?":"Which devices?","Puissance approximative totale":"Approximate total power","Unité de cette puissance":"Unit of this power","Une question sur ce pôle ?":"A question about this team?","Responsable technique":"Technical manager","Contact sur place pour les artistes":"On-site contact for artists","Nom de la deuxième personne":"Name of the second person","Prénom de la deuxième personne":"First name of the second person","Email de la deuxième personne":"Email of the second person","Téléphone de la deuxième personne":"Phone of the second person","Viens-tu seul·e ou à deux ?":"Are you coming alone or as two?","Forfait solo : 210 €.":"Solo package: €210.","Type de proposition":"Type of proposal","Souhaites-tu être accompagné·e par un ou plusieurs musiciens volants ?":"Would you like to be accompanied by one or more flying musicians?","Musicien volant":"Flying musician","Lesquels ? Écris leurs noms, ou les instruments que tu souhaites.":"Which ones? Write their names, or the instruments you would like.","Les personnes du groupe (une ligne par personne : prénom, nom, rôle)":"The people in the group (one line per person: first name, last name, role)","As-tu une fiche technique ?":"Do you have a technical sheet?","Lien vers ta fiche technique":"Link to your technical sheet","Instruments utilisés":"Instruments used","Micros et appareils à brancher":"Microphones and devices to plug in","Lien vidéo ou audio":"Video or audio link","Ton numéro de SIRET":"Your SIRET number","Intitulé de l’atelier":"Title of the workshop","Présentation de l’intervenant, de ton parcours et de ta pratique":"Presentation of the facilitator, your background and your practice","Expérience dans l’animation d’ateliers ou d’événements similaires":"Experience leading workshops or similar events","Formations et certifications pertinentes":"Relevant training and certifications","Écris « sans objet » s’il n’y en a pas.":"Write “not applicable” if there is none.","Intention et description de l’atelier":"Intention and description of the workshop","Déroulement et principales étapes de l’atelier":"Course and main stages of the workshop","Durée de l’atelier : 2 h":"Workshop duration: 2 h","Chaque atelier dure 2 heures, avec un seul facilitateur.":"Each workshop lasts 2 hours, with a single facilitator.","Public visé":"Target audience","Éventuels prérequis":"Any prerequisites","Nombre minimum de participant·es":"Minimum number of participants","Matériel nécessaire à la réalisation de l’atelier":"Equipment needed to run the workshop","Besoins techniques ou logistiques particuliers":"Special technical or logistical needs","Type d’espace souhaité":"Type of space wanted","Extérieur":"Outdoors","Dégagé":"Open space","Précise le type d’espace":"Specify the type of space","Contraintes liées au bruit ou à la configuration de l’espace":"Constraints related to noise or to the layout of the space","Précautions de sécurité à prévoir":"Safety precautions to plan for","Pourquoi souhaites-tu participer à Mantra Joie et qu’as-tu envie d’y partager ou apporter ?":"Why do you want to take part in Mantra Joie, and what would you like to share or bring?","Forfait solo : 210 €, camping compris.":"Solo package: €210, camping included.","Présentation détaillée de l’artisan, de sa marque et de sa démarche créative":"Detailed presentation of the craftsperson, their brand and their creative approach","Produits proposés":"Products offered","Catégorie de créations ou de produits vendus":"Category of creations or products sold","Les créations sont-elles conçues par toi ?":"Are the creations designed by you?","Précisions sur la conception":"Details about the design","Les créations sont-elles fabriquées par toi ou par des artisans ou ateliers partenaires ?":"Are the creations made by you or by partner craftspeople or workshops?","Par des artisans ou ateliers partenaires":"By partner craftspeople or workshops","Par moi et par des partenaires":"By me and by partners","Qui sont les partenaires, et quel est ton rôle dans la conception ?":"Who are the partners, and what is your role in the design?","Proposes-tu des produits achetés pour être revendus et que tu n’as pas conçus ?":"Do you offer products bought for resale that you did not design?","Précise lesquels":"Specify which ones","Longueur souhaitée du stand, tente ou barnum compris (en mètres)":"Wanted length of the stall, tent or marquee included (in metres)","Profondeur souhaitée du stand, tente ou barnum compris (en mètres)":"Wanted depth of the stall, tent or marquee included (in metres)","Contraintes d’accessibilité ou de mobilité à signaler pour l’installation":"Accessibility or mobility constraints to mention for the set-up","Facultatif. Ce que tu écris ici sert uniquement à préparer ton installation.":"Optional. What you write here is only used to prepare your set-up.","Bien-être":"Wellbeing","Mini-biographie : présentation de la personne et de son approche":"Short biography: presentation of the person and their approach","Combien de soins ou de massages proposes-tu ?":"How many treatments or massages do you offer?","Soin ou massage 1 : intitulé":"Treatment or massage 1: title","Soin ou massage 1 : courte description":"Treatment or massage 1: short description","Soin ou massage 2 : intitulé":"Treatment or massage 2: title","Soin ou massage 2 : courte description":"Treatment or massage 2: short description","Soin ou massage 3 : intitulé":"Treatment or massage 3: title","Soin ou massage 3 : courte description":"Treatment or massage 3: short description","Type, forme et format de la structure envisagée":"Type, shape and format of the planned structure","Longueur de l’installation (en mètres)":"Length of the installation (in metres)","Profondeur de l’installation (en mètres)":"Depth of the installation (in metres)","Hauteur de l’installation, si nécessaire (en mètres)":"Height of the installation, if needed (in metres)","Catégorie de ton food truck":"Category of your food truck","Food truck desserts et glaces":"Desserts and ice cream food truck","Forfait pour deux personnes, 5 jours de festival et 5 nuits de camping compris : 550 € pour un food truck repas, 450 € pour un food truck desserts et glaces.":"Package for two people, 5 festival days and 5 camping nights included: €550 for a meal food truck, €450 for a desserts and ice cream food truck.","Nom de l’activité et ce que tu proposes à manger ou à boire":"Name of the activity and what you offer to eat or drink","Menus, produits et prix envisagés":"Menus, products and planned prices","Options alimentaires":"Food options","Sans gluten":"Gluten-free","Le végétarien est un critère de sélection. Le sans gluten est apprécié.":"Vegetarian is a selection criterion. Gluten-free is appreciated.","Emprise totale, véhicule et espace de travail compris (en mètres)":"Total footprint, vehicle and work area included (in metres)","Nombre de personnes dans l’équipe":"Number of people in the team","As-tu besoin d’un accès à l’eau ?":"Do you need access to water?","Précise ton besoin en eau":"Specify your water needs","Précise ton installation au gaz":"Specify your gas installation","Besoins pour le froid, les eaux usées et les déchets":"Needs for refrigeration, waste water and waste","L'Antre deux mondes":"L'Antre deux mondes","Mini-description de l’activité et des prestations proposées":"Short description of the activity and the services offered","Proposes-tu des créations à la vente en complément ?":"Do you offer creations for sale as well?","Description des créations proposées à la vente":"Description of the creations offered for sale","Dimensions, structure, besoins techniques et contraintes":"Dimensions, structure, technical needs and constraints","Facultatif pour le moment : décris ce que tu sais déjà de ton installation.":"Optional for now: describe what you already know about your installation.","Dis-nous ce que tu proposes et ce dont tu as besoin":"Tell us what you offer and what you need","Je n’ai pas de SIRET":"I do not have a SIRET","Explique pourquoi tu n’as pas de SIRET":"Explain why you do not have a SIRET","Explique en une phrase pourquoi tu n’as pas de SIRET.":"Explain in one sentence why you do not have a SIRET.","Les candidatures de bénévoles sont fermées pour cette édition. Merci pour ton élan !":"Volunteer applications are closed for this edition. Thank you for your enthusiasm!","Le dossier final est fermé pour le moment.":"The final file is closed for the moment.","Préparation du PDF… quelques secondes":"Preparing the PDF… a few seconds","Dans le cas où ma candidature est retenue, j’accepte les conditions ci-dessous. Cocher ces cases ne vaut ni sélection, ni inscription définitive, ni signature du contrat.":"If my application is accepted, I accept the conditions below. Ticking these boxes is not a selection, a final registration or the signing of the contract.","Les pôles sont encore en chargement. Patiente quelques secondes, puis clique à nouveau sur Continuer.":"The categories are still loading. Wait a few seconds, then click Continue again.","Le formulaire n’a pas pu se charger. Clique sur Retour puis sur Candidater pour réessayer.":"The form could not load. Click Back then Apply to try again.","Les candidatures sont fermées pour le moment.":"Applications are closed for the moment.","Choisis ton pôle.":"Choose your category.","Les candidatures sont fermées pour ce pôle.":"Applications are closed for this category.","Coche toutes les cases d’engagement pour continuer.":"Tick all the commitment boxes to continue.","Coche la case pour accepter les conditions et les critères de sélection.":"Tick the box to accept the conditions and the selection criteria.","Écris une adresse email valide.":"Enter a valid email address.","Photographies haute définition de tes produits (3 à 4, un fichier par photo)":"High-definition photographs of your products (3 to 4, one file per photo)","Photo de toi en pratique et/ou de ton espace (1 à 6)":"Photo of you practising and/or of your space (1 to 6)","Photo de profil et photos de ton activité ou de tes créations (1 à 6)":"Profile photo and photos of your activity or creations (1 to 6)","Photo illisible. Essaie un fichier JPG ou PNG.":"Unreadable photo. Try a JPG or PNG file.","Envoi de tes photos et de tes réponses…":"Sending your photos and your answers…","Enregistrement de ta candidature…":"Saving your application…","Création de ta fiche et de ton email de confirmation… (cela peut prendre une vingtaine de secondes)":"Creating your file and your confirmation email… (this can take about twenty seconds)","Ajoute au moins une photo.":"Add at least one photo.","Coche la case pour confirmer que tu as pris connaissance de l’information sur tes données.":"Tick the box to confirm that you have read the information about your data.","Envoi en cours…":"Sending…","Envoi refusé":"Sending refused","Terminé ✔":"Done ✔","Ta candidature est bien reçue. Tu vas recevoir un email de confirmation.":"Your application has been received. You will receive a confirmation email.","Choisis ton contrat signé (PDF ou photo).":"Choose your signed contract (PDF or photo).","Envoie un PDF ou une photo (JPG ou PNG).":"Send a PDF or a photo (JPG or PNG).","Le fichier est trop lourd : 10 Mo au maximum.":"The file is too heavy: 10 MB maximum.","Envoi impossible pour le moment.":"Sending is not possible right now.","Forfait solo : 210 €. Forfait duo : 280 €, camping de 5 nuits compris pour les deux personnes.":"Solo package: €210. Duo package: €280, 5 nights of camping included for both people.","Oui":"Yes","Solo":"Solo","Duo":"Duo","Artiste":"Artist","Artistes":"Artists","Ateliers":"Workshops","Atelier":"Workshop","Artisanat":"Crafts","Artisan":"Craftsperson","Stand / Miam Miam":"Stall / Food truck","Autre":"Other","DJ ecstatic":"Ecstatic DJ","Cercle de chants":"Singing circle","Spectacle":"Show","Concert":"Concert","Danse":"Dance","Food truck repas":"Meal food truck","Quel jour arrives-tu ?":"Which day are you arriving?","Comment viens-tu ?":"How are you coming?","Voiture":"Car","Train":"Train","Avion":"Plane","Numéro de ton vol ou de ton train":"Your flight or train number","Où arrives-tu ?":"Where are you arriving?","Directement au festival":"Directly at the festival","Il faut venir me chercher (gare ou aéroport)":"I need to be picked up (station or airport)","Où doit-on venir te chercher ? Nom de la gare ou de l’aéroport":"Where should we pick you up? Name of the station or airport","À quelle heure arrives-tu au festival ?":"What time are you arriving at the festival?","À quelle heure arrives-tu à la gare ou à l’aéroport ?":"What time are you arriving at the station or airport?","Nom de ton invité":"Your guest’s last name","Prénom de ton invité":"Your guest’s first name","Email de ton invité (facultatif)":"Your guest’s email (optional)","Téléphone de ton invité":"Your guest’s phone","Ton invité arrive-t-il en même temps que toi ?":"Is your guest arriving at the same time as you?","Quel jour arrive ton invité ?":"Which day is your guest arriving?","À quelle heure arrive ton invité ?":"What time is your guest arriving?","Quel jour repars-tu ?":"Which day are you leaving?","À quelle heure quittes-tu le festival ?":"What time are you leaving the festival?","Si tu repars en train ou en avion : de quelle gare ou de quel aéroport ? (facultatif)":"If you leave by train or plane: from which station or airport? (optional)","À quelle heure dois-tu être à la gare ou à l’aéroport ?":"What time do you need to be at the station or airport?","Ton invité repart-il en même temps que toi ?":"Is your guest leaving at the same time as you?","Quel jour repart ton invité ?":"Which day is your guest leaving?","À quelle heure repart ton invité ?":"What time is your guest leaving?","Régime alimentaire et besoins en repas":"Diet and meal needs","Allergies ou intolérances alimentaires (facultatif)":"Food allergies or intolerances (optional)","Écris « aucun » s’il n’y en a pas.":"Write “none” if there are none.","Cette information sert uniquement à préparer tes repas.":"This information is only used to prepare your meals.","Date d’arrivée au festival":"Arrival date at the festival","Date de départ":"Departure date","Ces informations préparent ton accueil : arrivée, transport, départ, repas.":"This information prepares your welcome: arrival, transport, departure, meals.","Un seul invité est possible. Ses coordonnées peuvent être modifiées jusqu’au 21 mai 2027. Ton invité règle son camping à son arrivée.":"Only one guest is possible. Their details can be changed until 21 May 2027. Your guest pays for their camping on arrival.","Enregistrement…":"Saving…","Vérifie ton récapitulatif.":"Check your summary.","INSTALLATION/DÉSINSTALLATION":"SET-UP / TAKE-DOWN","ACCUEIL + Gardien·nes du temps le dimanche":"WELCOME + Timekeepers on Sunday","PARKING/CAMPING":"PARKING / CAMPING","INFIRMERIE + Gardien·nes du temps le vendredi":"FIRST AID + Timekeepers on Friday","BUVETTE (sans alcool)":"BAR (no alcohol)","SNACK (incluant le petit-déjeuner)/CRÊPES":"SNACK (including breakfast) / CRÊPES","RECRUTEMENT DES BÉNÉVOLES (à confirmer)":"VOLUNTEER RECRUITMENT (to be confirmed)","Carré":"Square","Vertical":"Vertical","Horizontal":"Horizontal","Additionne la puissance de tes appareils, indiquée en W sur leur étiquette : 1 000 W = 1 kW. Si tu ne la connais pas, laisse vide.":"Add up the power of your devices, shown in W on their label: 1,000 W = 1 kW. If you do not know it, leave it empty.","Distingue ce que tu apportes et ce que tu demandes au festival.":"Separate what you bring from what you ask the festival to provide.","Dépose-la sur Drive, Dropbox ou WeTransfer et colle le lien ici. Tu pourras aussi la déposer à l’inscription finale.":"Upload it to Drive, Dropbox or WeTransfer and paste the link here. You will also be able to upload it at the final registration.","Forfait solo : 210 €, camping compris. Forfait duo : 280 €, camping de 5 nuits compris pour les deux personnes.":"Solo package: €210, camping included. Duo package: €280, 5 nights of camping included for both people.","Indique ce que tu utilises.":"Say what you use.","Indique ce qu’il faut brancher.":"Say what needs to be plugged in.","Intérieur":"Indoors","Par exemple : bijoux, textile, céramique. Texte libre pour le moment.":"For example: jewellery, textile, ceramics. Free text for now.","Réponds « Oui » seulement si ton activité n’est pas soumise à cette obligation.":"Answer “Yes” only if your activity is not subject to this obligation.","Si tu es sélectionné·e, les coordonnées de ton invité te seront demandées dans le dossier final.":"If you are selected, your guest’s details will be asked for in the final file.","Tu peux aussi joindre ta carte avec les photos.":"You can also attach your menu with the photos.","Une phrase suffit : ton statut, ou pourquoi ton activité n’est pas concernée.":"One sentence is enough: your status, or why your activity is not concerned.","Une prestation ou une expérience créative, artistique, esthétique ou symbolique.":"A service or a creative, artistic, aesthetic or symbolic experience.","Une puissance s’exprime en W ou en kW, pas en kWh.":"Power is expressed in W or kW, not kWh.","Une réponse « Oui » est examinée par l’équipe : ce n’est pas une acceptation automatique.":"A “Yes” answer is reviewed by the team: it is not an automatic acceptance.","Uniquement des créations artisanales ou des produits faits maison.":"Only handmade creations or home-made products.","Utilises-tu du gaz ?":"Do you use gas?","Végétarien":"Vegetarian","Écris « Aucun » si besoin.":"Write “None” if needed.","Écris « aucune » s’il n’y en a pas.":"Write “none” if there is none."};
+const I18N_REGLES = [
+  [/^Étape (\d+) sur (\d+)$/, m => 'Step ' + m[1] + ' of ' + m[2]],
+  [/^Candidature · étape (\d+) sur (\d+)$/, m => 'Application · step ' + m[1] + ' of ' + m[2]],
+  [/^Écris à (.+)$/, m => 'Write to ' + m[1]],
+  [/^Envoie ta fiche technique et tes besoins en matériel directement à Fab : (.+)$/, m => 'Send your technical sheet and your equipment needs directly to Fab: ' + m[1]],
+  [/^Éric : (.+)$/, m => 'Éric: ' + m[1]],
+  [/^Participation pour deux personnes : (.+)$/, m => 'Participation for two people: ' + m[1]],
+  [/^Ajoute au moins (\d+) photos, une par fichier\.$/, m => 'Add at least ' + m[1] + ' photos, one per file.'],
+  [/^(\d+) photos maximum\.$/, m => m[1] + ' photos maximum.'],
+  [/^À compléter : (.+)\.$/, m => { const t = tr(m[1]); return 'To complete: ' + t + (/[?.]$/.test(t) ? '' : '.'); }],
+  [/^Envoi impossible : (.+)$/s, m => 'Sending failed: ' + m[1]],
+  [/^Reçu le (.+)\.$/, m => 'Received on ' + m[1] + '.'],
+  [/^(\d+) caractères? · minimum 70 pour que Google puisse l.utiliser$/, m => m[1] + ' character' + (+m[1] > 1 ? 's' : '') + ' · at least 70 for Google to use it'],
+  [/^(\d+) caractères? · le trait marque le minimum conseillé de 300$/, m => m[1] + ' character' + (+m[1] > 1 ? 's' : '') + ' · the line marks the recommended minimum of 300'],
+  [/^(.+) : fermé\. Touche pour lire pourquoi\.$/, m => tr(m[1]) + ': closed. Tap to read why.'],
+  [/^Enregistré le (.+?)\. Tu peux fermer cette page et revenir avec le même lien : tes réponses écrites seront là\. Les fichiers sont à ajouter de nouveau\.$/, m => 'Saved on ' + m[1] + '. You can close this page and come back with the same link: your written answers will be there. Files have to be added again.'],
+  [/^Tes réponses enregistrées le (.+) sont remplies\. Vérifie et continue\. Les fichiers .*sont à ajouter de nouveau\.$/, m => 'Your answers saved on ' + m[1] + ' are filled in. Check them and continue. Files (photos, contract, proof of payment) have to be added again.'],
+  [/^Ta candidature est bien reçue\. Tu vas recevoir un email de confirmation\.( Les réponses sont prévues à partir du (.+?)\.)?( Cet accusé de réception ne confirme pas encore ta participation\.)?$/, m => 'Your application has been received. You will receive a confirmation email.' + (m[2] ? ' Answers are expected from ' + m[2] + '.' : '') + (m[3] ? ' This acknowledgement does not yet confirm your participation.' : '')]
+];
+let langue = 'fr';
+const I18N_NOEUDS = new Map();   // nœud de texte → { fr, en } (pour revenir au français)
+const I18N_ATTRS = [];           // { el, attr, fr, en }
+const normTexte = s => String(s).replace(/\s+/g, ' ').trim();
+function tr(fr) {
+  const cle = normTexte(fr);
+  if (!cle) return fr;
+  if (Object.prototype.hasOwnProperty.call(I18N_EN, cle)) return I18N_EN[cle];
+  for (let i = 0; i < I18N_REGLES.length; i++) { const m = I18N_REGLES[i][0].exec(cle); if (m) return I18N_REGLES[i][1](m); }
+  return fr;
+}
+function traduireTexte(n) {
+  const p = n.parentElement;
+  if (!p || /^(SCRIPT|STYLE|TEXTAREA)$/.test(p.tagName)) return;
+  const dejaVu = I18N_NOEUDS.get(n);
+  if (dejaVu && n.nodeValue === dejaVu.en) return;   // c'est déjà notre version anglaise
+  const fr = n.nodeValue, cle = normTexte(fr);
+  if (!/[A-Za-zÀ-ÿ]{2}/.test(cle)) return;
+  const en = tr(cle);
+  if (en === cle) { I18N_NOEUDS.delete(n); return; }
+  if (p.tagName === 'OPTION' && !p.hasAttribute('value')) p.setAttribute('value', cle);   // la valeur envoyée reste le français
+  const debut = fr.match(/^\s*/)[0], fin = fr.match(/\s*$/)[0];
+  const complet = debut + en + fin;
+  I18N_NOEUDS.set(n, { fr: fr, en: complet });
+  n.nodeValue = complet;
+}
+const ATTRS_TRADUITS = ['placeholder', 'title', 'aria-label', 'alt'];
+function traduireAttr(el, attr) {
+  const fr = el.getAttribute(attr);
+  if (!fr) return;
+  const dejaVu = I18N_ATTRS.find(x => x.el === el && x.attr === attr);
+  if (dejaVu && fr === dejaVu.en) return;
+  const en = tr(fr);
+  if (en === normTexte(fr)) return;
+  if (dejaVu) { dejaVu.fr = fr; dejaVu.en = en; } else I18N_ATTRS.push({ el: el, attr: attr, fr: fr, en: en });
+  el.setAttribute(attr, en);
+}
+function traduireArbre(racine) {
+  if (!racine) return;
+  if (racine.nodeType === 3) { traduireTexte(racine); return; }
+  if (racine.nodeType !== 1) return;
+  const marcheur = document.createTreeWalker(racine, 4);
+  let n; while ((n = marcheur.nextNode())) traduireTexte(n);
+  const els = [racine].concat(Array.from(racine.querySelectorAll('[placeholder],[title],[aria-label],[alt]')));
+  els.forEach(el => ATTRS_TRADUITS.forEach(a => { if (el.hasAttribute && el.hasAttribute(a)) traduireAttr(el, a); }));
+}
+const observeurLangue = new MutationObserver(muts => {
+  if (langue !== 'en') return;
+  muts.forEach(m => {
+    if (m.type === 'characterData') traduireTexte(m.target);
+    else if (m.type === 'attributes') traduireAttr(m.target, m.attributeName);
+    else m.addedNodes.forEach(traduireArbre);
+  });
+  observeurLangue.takeRecords();   // on ignore ce que nos propres remplacements viennent de provoquer
+});
+observeurLangue.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS_TRADUITS });
+// Le texte FRANÇAIS d'origine d'un élément (pour les endroits où le code retrouve un bouton par son texte).
+function frTexte(el) {
+  let s = ''; const marcheur = document.createTreeWalker(el, 4); let n;
+  while ((n = marcheur.nextNode())) s += I18N_NOEUDS.has(n) && n.nodeValue === I18N_NOEUDS.get(n).en ? I18N_NOEUDS.get(n).fr : n.nodeValue;
+  return s;
+}
+function appliquerLangue(l, enregistrer) {
+  langue = l === 'en' ? 'en' : 'fr';
+  document.documentElement.lang = langue;
+  if (langue === 'en') traduireArbre(document.body);
+  else {
+    I18N_NOEUDS.forEach((v, n) => { if (n.nodeValue === v.en) n.nodeValue = v.fr; });
+    I18N_NOEUDS.clear();
+    I18N_ATTRS.forEach(x => { if (x.el.getAttribute(x.attr) === x.en) x.el.setAttribute(x.attr, x.fr); });
+    I18N_ATTRS.length = 0;
+  }
+  observeurLangue.takeRecords();
+  document.querySelectorAll('#langue button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === langue ? 'true' : 'false'));
+  if (enregistrer) { try { localStorage.setItem('mj_langue', langue); } catch (e) { /* stockage indisponible : le choix vaut pour cette visite */ } }
+}
+document.querySelectorAll('#langue button').forEach(b => b.addEventListener('click', () => appliquerLangue(b.dataset.lang, true)));
 (function () {
+  const demandee = (/[?&]lang=(en|fr)(?:&|#|$)/.exec(location.search) || [])[1];
+  let gardee = ''; try { gardee = localStorage.getItem('mj_langue') || ''; } catch (e) { /* stockage indisponible */ }
+  appliquerLangue(demandee || gardee || 'fr', !!demandee);
+})();
+
+// Contrat signé des bénévoles : le lien personnel (?c=…) de leur email de bienvenue ouvre cette page d'envoi, sans code ni connexion.
+let contratJeton = '';
+async function envoyerContratBenevole() {
+  const fichier = $('contrat_benevole_file').files[0], bouton = $('btn-contrat-benevole');
+  if (!fichier) return erreur('contrat', 'Choisis ton contrat signé (PDF ou photo).');
+  if (!/^(application\/pdf|image\/jpeg|image\/png)$/.test(fichier.type) && !/\.(pdf|jpe?g|png)$/i.test(fichier.name)) return erreur('contrat', 'Envoie un PDF ou une photo (JPG ou PNG).');
+  if (fichier.size > 10 * 1024 * 1024) return erreur('contrat', 'Le fichier est trop lourd : 10 Mo au maximum.');
+  bouton.disabled = true; bouton.textContent = 'Envoi en cours…';
+  try {
+    let contenu = await lireFichier(fichier);
+    if (/^data:application\/octet-stream/.test(contenu)) contenu = contenu.replace('application/octet-stream', /\.pdf$/i.test(fichier.name) ? 'application/pdf' : (/\.png$/i.test(fichier.name) ? 'image/png' : 'image/jpeg'));
+    const r = await (await fetch(CONFIG.scriptUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ kind: 'contrat_benevole', token: contratJeton, nom: fichier.name, contenu: contenu }) })).json();
+    if (!r || !r.ok) throw new Error((r && r.error) || 'Envoi impossible pour le moment.');
+    $('contrat-formulaire').style.display = 'none'; $('contrat-merci').style.display = 'block'; $('contrat-recu-le').textContent = 'Reçu le ' + (r.recu_le || '') + '.';
+  } catch (e) { erreur('contrat', 'Envoi impossible : ' + (e && e.message ? e.message : e) + ' Rien n’est perdu, tu peux réessayer.'); }
+  finally { bouton.disabled = false; bouton.textContent = 'Envoyer mon contrat'; }
+}
+$('btn-contrat-benevole').addEventListener('click', envoyerContratBenevole);
+(function () {
+  const c = /[?&]c=([a-f0-9]{40})(?:&|#|$)/.exec(location.search);
+  if (c) { contratJeton = c[1]; aller('contrat'); return; }
   const m = /[?&]d=([a-f0-9]{40})(?:&|#|$)/.exec(location.search);
   if (m) { ouvrirDossierPersonnel(m[1]); return; }
   const q = /[?&]pole=([A-Za-z-]+)(?:&|#|$)/.exec(location.search);
