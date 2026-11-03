@@ -639,15 +639,15 @@ li .ico-btn img { width: 24px; height: 24px; }
 .carte-ajout .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 /* v3.42 : l'ajout d'une personne est sur l'Accueil, bien visible */
 .carte-ajouter { position: relative; overflow: hidden; padding-left: 28px; }
-.carte-ajouter::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 7px; background: linear-gradient(180deg, var(--magenta), var(--violet), var(--turquoise-vif)); }
+.carte-ajouter::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--turquoise-clair); }
 .ajouter-entete { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-.ajouter-rond { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; flex: none; color: #fff; background: linear-gradient(135deg, var(--magenta), var(--violet)); box-shadow: 0 8px 18px rgba(107, 44, 145, 0.28); }
+.ajouter-rond { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; flex: none; color: var(--navy); background: var(--turquoise-clair); }
 .ajouter-rond svg { width: 28px; height: 28px; }
 .ajouter-texte { flex: 1 1 260px; min-width: 0; }
 .ajouter-texte h2 { margin: 0; font-size: 1.3rem; color: var(--navy); }
 .ajouter-texte p { margin: 4px 0 0; color: var(--doux); font-size: .95rem; line-height: 1.45; }
-.btn-ajouter { background: linear-gradient(100deg, var(--magenta), var(--violet)); color: #fff; border-color: transparent; padding: 14px 28px; font-size: 1.02rem; min-height: 48px; box-shadow: 0 8px 20px rgba(181, 32, 127, 0.28); transition: transform .15s ease, box-shadow .15s ease; }
-.btn-ajouter:hover { transform: translateY(-1px); box-shadow: 0 12px 24px rgba(181, 32, 127, 0.34); }
+.btn-ajouter { background: var(--turquoise-clair); color: var(--navy); border-color: transparent; padding: 11px 22px; font-size: 1rem; min-height: 44px; transition: filter .15s ease; }
+.btn-ajouter:hover { filter: brightness(0.95); }
 .btn-ajouter:focus-visible { outline: 3px solid var(--turquoise-clair); outline-offset: 3px; }
 .carte-ajouter .carte-ajout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; margin: 20px 0 0; padding: 22px; border: 1px solid var(--ligne); border-radius: 20px; background: rgba(255, 255, 255, 0.92); box-shadow: 0 10px 28px rgba(60, 40, 120, 0.10); }
 .carte-ajouter .carte-ajout[hidden] { display: none; }
