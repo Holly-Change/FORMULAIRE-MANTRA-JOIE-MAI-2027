@@ -673,6 +673,25 @@ li .ico-btn img { width: 24px; height: 24px; }
 .installer-menu { margin: 8px 0 6px; } .installer-menu .aide-ios { font-size: .85rem; margin: 6px 2px 0; }
 .aide-installer { margin: 8px 2px 0; font-size: .92rem; opacity: .85; }
 .aide-connexion { margin: 14px 0 0; font-size: .92rem; text-align: center; }
+.intervention { border: 1px solid var(--ligne); border-radius: 14px; padding: 12px 14px; margin: 10px 0; background: rgba(255, 255, 255, 0.7); }
+.choix-intervention { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.choix-intervention .choisi { background: linear-gradient(100deg, var(--magenta), var(--violet)); color: #fff; border-color: transparent; }
+.bandeau-envoi { margin: 8px 0; }
+.edition-choix { margin: 0 14px 12px; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.10); }
+.edition-choix label { display: block; font-size: .8rem; opacity: .85; margin-bottom: 4px; }
+.edition-choix select { width: 100%; font: inherit; padding: 8px 10px; border-radius: 10px; border: 0; }
+.edition-choix p { margin: 6px 0 0; font-size: .82rem; }
+.edition-choix p:empty { display: none; }
+.inviter-lignes { margin: 8px 0; }
+.inviter-filtres { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+.inviter-filtres select, #inviter-source { font: inherit; padding: 8px 10px; border-radius: 10px; margin-right: 8px; }
+.inviter-ligne[hidden] { display: none; }
+.admin-option { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 0; min-height: 40px; }
+.admin-option input { width: 20px; height: 20px; accent-color: #6B2C91; }
+.admin-edition { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px solid var(--ligne); }
+.admin-edition select { font: inherit; padding: 6px 8px; border-radius: 10px; }
+.raison-date { margin: 6px 0 0; padding: 8px 12px; border-radius: 12px; background: #FBEFCF; color: #6B4A08; font-size: .93rem; line-height: 1.4; }
+.raison-date[hidden] { display: none; }
 .lien-aide { font-size: .9rem; font-weight: 700; white-space: nowrap; }
 .barre-retour { position: sticky; top: 0; z-index: 6; padding: 10px 16px 6px; background: linear-gradient(180deg, rgba(246,241,251,.97), rgba(246,241,251,0)); }
 .barre-retour .btn { padding: 10px 18px; }
@@ -737,6 +756,12 @@ li .ico-btn img { width: 24px; height: 24px; }
   <aside class="menu" id="menu-principal">
     <img class="lotus" src="assets/LOTUS%20PORTAL%20LOGO.png" alt="" onerror="this.remove()">
     <div class="marque" id="marque"></div>
+    <div class="message-important" id="bandeau-pause" role="status" hidden>Ce Portail est en pause (licence) : tu peux tout lire, mais plus rien ne peut être modifié. Contacte Holly.</div>
+    <div class="edition-choix" id="edition-choix" hidden>
+      <label for="choix-edition">Édition</label>
+      <select id="choix-edition"></select>
+      <p id="edition-etat" role="status"></p>
+    </div>
     <nav aria-label="Menu du Portail Festival">
       <button type="button" data-vue="accueil"><span class="ico-nav" data-ico="HOME.png"></span>Accueil
       </button>
@@ -749,6 +774,8 @@ li .ico-btn img { width: 24px; height: 24px; }
       <button type="button" data-vue="benevoles"><span class="ico-nav" data-ico="BENEVOLES.png"></span>Bénévoles
       </button>
       <div class="sous-menu" id="sous-menu-benevoles" aria-label="Bénévoles par équipe"></div>
+      <button type="button" data-vue="inviter" id="menu-inviter" hidden><span class="ico-nav" data-ico="PARTICIPANTS.png"></span>Inviter à nouveau
+      </button>
       <button type="button" data-vue="stats"><span class="ico-nav" data-ico="STATS.png"></span>Statistiques
       </button>
       <button type="button" data-vue="reglages"><span class="ico-nav" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.2" fill="#fff"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="15" cy="17" r="2.2" fill="#fff"/></svg></span>Réglages</button>
@@ -800,7 +827,7 @@ li .ico-btn img { width: 24px; height: 24px; }
           <div><h1>Candidatures</h1><p id="sous-titre">Toutes les candidatures reçues</p></div>
         </div>
         <div class="outils"><input class="recherche" id="recherche" type="search" placeholder="Chercher un projet, un nom, un email" aria-label="Chercher"></div>
-        <div class="outils-actions"><button class="btn btn-doux-clair" id="btn-export-csv" type="button">Exporter la liste (CSV)</button><span class="meta" id="export-etat" role="status"></span></div>
+        <div class="outils-actions"><button class="btn btn-doux-clair" id="btn-export-csv" type="button">Exporter la liste (CSV)</button><button class="btn btn-doux-clair" id="btn-export-tout" type="button" hidden>Exporter tout (CSV)</button><span class="meta" id="export-etat" role="status"></span></div>
         <div class="groupe-filtres"><span class="etiquette">Catégorie</span><div class="filtres" id="filtres-categorie" role="group" aria-label="Filtrer par catégorie"></div></div>
         <div class="groupe-filtres"><span class="etiquette">Sélection</span><div class="filtres" id="filtres-statut" role="group" aria-label="Filtrer par sélection"></div></div>
         <div class="groupe-filtres" id="groupe-origine" hidden><span class="etiquette">Origine</span><div class="filtres" id="filtres-origine" role="group" aria-label="Filtrer par origine"></div></div>
@@ -845,6 +872,7 @@ li .ico-btn img { width: 24px; height: 24px; }
       </div>
     </section>
 
+    <section id="vue-inviter" hidden></section>
     <section id="vue-stats" hidden>
       <div class="page">
         <div class="titre-page">
@@ -863,7 +891,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.42-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.46-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 // Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
@@ -950,11 +978,32 @@ let derniereListe = [];
 
 try { jeton = sessionStorage.getItem('equipe_jeton') || ''; } catch (e) { jeton = ''; }
 
-async function appel(corps) {
-  const reponse = await fetch(SCRIPT_URL, {
-    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ kind: 'team' }, corps))
-  });
-  return reponse.json();
+// L'édition sur laquelle l'équipe travaille (choisie dans le menu, gardée pour la session). Vide = l'édition 1 / celle que le serveur propose.
+let editionCourante = ''; try { editionCourante = sessionStorage.getItem('equipe_edition') || ''; } catch (err) { editionCourante = ''; }
+let editionsListe = [];
+async function appel(corps, delaiMs) {
+  const ctl = delaiMs && typeof AbortController === 'function' ? new AbortController() : null;
+  const minuteur = ctl ? setTimeout(() => ctl.abort(), delaiMs) : null;
+  try {
+    const reponse = await fetch(SCRIPT_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ kind: 'team' }, editionCourante ? { e: editionCourante } : {}, corps)), signal: ctl ? ctl.signal : undefined
+    });
+    return await reponse.json();
+  } finally { if (minuteur) clearTimeout(minuteur); }
+}
+// Un identifiant par envoi : si la même demande arrive deux fois, le serveur ne renvoie pas l'email.
+function nouvelIdEnvoi() {
+  const brut = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
+  return String(brut).replace(/[^a-zA-Z0-9-]/g, '').slice(0, 60);
+}
+const DELAI_ENVOI_MS = 100000;   // au-delà, on ne sait plus : on ne relance JAMAIS l'envoi, on invite à vérifier
+function bandeauEnvoi(etat) {
+  if (!etat) return null;
+  const b = el('p', 'message ko bandeau-envoi', etat.interrompu
+    ? 'Envoi interrompu : commencé à ' + etat.depuis + ' sans fin enregistrée. Vérifie la boîte d’envoi du compte du festival. Si l’email n’est pas parti, change un statut pour préparer un renvoi. Rien n’est renvoyé tout seul.'
+    : 'Envoi en cours depuis ' + etat.depuis + '. Ne le relance pas : l’email part tout seul, la fiche se met à jour ensuite.');
+  b.setAttribute('role', 'status');
+  return b;
 }
 
 function oublierJeton() {
@@ -1020,6 +1069,104 @@ $('btn-deconnexion').addEventListener('click', async () => {
 });
 $('btn-actualiser').addEventListener('click', () => { participants = null; benevoles = null; statsDetail = null; reglagesDonnees = null; charger(); });
 
+// « Inviter à nouveau » : seulement pour les organisatrices principales, si l'option est active.
+function majMenuInviter() {
+  const b = $('menu-inviter'); if (!b) return;
+  const ref = compte && compte.role === 'referente';
+  b.hidden = !!ref || !!(config && config.options && config.options.inviter === false);
+}
+let inviterDonnees = null, inviterSource = '';
+function dessinerInviter() {
+  const zone = $('vue-inviter'); zone.textContent = '';
+  const c = el('div', 'bloc'); c.id = 'inviter-bloc';
+  c.appendChild(el('h2', '', 'Inviter à nouveau'));
+  c.appendChild(el('p', 'compte', 'Choisis une édition passée. Tu vois les personnes acceptées qui ont dit oui à être recontactées. Chacune reçoit un lien vers la candidature de cette édition, déjà remplie : elle vérifie, complète et envoie.'));
+  const autres = editionsListe.filter((x) => x.id !== (editionCourante || (editionsListe[0] || {}).id));
+  if (!autres.length) { c.appendChild(el('p', 'message ko', 'Il n’y a pas d’autre édition à partir de laquelle inviter. Crée ou ouvre une autre édition dans l’Administration.')); zone.appendChild(c); return; }
+  const sel = document.createElement('select'); sel.id = 'inviter-source'; sel.setAttribute('aria-label', 'Édition de départ');
+  autres.forEach((x) => { const o = document.createElement('option'); o.value = x.id; o.textContent = x.nom; sel.appendChild(o); });
+  if (inviterSource && autres.some((x) => x.id === inviterSource)) sel.value = inviterSource;
+  const b = el('button', 'btn', 'Voir qui peut être invité'); b.type = 'button'; b.id = 'inviter-voir';
+  const st = el('div', '', ''); st.setAttribute('role', 'status');
+  const liste = el('div', '', ''); liste.id = 'inviter-liste';
+  b.addEventListener('click', async () => {
+    inviterSource = sel.value;
+    const r = await enregistrer(st, b, async () => appelReglages({ op: 'invitations_lister', token: jeton, source: sel.value }), 'Liste à jour');
+    if (r && r.ok) { inviterDonnees = r; dessinerListeInviter(liste); } else liste.textContent = '';
+  });
+  c.appendChild(sel); c.appendChild(b); c.appendChild(st); c.appendChild(liste); zone.appendChild(c);
+  if (inviterDonnees && inviterSource === sel.value) dessinerListeInviter(liste);
+}
+function dessinerListeInviter(zone) {
+  zone.textContent = '';
+  const d = inviterDonnees; if (!d) return;
+  const ex = d.exclus || {};
+  const bruit = [];
+  if (ex.sans_accord) bruit.push(ex.sans_accord + ' sans accord pour être recontactée');
+  if (ex.liste_noire) bruit.push(ex.liste_noire + ' sur la liste noire');
+  if (ex.deja_invites) bruit.push(ex.deja_invites + ' déjà invitée' + (ex.deja_invites > 1 ? 's' : ''));
+  if (ex.deja_candidats) bruit.push(ex.deja_candidats + ' ont déjà candidaté');
+  if (ex.sans_email) bruit.push(ex.sans_email + ' sans email');
+  if (bruit.length) zone.appendChild(el('p', 'compte', 'Non proposées : ' + bruit.join(', ') + '.'));
+  if (!d.items.length) { zone.appendChild(el('p', 'message', 'Personne à inviter pour le moment.')); return; }
+  const poles = []; d.items.forEach((i) => { if (poles.indexOf(i.pole) < 0) poles.push(i.pole); });
+  const filtres = el('div', 'inviter-filtres');
+  const fp = document.createElement('select'); fp.id = 'inviter-pole'; fp.setAttribute('aria-label', 'Filtrer par pôle');
+  [['', 'Tous les pôles']].concat(poles.map((p) => [p, nomPole(p)])).forEach((x) => { const o = document.createElement('option'); o.value = x[0]; o.textContent = x[1]; fp.appendChild(o); });
+  const lb = el('label', 'admin-option'); const fd = document.createElement('input'); fd.type = 'checkbox'; fd.id = 'inviter-doree'; lb.appendChild(fd); lb.appendChild(el('span', '', '★ Seulement la liste dorée'));
+  filtres.appendChild(fp); filtres.appendChild(lb); zone.appendChild(filtres);
+  const lignes = el('div', 'inviter-lignes'); zone.appendChild(lignes);
+  const resume = el('p', 'compte', ''); resume.id = 'inviter-resume'; resume.setAttribute('role', 'status');
+  const envoyer = el('button', 'btn btn-ajouter', 'Envoyer les invitations'); envoyer.type = 'button'; envoyer.id = 'inviter-envoyer';
+  const res = el('div', '', ''); res.setAttribute('role', 'status');
+  const cases = [];
+  const majResume = () => {
+    const n = cases.filter((x) => x.c.checked && !x.l.hidden).length, q = d.quota;
+    resume.textContent = n ? 'Tu vas envoyer ' + n + ' email' + (n > 1 ? 's' : '') + (q >= 0 ? ', il en reste ' + q + ' aujourd’hui.' : '.') : 'Coche les personnes à inviter.';
+    resume.className = (q >= 0 && n > q) ? 'message ko' : 'compte';
+    envoyer.disabled = !n || (q >= 0 && n > q);
+  };
+  d.items.forEach((i) => {
+    const l = el('label', 'admin-option inviter-ligne'); l.dataset.pole = i.pole; l.dataset.doree = i.doree ? '1' : '';
+    const c = document.createElement('input'); c.type = 'checkbox'; c.value = i.id; c.addEventListener('change', majResume);
+    l.appendChild(c); l.appendChild(el('span', '', (i.doree ? '★ ' : '') + (i.projet || '') + ' : ' + i.prenom + ' ' + i.nom + ' (' + nomPole(i.pole) + ', ' + i.email + ')'));
+    lignes.appendChild(l); cases.push({ c: c, l: l });
+  });
+  const filtrer = () => { cases.forEach((x) => { x.l.hidden = !!((fp.value && x.l.dataset.pole !== fp.value) || (fd.checked && !x.l.dataset.doree)); }); majResume(); };
+  fp.addEventListener('change', filtrer); fd.addEventListener('change', filtrer);
+  envoyer.addEventListener('click', async () => {
+    const ids = cases.filter((x) => x.c.checked && !x.l.hidden).map((x) => x.c.value);
+    const r = await enregistrer(res, envoyer, async () => appelReglages({ op: 'invitations_envoyer', token: jeton, source: inviterSource, ids: ids }), 'Invitations envoyées');
+    if (r && r.ok) { res.className = 'message ok'; res.textContent = r.envoyees + ' invitation' + (r.envoyees > 1 ? 's' : '') + ' envoyée' + (r.envoyees > 1 ? 's' : '') + (r.mode === 'TEST' ? ' (mode TEST : elles sont allées à l’adresse de test).' : '.'); inviterDonnees = null; }
+  });
+  zone.appendChild(resume); zone.appendChild(envoyer); zone.appendChild(res); majResume();
+}
+function majBandeauPause() { const b = $('bandeau-pause'); if (b) b.hidden = !(config && config.licence && config.licence.pause); }
+function nomStatutEdition(s) { return ({ brouillon: 'Brouillon', ouverte: 'Ouverte', fermee: 'Fermée', archivee: 'Archivée' })[s] || s; }
+function rechargerPage() { location.reload(); }
+function changerEdition(id) { editionCourante = id || ''; try { sessionStorage.setItem('equipe_edition', editionCourante); } catch (err) { /* stockage indisponible */ } rechargerPage(); }
+function dessinerEditions() {
+  const boite = $('edition-choix'); if (!boite) return;
+  const courante = editionsListe.filter((x) => x.id === (editionCourante || (editionsListe[0] || {}).id))[0] || editionsListe[0];
+  boite.hidden = editionsListe.length < 2;   // une seule édition : rien de plus à l'écran qu'avant
+  const sel = $('choix-edition'); sel.textContent = '';
+  editionsListe.forEach((ed) => { const o = document.createElement('option'); o.value = ed.id; o.textContent = ed.nom + (ed.statut === 'ouverte' ? '' : ' (' + nomStatutEdition(ed.statut).toLowerCase() + ')'); sel.appendChild(o); });
+  if (courante) sel.value = courante.id;
+  $('edition-etat').textContent = courante && courante.statut === 'archivee' ? 'Édition archivée : tu peux la lire, pas la modifier.' : (courante && courante.statut === 'brouillon' ? 'Brouillon : le public ne la voit pas encore.' : '');
+  document.body.classList.toggle('edition-archivee', !!courante && courante.statut === 'archivee');
+  sel.onchange = () => changerEdition(sel.value);
+}
+async function chargerEditions() {
+  try {
+    const r = await appel({ op: 'editions_lire', token: jeton });
+    if (!r || !r.ok) return;
+    editionsListe = r.editions || [];
+    if (editionCourante && !editionsListe.some((x) => x.id === editionCourante)) { editionCourante = ''; try { sessionStorage.removeItem('equipe_edition'); } catch (err) { /* rien */ } }
+    let stocke = ''; try { stocke = sessionStorage.getItem('equipe_edition') || ''; } catch (err) { stocke = ''; }
+    if (!stocke && r.defaut && r.defaut !== r.courante) { changerEdition(r.defaut); return; }   // seule une autre édition est ouverte : on y va
+    dessinerEditions();
+  } catch (err) { /* la liste des éditions est un confort : sans elle le Portail marche comme avant */ }
+}
 async function charger() {
   try {
     const r = await appel({ op: 'list', token: jeton });
@@ -1036,6 +1183,8 @@ async function charger() {
     habiller();
     appliquerRole();
     naviguer(vue === 'detail' ? 'candidatures' : vue);
+    chargerEditions();
+    majExport(); majBandeauPause(); majMenuInviter();
     chargerEnArrierePlan();
   } catch (err) {
     montrerConnexion('Impossible de charger les données. Réessaie dans un instant.');
@@ -1261,12 +1410,13 @@ document.addEventListener('visibilitychange', () => {
 });
 
 function naviguer(nom) {
-  vue = ['candidatures', 'participants', 'benevoles', 'stats', 'reglages', 'detail'].indexOf(nom) >= 0 ? nom : 'accueil';
+  vue = ['candidatures', 'participants', 'benevoles', 'stats', 'reglages', 'detail', 'inviter'].indexOf(nom) >= 0 ? nom : 'accueil';
   $('vue-accueil').hidden = vue !== 'accueil';
   $('vue-candidatures').hidden = vue !== 'candidatures';
   $('vue-participants').hidden = vue !== 'participants';
   $('vue-benevoles').hidden = vue !== 'benevoles';
   $('vue-stats').hidden = vue !== 'stats';
+  $('vue-inviter').hidden = vue !== 'inviter';
   $('vue-reglages').hidden = vue !== 'reglages';
   $('vue-detail').hidden = vue !== 'detail';
   majBarreRetour();
@@ -1277,6 +1427,7 @@ function naviguer(nom) {
   sectionOuverte = ['candidatures', 'participants', 'benevoles'].indexOf(actif) >= 0 ? actif : '';
   if (vue === 'accueil') dessinerAccueil(); else if (vue === 'candidatures') dessinerCandidatures();
   else if (vue === 'stats') chargerStatsDetail(false);
+  else if (vue === 'inviter') dessinerInviter();
   else if (vue === 'reglages') chargerReglages();
   else if (vue === 'participants') { dessinerParticipants(); if (!participants) chargerParticipants(); }
   else if (vue === 'benevoles') { dessinerBenevoles(); if (!benevoles) chargerBenevoles(); }
@@ -1363,6 +1514,7 @@ function ligneOuverture(o) {
   const etat = el('span', ''); const bouton = el('button', 'btn', ''); bouton.type = 'button'; bouton.dataset.interrupteur = o.cle;
   bouton.setAttribute('role', 'switch');
   haut.appendChild(etat); haut.appendChild(bouton); ligne.appendChild(haut);
+  const raisonDate = el('p', 'raison-date', ''); raisonDate.setAttribute('role', 'status'); ligne.appendChild(raisonDate);
   const confirm = el('div', 'confirm-ferme'); confirm.hidden = true; ligne.appendChild(confirm);
   const msg = champReglage('Ce que le public lit', o.message, { long: true, lignes: 2, placeholder: o.defaut, nom: 'msg-' + o.cle.replace(/[^a-z0-9]+/gi, '-') });
   msg.saisie.dataset.msg = o.cle;
@@ -1376,12 +1528,17 @@ function ligneOuverture(o) {
     ligne.classList.toggle('est-ferme', !ouvert);
     if (!ouvert) detMsg.open = true;
     etat.className = 'etat ' + (ouvert ? 'etat-ouvert' : 'etat-ferme'); etat.textContent = ouvert ? 'OUVERT' : 'FERMÉ';
+    raisonDate.textContent = !ouvert && o.raison ? o.raison : ''; raisonDate.hidden = !raisonDate.textContent;   // la raison reste écrite tant qu'une date ferme
     bouton.className = 'btn ' + (ouvert ? 'btn-danger-doux' : ''); bouton.textContent = ouvert ? 'Fermer' : 'Rouvrir';
     bouton.setAttribute('aria-checked', String(ouvert)); bouton.setAttribute('aria-label', o.libelle + ' : ' + (ouvert ? 'ouvert, appuyer pour fermer' : 'fermé, appuyer pour rouvrir'));
   };
   const appliquer = async (neuf) => {
     const r = await enregistrer(statut, bouton, () => o.changer(neuf), neuf ? 'Rouvert' : 'Fermé');
-    if (r && r.ok) { ouvert = neuf; dessiner(); } else if (r === null) return;
+    if (r && r.ok) {
+      const raison = o.raisonDe ? o.raisonDe(r) : '';   // une date peut encore fermer, même avec l'interrupteur sur « ouvert »
+      o.raison = raison; ouvert = neuf && !raison; dessiner();
+      if (neuf && raison) { statut.className = 'message ko'; statut.textContent = 'Le bouton est sur ouvert, mais c’est toujours fermé. ' + raison; }
+    } else if (r === null) return;
     confirm.hidden = true;
   };
   bouton.addEventListener('click', () => {
@@ -1553,7 +1710,8 @@ function dessinerReglages() {
 }
 
 function ligneFormulaire(r, f) {
-  return ligneOuverture({ cle: f[0], libelle: f[1], ouvert: r.ouvertures[f[0]], message: r.messages[f[0]], defaut: r.messages_defaut[f[0]],
+  const raisonG = (r.ouvertures_raisons || {})[f[0]] || '';
+  return ligneOuverture({ cle: f[0], libelle: f[1], ouvert: r.ouvertures[f[0]] && !raisonG, raison: raisonG, raisonDe: (rep) => ((rep.ouvertures_raisons || {})[f[0]] || ''), message: r.messages[f[0]], defaut: r.messages_defaut[f[0]],
     changer: async (neuf) => gardeReglages(await appelReglages({ op: 'reglages_ecrire', valeurs: { [f[2]]: neuf ? 'OUI' : 'NON' } })),
     enregistrerMessage: async (txt) => gardeReglages(await appelReglages({ op: 'reglages_ecrire', valeurs: { [f[3]]: txt } })) });
 }
@@ -1659,7 +1817,7 @@ function construirePole(z, p, r) {
   z.appendChild(barre); noms.forEach((n) => z.appendChild(parties[n[0]]));
   // --- Infos
   const inf = parties.infos;
-  inf.appendChild(ligneOuverture({ cle: 'pole:' + p.nom, libelle: 'Candidatures du pôle ' + nomPole(p.nom), ouvert: p.ouvert, message: p.message_ferme, defaut: r.message_pole_defaut.replace('{pole}', p.nom),
+  inf.appendChild(ligneOuverture({ cle: 'pole:' + p.nom, libelle: 'Candidatures du pôle ' + nomPole(p.nom), ouvert: p.ouvert, raison: p.raison_date || '', raisonDe: (rep) => rep.pole_raison || '', message: p.message_ferme, defaut: r.message_pole_defaut.replace('{pole}', p.nom),
     changer: async (neuf) => gardeReglages(await appelReglages({ op: 'pole_ecrire', nom: p.nom, champs: { ouvert: neuf ? 'OUI' : 'NON' } })),
     enregistrerMessage: async (txt) => gardeReglages(await appelReglages({ op: 'pole_ecrire', nom: p.nom, champs: { message_ferme: txt } })) }));
   const det = el('section', 'carte reglage-bloc'); det.dataset.pole = p.nom; det.appendChild(el('h2', '', 'Paiement, référente et conditions')); det.appendChild(lienAide('r-pole'));
@@ -1773,6 +1931,78 @@ async function appelAdmin(corps) {
   if (r && r.admin === false) { adminJeton = ''; adminDonnees = null; adminMessage = r.error || "L'accès administrateur a expiré."; dessinerAdmin(); return null; }
   return r;
 }
+// Administration : les options premium (un interrupteur chacune) et la licence du client. Le serveur les vérifie, ce ne sont pas de simples boutons cachés.
+let adminOptions = null, adminLicence = null;
+async function chargerOptionsLicence() {
+  const o = await appelAdmin({ op: 'options_lire' }), l = await appelAdmin({ op: 'licence_lire' });
+  if (o && o.ok) adminOptions = o.options; if (l && l.ok) adminLicence = l.licence;
+  if (o && o.ok && l && l.ok) dessinerAdmin();
+}
+function blocOptionsAdmin() {
+  const bloc = el('div', 'admin-options'); bloc.id = 'admin-options';
+  bloc.appendChild(el('h3', '', 'Options premium de ce client'));
+  bloc.appendChild(el('p', 'compte', 'Coupe ce qui n’est pas vendu à ce client. Tant qu’une option n’a pas été réglée, elle est active. Le serveur vérifie ces interrupteurs : ils ne sont pas dans le Sheet.'));
+  if (!adminOptions) { bloc.appendChild(el('p', 'compte', 'Chargement…')); chargerOptionsLicence(); return bloc; }
+  adminOptions.forEach((o) => {
+    const ligne = el('label', 'admin-option'); ligne.dataset.cle = o.cle;
+    const c = document.createElement('input'); c.type = 'checkbox'; c.checked = !!o.actif; c.disabled = !o.construit;
+    const txt = el('span', '', o.nom + (o.construit ? '' : ' (à venir)'));
+    const st = el('span', '', ''); st.setAttribute('role', 'status');
+    c.addEventListener('change', async () => {
+      const rep = await enregistrer(st, c, () => appelAdmin({ op: 'options_ecrire', cle: o.cle, actif: c.checked }), c.checked ? 'Activée' : 'Coupée');
+      if (rep && rep.ok) { adminOptions = rep.options; if (config && config.options) config.options[o.cle] = c.checked; majExport(); majMenuInviter(); } else c.checked = !c.checked;
+    });
+    ligne.appendChild(c); ligne.appendChild(txt); ligne.appendChild(st); bloc.appendChild(ligne);
+  });
+  return bloc;
+}
+function blocLicenceAdmin() {
+  const bloc = el('div', 'admin-licence'); bloc.id = 'admin-licence';
+  bloc.appendChild(el('h3', '', 'Licence du client'));
+  const l = adminLicence || { definie: false, pause: false };
+  const resume = !l.definie ? 'Aucune date de fin enregistrée.' : (l.expiree ? 'Licence terminée depuis ' + Math.abs(l.jours) + ' jour' + (Math.abs(l.jours) > 1 ? 's' : '') + ' (' + l.fin + ').' : 'Licence jusqu’au ' + l.fin + ' (dans ' + l.jours + ' jour' + (l.jours > 1 ? 's' : '') + ').');
+  bloc.appendChild(el('p', (l.expiree || l.bientot) ? 'message ko' : 'compte', resume + (l.pause ? ' Le Portail est EN PAUSE.' : '')));
+  const client = champReglage('Nom du client', l.client || '', { nom: 'admin-licence-client' });
+  const fin = champReglage('Date de fin (2027-12-31)', l.fin || '', { nom: 'admin-licence-fin' });
+  const pause = document.createElement('input'); pause.type = 'checkbox'; pause.id = 'admin-licence-pause'; pause.checked = !!l.pause;
+  const lp = el('label', 'admin-option'); lp.appendChild(pause); lp.appendChild(el('span', '', 'Mettre le Portail en pause (formulaires fermés, équipe en lecture seule)'));
+  const b = el('button', 'btn', 'Enregistrer la licence'); b.type = 'button'; b.id = 'admin-licence-enregistrer';
+  const st = el('div', '', ''); st.setAttribute('role', 'status');
+  b.addEventListener('click', async () => {
+    const rep = await enregistrer(st, b, () => appelAdmin({ op: 'licence_ecrire', client: client.saisie.value, fin: fin.saisie.value, pause: pause.checked }), 'Licence enregistrée');
+    if (rep && rep.ok) { adminLicence = rep.licence; if (config) config.licence = { pause: rep.licence.pause }; majBandeauPause(); dessinerAdmin(); }
+  });
+  bloc.appendChild(client.boite); bloc.appendChild(fin.boite); bloc.appendChild(lp); bloc.appendChild(b); bloc.appendChild(st);
+  return bloc;
+}
+// Administration : les éditions (statut) et la création d'une nouvelle édition.
+function blocEditionsAdmin() {
+  const bloc = el('div', 'admin-editions'); bloc.id = 'admin-editions';
+  bloc.appendChild(el('h3', '', 'Éditions'));
+  bloc.appendChild(el('p', 'compte', 'Chaque édition a son Sheet, son dossier Drive et ses inscriptions. Une nouvelle édition garde les réglages, les pôles, les questions, les textes d’emails et les tarifs de l’édition où tu es, sans les inscriptions, et ses formulaires sont fermés. Archivée, une édition se lit mais ne se modifie plus.'));
+  editionsListe.forEach((ed) => {
+    const ligne = el('div', 'admin-edition'); ligne.dataset.id = ed.id;
+    ligne.appendChild(el('strong', '', ed.nom));
+    const sel = document.createElement('select'); sel.setAttribute('aria-label', 'Statut de ' + ed.nom); sel.dataset.id = ed.id;
+    ['brouillon', 'ouverte', 'fermee', 'archivee'].forEach((s) => { const o = document.createElement('option'); o.value = s; o.textContent = nomStatutEdition(s); sel.appendChild(o); });
+    sel.value = ed.statut;
+    const st = el('span', '', ''); st.setAttribute('role', 'status');
+    sel.addEventListener('change', async () => {
+      const rep = await enregistrer(st, sel, () => appelAdmin({ op: 'edition_statut', id: ed.id, statut: sel.value }), 'Statut enregistré');
+      if (rep && rep.ok) { editionsListe = rep.editions || editionsListe; dessinerEditions(); } else sel.value = ed.statut;
+    });
+    ligne.appendChild(sel); ligne.appendChild(st); bloc.appendChild(ligne);
+  });
+  const nom = champReglage('Nom de la nouvelle édition', '', { nom: 'admin-edition-nom' });
+  const bc = el('button', 'btn', 'Créer l’édition'); bc.type = 'button'; bc.id = 'admin-edition-creer';
+  const sc = el('div', '', ''); sc.setAttribute('role', 'status');
+  bc.addEventListener('click', async () => {
+    const rep = await enregistrer(sc, bc, () => appelAdmin({ op: 'edition_creer', nom: nom.saisie.value }), 'Édition créée en brouillon : choisis-la dans « Édition » du menu pour la régler');
+    if (rep && rep.ok) { editionsListe = rep.editions || editionsListe; dessinerEditions(); nom.saisie.value = ''; }
+  });
+  bloc.appendChild(nom.boite); bloc.appendChild(bc); bloc.appendChild(sc);
+  return bloc;
+}
 function dessinerAdmin() {
   const adm = $('reglage-admin'); if (!adm) return; adm.textContent = '';
   adm.appendChild(el('h2', '', 'Administration')); adm.appendChild(lienAide('r-reel'));
@@ -1796,7 +2026,7 @@ function dessinerAdmin() {
   const v = adminDonnees || {};
   const barreTop = el('div', 'admin-barre'); barreTop.appendChild(el('span', 'compte', 'Accès administrateur ouvert pendant 30 minutes.'));
   const bf = el('button', 'btn btn-doux-clair', "Fermer l'administration"); bf.type = 'button'; bf.id = 'admin-fermer';
-  bf.addEventListener('click', () => { adminJeton = ''; adminDonnees = null; dessinerAdmin(); }); barreTop.appendChild(bf); adm.appendChild(barreTop);
+  bf.addEventListener('click', () => { adminJeton = ''; adminDonnees = null; adminOptions = null; adminLicence = null; dessinerAdmin(); }); barreTop.appendChild(bf); adm.appendChild(barreTop);
   // mode TEST / REEL
   const mode = el('div', 'admin-mode ' + (v.mode_envoi === 'REEL' ? 'mode-reel' : 'mode-test')); mode.id = 'admin-mode';
   mode.appendChild(el('strong', '', v.mode_envoi === 'REEL' ? 'Mode REEL : les emails partent vers les vraies personnes.' : "Mode TEST : tous les emails vont à l'adresse de test, personne d'autre ne reçoit rien."));
@@ -1817,6 +2047,9 @@ function dessinerAdmin() {
     conf.appendChild(sai); conf.appendChild(ok); mode.appendChild(b); mode.appendChild(conf);
   }
   mode.appendChild(sm); adm.appendChild(mode);
+  adm.appendChild(blocEditionsAdmin());
+  adm.appendChild(blocOptionsAdmin());
+  adm.appendChild(blocLicenceAdmin());
   // autres réglages
   const champs = [['email_test', "Adresse de test (reçoit tous les emails en mode TEST)", { type: 'email' }], ['nom_expediteur', "Nom de l'expéditeur (affiché dans la boîte mail)", {}], ['edition', "Nom de l'édition", {}],
     ['logo_portail', 'Logo du Portail (adresse https ou nom de fichier)', {}], ['image_accueil', "Grande image de l'accueil (adresse https ou nom de fichier)", {}]];
@@ -2547,12 +2780,21 @@ function exporterCsv(nom, entetes, lignes) {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   return texte;
 }
-$('btn-export-csv').addEventListener('click', () => {
+// Export brut (tout ce que la personne a le droit de voir, sans filtre) : pour tout le monde. Export de la liste filtrée : option premium « exports filtrés ».
+function exportFiltresActif() { return !(config && config.options && config.options.exports_filtres === false); }
+function majExport() {
+  const filtres = exportFiltresActif();
+  $('btn-export-csv').textContent = filtres ? 'Exporter la liste (CSV)' : 'Exporter tout (CSV)';
+  $('btn-export-tout').hidden = !filtres;
+}
+function exporterCandidatures(source) {
   const jour = new Date().toISOString().slice(0, 10);
-  const lignes = derniereListe.map((i) => [i.date, nomPole(i.pole), i.projet, i.formule, i.prenom, i.nom, i.email, i.telephone, statutDe(i), i.dossier_final, i.paiement, i.confirmation, i.origine === 'Invitée' ? 'Invitée' : 'Candidature']);
+  const lignes = source.map((i) => [i.date, nomPole(i.pole), i.projet, i.formule, i.prenom, i.nom, i.email, i.telephone, statutDe(i), i.dossier_final, i.paiement, i.confirmation, (i.origine === 'Invitée' || i.origine === 'Réinvité') ? i.origine : 'Candidature']);
   exporterCsv('candidatures-' + jour + '.csv', ['Date', 'Pôle', 'Projet', 'Formule', 'Prénom', 'Nom', 'Email', 'Téléphone', 'Sélection', 'Dossier final', 'Paiement', 'Confirmation', 'Origine'], lignes);
   $('export-etat').textContent = lignes.length + ' ligne' + (lignes.length > 1 ? 's' : '') + ' exportée' + (lignes.length > 1 ? 's' : '') + '.';
-});
+}
+$('btn-export-csv').addEventListener('click', () => exporterCandidatures(exportFiltresActif() ? derniereListe : items));
+$('btn-export-tout').addEventListener('click', () => exporterCandidatures(items));
 
 function boutonFiltre(zone, nom, nombre, actif, classe, action) {
   const b = document.createElement('button');
@@ -2611,6 +2853,7 @@ function dessinerCandidatures() {
     p2.appendChild(puceCategorie(i.pole));
     if (i.formule === 'Duo') p2.appendChild(puce('Duo'));
     if (i.origine === 'Invitée') p2.appendChild(puce('Invitée', 'invitee'));
+    if (i.origine === 'Réinvité') p2.appendChild(puce('Réinvité', 'invitee'));
     c2.appendChild(p2);
     const date = document.createElement('div'); date.className = 'meta'; date.textContent = (i.origine === 'Invitée' ? 'Ajoutée le ' : 'Reçue le ') + i.date; c2.appendChild(date);
     const c3 = document.createElement('div'); c3.className = 'puces';
@@ -2911,6 +3154,43 @@ function carteGroupe(g) {
   c.appendChild(liste);
   return c;
 }
+// Workshops : une ou deux interventions (forfait 135 € ou 185 €). Chaque intervention a sa décision ; la candidature est acceptée dès qu'une l'est.
+function carteInterventions(d, genre) {
+  const i = d.interventions;
+  if (!i) return null;
+  const c = carte('Interventions proposées'); c.id = 'carte-interventions';
+  c.appendChild(lienAide('r-interventions'));
+  c.appendChild(el('p', 'compte', i.nombre === 2 ? '2 interventions proposées : forfait de ' + i.forfait + '.' : '1 intervention proposée : forfait de ' + i.forfait + '.'));
+  if (i.nombre !== 2) return c;
+  const message = el('p', 'aide-statut', ''); message.setAttribute('role', 'status');
+  const retenues = i.items.filter((x) => x.decision === 'Accepté').length;
+  const boutons = [];
+  i.items.forEach((x) => {
+    const ligne = el('div', 'intervention'); ligne.dataset.num = x.num;
+    ligne.appendChild(el('strong', '', 'Intervention ' + x.num + (x.meme ? ' : même atelier que la première' : (x.titre ? ' : ' + x.titre : ''))));
+    const choix = el('div', 'choix-intervention');
+    [['Accepté', 'Accepter'], ['Refusé', 'Refuser'], ['À étudier', 'À étudier']].forEach((v) => {
+      const b = el('button', 'btn btn-doux-clair' + (x.decision === v[0] ? ' choisi' : ''), v[1]); b.type = 'button'; b.dataset.valeur = v[0]; b.setAttribute('aria-pressed', String(x.decision === v[0]));
+      b.addEventListener('click', async () => {
+        if (x.decision === v[0]) return;
+        boutons.forEach((y) => { y.disabled = true; }); message.className = 'aide-statut'; message.textContent = 'Enregistrement…';
+        try {
+          const r = await appel({ op: 'intervention_decider', token: jeton, id: d.id, num: x.num, valeur: v[0] });
+          if (sessionExpiree(r)) return;
+          if (r.ok) { ouvrirFiche(genre, d.id); return; }   // on rouvre la fiche : statut, email prêt et historique sont à jour
+          message.className = 'message ko'; message.textContent = r.message || r.error || 'Changement refusé.';
+        } catch (err) { message.className = 'message ko'; message.textContent = 'Le serveur ne répond pas. Réessaie.'; }
+        boutons.forEach((y) => { y.disabled = false; });
+      });
+      boutons.push(b); choix.appendChild(b);
+    });
+    ligne.appendChild(choix); c.appendChild(ligne);
+  });
+  c.appendChild(el('p', 'compte resume-interventions', retenues === 0 ? 'Aucune intervention retenue pour l’instant.' : 'Retenue : ' + (retenues === 2 ? '2 interventions, forfait de 185 €' : '1 intervention, forfait de 135 €') + '.'));
+  c.appendChild(el('p', 'aide-statut', 'La candidature est acceptée dès qu’une intervention est acceptée, et refusée seulement quand les deux le sont.'));
+  c.appendChild(message);
+  return c;
+}
 function carteContratBenevole(d) {
   const c = carte('Contrat signé du bénévole');
   if (d.contrat_signe) {
@@ -3062,7 +3342,7 @@ function dessinerDetail(d, listes, mode) {
   entete.appendChild(titreFiche);
   const puces = el('div', 'puces');
   if (genre === 'benevole') (d.equipes || []).forEach((t) => puces.appendChild(puce(equipeCourte(t), 'equipe')));
-  else { puces.appendChild(puceCategorieIcone(d.pole)); if (d.formule === 'Duo') puces.appendChild(puce('Duo')); if (d.origine === 'Invitée') puces.appendChild(puce('Invitée', 'invitee')); }
+  else { puces.appendChild(puceCategorieIcone(d.pole)); if (d.formule === 'Duo') puces.appendChild(puce('Duo')); if (d.origine === 'Invitée') puces.appendChild(puce('Invitée', 'invitee')); if (d.origine === 'Réinvité') puces.appendChild(puce('Réinvité', 'invitee')); }
   entete.appendChild(puces);
   if (sousTexte) entete.appendChild(el('p', 'fiche-soustitre', sousTexte));
   const infos = el('ul', 'fiche-infos');
@@ -3111,6 +3391,7 @@ function dessinerDetail(d, listes, mode) {
   if (genre === 'participant') (d.groupes || []).forEach((g) => cartesExtra.push(carteGroupe(g)));
   if (genre === 'benevole' && d.motivation) cartesExtra.push(carteMotivation(d.motivation));
   if (genre === 'benevole' && d.contrat_requis) cartesExtra.push(carteContratBenevole(d));
+  if (genre !== 'benevole' && d.interventions) cartesExtra.push(carteInterventions(d, genre));
 
   // Statuts
   const cs = carte(genre === 'participant' ? 'Suivi du dossier' : 'Suivi');
@@ -3246,9 +3527,11 @@ function dessinerDetail(d, listes, mode) {
   zone.appendChild(cs);
 
   // Email prêt
+  let envoiEtat = d.envoi_en_cours || null;
   function redessinerEmail(pret) {
     emailZone.innerHTML = '';
     emailZone.appendChild(el('h2', '', 'Email')); emailZone.appendChild(lienAide('r-acceptation'));
+    const enCours = bandeauEnvoi(envoiEtat); if (enCours) emailZone.appendChild(enCours);
     if (!pret) { emailZone.appendChild(el('p', 'meta', "Aucun email prêt. Change un statut pour en préparer un.")); return; }
     emailZone.appendChild(el('p', 'titre-pret', 'Prêt : ' + pret.libelle));
     if (pret.erreur) { emailZone.appendChild(el('p', 'message ko', pret.erreur)); return; }
@@ -3307,10 +3590,10 @@ function dessinerDetail(d, listes, mode) {
       oui.addEventListener('click', async () => {
         oui.disabled = true; non.disabled = true; resultat.className = 'message'; resultat.textContent = ''; resultat.appendChild(roue('Envoi en cours...'));
         try {
-          const corpsEnvoi = { op: 'send_email', token: jeton, id: sid };
+          const corpsEnvoi = { op: 'send_email', token: jeton, id: sid, envoi_id: nouvelIdEnvoi() };
           if (modifie) corpsEnvoi.edit = { objet: objet.value, corps: corps.value, base: pret.corps };
           delete detailsPrets[cleDetail];
-          const r = await appel(corpsEnvoi);
+          const r = await appel(corpsEnvoi, DELAI_ENVOI_MS);
           if (sessionExpiree(r)) return;
           if (r.statuts) { statuts = r.statuts; majListes(genre, d, statuts); redessinerStatuts(); redessinerAlerte(); }
           majEmailAEnvoyer(genre, d, 'email_pret' in r ? r.email_pret : null);
@@ -3321,8 +3604,12 @@ function dessinerDetail(d, listes, mode) {
           fin.textContent = r.ok ? 'Email envoyé.' + (r.detail ? ' (' + r.detail + ')' : '') : (r.error || 'Envoi non réussi : ' + (r.statut || '') + (r.detail ? ' (' + r.detail + ')' : ''));
           emailZone.appendChild(fin);
         } catch (err) {
-          resultat.className = 'message ko'; resultat.textContent = 'Le serveur ne répond pas. Vérifie le Sheet avant de réessayer.';
-          oui.disabled = false; non.disabled = false;
+          // On ne sait pas si l'envoi est parti : on ne propose JAMAIS de le relancer. On invite à vérifier, et la fiche se rouvre toute seule pour montrer l'état réel.
+          resultat.className = 'message ko'; resultat.textContent = 'Le serveur est lent à répondre : l’envoi est peut-être en cours ou déjà parti. Ne le relance pas. La fiche va se mettre à jour toute seule dans un instant.';
+          const verifier = el('button', 'btn btn-doux-clair', 'Vérifier maintenant'); verifier.type = 'button'; verifier.id = 'btn-verifier-envoi';
+          verifier.addEventListener('click', () => ouvrirFiche(genre, d.id));
+          actions.appendChild(verifier);
+          setTimeout(() => { if (document.body.contains(resultat)) ouvrirFiche(genre, d.id); }, 30000);
         }
       });
       actions.appendChild(oui); actions.appendChild(non);
