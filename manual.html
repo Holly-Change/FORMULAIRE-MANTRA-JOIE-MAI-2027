@@ -286,11 +286,15 @@ footer strong { color: var(--navy); }
     <a class="tuile" href="#r-whatsapp"><img src="assets/ALERT.png" alt="" loading="lazy" onerror="this.remove()">Mettre le lien WhatsApp d’un groupe</a>
     <a class="tuile" href="#r-tester-email"><img src="assets/ALERT.png" alt="" loading="lazy" onerror="this.remove()">Tester avec la même adresse email</a>
     <a class="tuile" href="#r-contrat-benevole"><img src="assets/ALERT.png" alt="" loading="lazy" onerror="this.remove()">Récupérer le contrat signé d’un bénévole</a>
+    <a class="tuile" href="#r-interventions"><img src="assets/ALERT.png" alt="" loading="lazy" onerror="this.remove()">Décider pour une ou deux interventions (Workshops)</a>
     <a class="tuile" href="#r-reel"><img src="assets/SEND.png" alt="" loading="lazy" onerror="this.remove()">Passer aux vrais emails</a>
     <a class="tuile" href="#r-code"><img src="assets/LINK.png" alt="" loading="lazy" onerror="this.remove()">Me connecter la première fois</a>
     <a class="tuile" href="#r-changer-code"><img src="assets/LINK.png" alt="" loading="lazy" onerror="this.remove()">Changer mon code</a>
     <a class="tuile" href="#r-inviter"><img src="assets/BENEVOLES.png" alt="" loading="lazy" onerror="this.remove()">Inviter une référente</a>
     <a class="tuile" href="#r-sauvegarde"><img src="assets/REFRESH%20LOADING.png" alt="" loading="lazy" onerror="this.remove()">Faire ou restaurer une sauvegarde</a>
+    <a class="tuile" href="#r-edition"><img src="assets/COPY.png" alt="" loading="lazy" onerror="this.remove()">Créer une nouvelle édition</a>
+    <a class="tuile" href="#r-options"><img src="assets/ALERT.png" alt="" loading="lazy" onerror="this.remove()">Régler les options premium et la licence d’un client</a>
+    <a class="tuile" href="#r-reinviter"><img src="assets/PERSON.png" alt="" loading="lazy" onerror="this.remove()">Inviter à nouveau des personnes d’une édition passée</a>
     <a class="tuile" href="#installer"><img src="assets/PHONE.png" alt="" loading="lazy" onerror="this.remove()">Installer l’application</a>
   </div>
 </section>
@@ -534,6 +538,20 @@ footer strong { color: var(--navy); }
     <div class="sipas"><strong>Si ça ne marche pas</strong><p>Pas de lien dans l’email de bienvenue : vérifie dans Réglages, Général, Dates et liens, que <b class="ui">Lien du formulaire du dossier final</b> est rempli.</p></div>
   </article>
 
+  <article class="recette" id="r-interventions" data-bloc>
+    <header><img src="assets/ALERT.png" alt="" loading="lazy" onerror="this.remove()"><div><h3>Décider pour une ou deux interventions (Workshops)</h3></div></header>
+    <p class="qui"><span class="puce violet">Organisatrice principale</span><span class="puce violet">Référente Workshops</span></p>
+    <ol class="etapes">
+      <li>Ouvre la candidature Workshops, puis descends jusqu’à la carte <b class="ui">Interventions proposées</b>.</li>
+      <li>Elle indique si la personne propose 1 intervention (forfait de 135 €) ou 2 interventions (forfait de 185 €), avec le titre de chacune. Si la seconde est la même, elle le dit.</li>
+      <li>Pour chaque intervention, presse <b class="ui">Accepter</b>, <b class="ui">Refuser</b> ou <b class="ui">À étudier</b>.</li>
+      <li>Lis la ligne <b class="ui">Retenue</b> : elle donne le nombre d’interventions retenues et le forfait.</li>
+    </ol>
+    <p>La candidature passe toute seule à Accepté dès qu’une intervention est acceptée, et à Refusé seulement quand les deux sont refusées. L’email d’acceptation ajoute une ligne « Intervention(s) retenue(s) », sans email de refus séparé.</p>
+    <div class="resultat"><strong>Tu dois voir</strong><p>Le statut de la candidature et l’email prêt à envoyer se mettent à jour tout de suite. Les décisions sont gardées dans l’onglet « Interventions » du Sheet.</p></div>
+    <div class="sipas"><strong>Si ça ne marche pas</strong><p>Pas de carte Interventions : la candidature date d’avant la question « Combien d’interventions proposes-tu ? », elle compte pour une seule intervention. Utilise alors les boutons de statut habituels.</p></div>
+  </article>
+
     <article class="recette" id="r-email-perso" data-bloc>
     <header><img src="assets/EMAIL-NOTIFICATION.png" alt="" loading="lazy" onerror="this.remove()"><div><h3>Personnaliser un email</h3></div></header>
     <p class="accroche" style="margin:4px 0 6px;color:var(--doux)">Un email peut avoir un texte commun à tous les pôles, et un texte propre à un seul pôle.</p>
@@ -639,6 +657,50 @@ footer strong { color: var(--navy); }
     <div class="resultat"><strong>Tu dois voir</strong><p>La nouvelle copie dans la liste, nommée par exemple <code>Sauvegarde 2026-10-28 03h00 [manuelle]</code>. Avant une restauration, le Portail fait lui-même une copie de l’état actuel.</p></div>
     <div class="sipas"><strong>À savoir</strong><p>Ne renomme pas les copies : la rotation lit leur nom. Une copie est faite chaque nuit : 7 quotidiennes, 4 hebdomadaires, 3 mensuelles.</p></div>
   </article>
+
+  <article class="recette" id="r-edition" data-bloc>
+    <header><img src="assets/COPY.png" alt="" loading="lazy" onerror="this.remove()"><div><h3>Créer une nouvelle édition</h3></div></header>
+    <p class="qui"><span class="puce violet">Administrateur</span></p>
+    <ol class="etapes">
+      <li>Dans le menu, presse <b class="ui">Réglages</b>, puis <b class="ui">Administration</b>, et ouvre l’administration avec ton mot de passe.</li>
+      <li>Dans le bloc <b class="ui">Éditions</b>, écris le nom dans <b class="ui">Nom de la nouvelle édition</b>.</li>
+      <li>Presse <b class="ui">Créer l’édition</b>.</li>
+      <li>Dans le menu, choisis la nouvelle édition dans la liste <b class="ui">Édition</b>.</li>
+      <li>Vérifie les réglages, les pôles, les tarifs et les dates, puis ouvre les formulaires.</li>
+      <li>Dans <b class="ui">Éditions</b>, passe son statut à Ouverte quand tu veux la montrer au public.</li>
+    </ol>
+    <div class="resultat"><strong>Tu dois voir</strong><p>Une nouvelle ligne dans la liste des éditions, en brouillon. Elle garde les réglages, les pôles, les questions, les textes d’emails et les tarifs de l’édition où tu étais, sans les inscriptions. Ses formulaires sont fermés.</p></div>
+    <div class="sipas"><strong>À savoir</strong><p>Une édition archivée se lit mais ne se modifie plus, et une sauvegarde est faite au moment de l’archiver. Les liens d’une édition contiennent <code>e=</code> : les anciens liens (sans <code>e=</code>) vont à la première édition.</p></div>
+  </article>
+
+  <article class="recette" id="r-options" data-bloc>
+    <header><img src="assets/COPY.png" alt="" loading="lazy" onerror="this.remove()"><div><h3>Régler les options premium et la licence d’un client</h3></div></header>
+    <p class="qui"><span class="puce violet">Administrateur</span></p>
+    <ol class="etapes">
+      <li>Dans le menu, presse <b class="ui">Réglages</b>, puis <b class="ui">Administration</b>, et ouvre l’administration.</li>
+      <li>Dans <b class="ui">Options premium de ce client</b>, coche ou décoche chaque option.</li>
+      <li>Dans <b class="ui">Licence du client</b>, écris le nom du client et la date de fin, par exemple 2027-12-31.</li>
+      <li>Presse <b class="ui">Enregistrer la licence</b>.</li>
+    </ol>
+    <div class="resultat"><strong>Tu dois voir</strong><p>« Enregistré » à côté de chaque option. La licence indique sa date de fin et le nombre de jours restants, en rouge quand il en reste moins de 30.</p></div>
+    <div class="sipas"><strong>À savoir</strong><p>Une option jamais réglée est active. Les options sont gardées côté serveur, pas dans le Sheet : le client ne peut pas les changer lui-même. Une licence terminée ne bloque rien toute seule : seule la pause bloque (formulaires fermés, équipe en lecture seule).</p></div>
+  </article>
+
+  <article class="recette" id="r-reinviter" data-bloc>
+    <header><img src="assets/PERSON.png" alt="" loading="lazy" onerror="this.remove()"><div><h3>Inviter à nouveau des personnes d’une édition passée</h3></div></header>
+    <p class="qui"><span class="puce violet">Organisatrice principale</span></p>
+    <ol class="etapes">
+      <li>Dans le menu, choisis l’édition qui invite dans la liste <b class="ui">Édition</b>.</li>
+      <li>Dans le menu, presse <b class="ui">Inviter à nouveau</b>.</li>
+      <li>Choisis l’édition de départ et presse <b class="ui">Voir qui peut être invité</b>.</li>
+      <li>Filtre par pôle ou avec <b class="ui">★ Seulement la liste dorée</b>, puis coche les personnes.</li>
+      <li>Lis la phrase « Tu vas envoyer N emails, il en reste Q aujourd’hui ».</li>
+      <li>Presse <b class="ui">Envoyer les invitations</b>.</li>
+    </ol>
+    <div class="resultat"><strong>Tu dois voir</strong><p>« 2 invitations envoyées ». Chaque personne reçoit un lien vers la candidature de cette édition, déjà remplie. Sa candidature arrive avec l’origine « Réinvité ».</p></div>
+    <div class="sipas"><strong>À savoir</strong><p>Sont proposées seulement les personnes acceptées qui ont répondu Oui à être recontactées, avec un email, hors liste noire, pas déjà invitées ni déjà candidates. En mode TEST, les emails vont à l’adresse de test. Si tu coches plus de personnes que Google n’en permet aujourd’hui, rien ne part.</p></div>
+  </article>
+
 </section>
 
 <!-- ================= RÉGLAGES ================= -->
@@ -834,6 +896,8 @@ footer strong { color: var(--navy); }
   <details data-bloc data-titre="Un email est bloqué À compléter"><summary>Un email est bloqué avec « À compléter »</summary><div><p>Le message dit ce qui manque. Va dans Réglages, ouvre le pôle : les champs vides sont en rouge (voir <a href="#r-pole">Compléter ce qui est en rouge</a>). Remplis-les, puis rouvre la fiche.</p></div></details>
   <details data-bloc data-titre="Quelqu’un veut finir son dossier plus tard"><summary>Quelqu’un veut finir son dossier plus tard</summary><div><p>Oui, c’est possible avec son lien personnel. Dans le dossier final, le bouton « Enregistrer et continuer plus tard » garde les réponses écrites (et elles s’enregistrent aussi toutes seules). En rouvrant le même lien, tout est remis, avec la possibilité de revenir à l’étape où la personne s’était arrêtée.</p><p>Les fichiers (photos, contrat signé, preuve de paiement) ne sont pas gardés : la personne les ajoute de nouveau. Le brouillon disparaît quand le dossier est envoyé. Il est dans l’onglet « Brouillons dossier » du Sheet.</p></div></details>
   <details data-bloc data-titre="Quelqu’un veut le formulaire en anglais"><summary>Quelqu’un veut le formulaire en anglais</summary><div><p>Le formulaire public a deux boutons en haut, <b>FR</b> et <b>EN</b>. Un lien terminé par <code>?lang=en</code> (ou <code>&amp;lang=en</code> après un autre réglage du lien) ouvre directement en anglais, et le choix est retenu pour la prochaine visite.</p><p>Tout ce que la personne lit pour remplir est en anglais. Restent en français : les conditions, les cases d’engagement, le contrat et les emails que nous envoyons. Ce qu’elle écrit est enregistré tel quel, et rien de ce qui arrive dans le Sheet ne change de langue.</p></div></details>
+  <details data-bloc data-titre="Un email reste sur « Envoi en cours »"><summary>Un email reste sur « Envoi en cours »</summary><div><p>Un email avec un contrat PDF joint peut prendre un moment à partir. Pendant ce temps, la fiche dit « Envoi en cours depuis… » et le bouton Envoyer ne revient pas : <b>ne le relance pas</b>, l’email part tout seul. La fiche se met à jour ensuite.</p><p>Si la page dit que le serveur est lent, ne renvoie pas non plus : elle se rouvre toute seule, ou appuie sur « Vérifier maintenant ». Si l’envoi reste « en cours » plus de 10 minutes, la fiche le dit « interrompu » : regarde la boîte d’envoi du compte du festival. Si l’email n’est pas parti, change un statut pour en préparer un nouveau. Rien n’est jamais renvoyé automatiquement.</p></div></details>
+  <details data-bloc data-titre="J’ai appuyé sur Rouvrir mais c’est toujours fermé"><summary>J’ai appuyé sur Rouvrir mais c’est toujours fermé</summary><div><p>Un pôle (ou les candidatures, le dossier final, les bénévoles) est ouvert seulement si <b>l’interrupteur est sur ouvert ET que la date du jour est entre le premier et le dernier jour</b>. Rouvrir ne touche que l’interrupteur.</p><p>Si une date ferme encore, la page l’écrit sous l’état, avec la date, par exemple « Fermé par une date : le dernier jour est passé ». Change ou efface cette date : pour un pôle dans Réglages, le pôle, onglet Infos ; pour les trois grands interrupteurs dans Réglages, Général, Dates et liens.</p></div></details>
   <details data-bloc data-titre="Je ne vois pas une candidature"><summary>Je ne vois pas une candidature</summary><div><p>Vérifie les filtres et la recherche. Une référente ne voit que ses pôles : demande à l’administrateur si un pôle manque à ton compte.</p></div></details>
   <details data-bloc data-titre="Mon code ne marche plus"><summary>Mon code ne marche plus</summary><div><p>Après plusieurs essais ratés, le compte attend quelques minutes. Si tu l’as oublié, l’administrateur te donne un nouveau code de départ, à changer à ta prochaine connexion.</p></div></details>
   <details data-bloc data-titre="Un document ne s’ouvre pas"><summary>Un document ne s’ouvre pas</summary><div><p>Au-delà de 8 Mo, le message à côté du bouton propose un lien <b class="ui">Ouvrir dans le Drive</b> qui ouvre directement ce fichier (voir <a href="#r-document">Ouvrir un document</a>). Autorise aussi les nouvelles fenêtres pour ce site. Sinon, le fichier a peut-être été déplacé : rouvre la fiche pour vérifier.</p></div></details>
