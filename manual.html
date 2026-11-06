@@ -295,6 +295,9 @@ footer strong { color: var(--navy); }
     <a class="tuile" href="#r-edition"><img src="assets/COPY.png" alt="" loading="lazy" onerror="this.remove()">Créer une nouvelle édition</a>
     <a class="tuile" href="#r-options"><img src="assets/ALERT.png" alt="" loading="lazy" onerror="this.remove()">Régler les options premium et la licence d’un client</a>
     <a class="tuile" href="#r-reinviter"><img src="assets/PERSON.png" alt="" loading="lazy" onerror="this.remove()">Inviter à nouveau des personnes d’une édition passée</a>
+    <a class="tuile" href="#r-planning"><img src="assets/CALENDAR.png" alt="" loading="lazy" onerror="this.remove()">Placer un artiste ou un atelier dans le planning</a>
+    <a class="tuile" href="#r-publier"><img src="assets/SEND.png" alt="" loading="lazy" onerror="this.remove()">Publier le programme dans l’app</a>
+    <a class="tuile" href="#r-lieux"><img src="assets/HOME.png" alt="" loading="lazy" onerror="this.remove()">Ajouter un lieu, une info pratique ou un contact utile</a>
     <a class="tuile" href="#installer"><img src="assets/PHONE.png" alt="" loading="lazy" onerror="this.remove()">Installer l’application</a>
   </div>
 </section>
@@ -415,7 +418,7 @@ footer strong { color: var(--navy); }
       <li>Plus tard, ouvre le contrat signé renvoyé par la personne avec <b class="ui">Ouvrir le contrat signé</b>, sur la même carte.</li>
     </ol>
     <div class="resultat"><strong>Tu dois voir</strong><p>« Contrat ajouté » avec le nom du fichier. Le contrat part en pièce jointe de l’email d’acceptation, et les phrases du contrat apparaissent dans cet email.</p></div>
-    <div class="sipas"><strong>Si ça ne marche pas</strong><p>Seuls les PDF sont acceptés. Pour retirer un contrat, presse <b class="ui">Retirer le contrat</b>. Le contrat signé n’apparaît qu’après l’envoi du dossier final par la personne.</p></div>
+    <div class="sipas"><strong>Si ça ne marche pas</strong><p>Seuls les PDF sont acceptés. Pour retirer un contrat, presse <b class="ui">Retirer le contrat</b>. Le contrat signé n’apparaît qu’après l’envoi du dossier final par la personne. Pour un bénévole, la même carte est sur sa fiche : l’email de bienvenue part avec son contrat, et il le renvoie signé par le lien de cet email.</p></div>
   </article>
 
   <article class="recette" id="r-paiement" data-bloc>
@@ -694,12 +697,57 @@ footer strong { color: var(--navy); }
       <li>Dans le menu, presse <b class="ui">Inviter à nouveau</b>.</li>
       <li>Choisis l’édition de départ et presse <b class="ui">Voir qui peut être invité</b>.</li>
       <li>Filtre par pôle ou avec <b class="ui">★ Seulement la liste dorée</b>, puis coche les personnes.</li>
+      <li>Ouvre <b class="ui">Voir l’email qui sera envoyé</b> pour le relire.</li>
       <li>Lis la phrase « Tu vas envoyer N emails, il en reste Q aujourd’hui ».</li>
       <li>Presse <b class="ui">Envoyer les invitations</b>.</li>
     </ol>
     <div class="resultat"><strong>Tu dois voir</strong><p>« 2 invitations envoyées ». Chaque personne reçoit un lien vers la candidature de cette édition, déjà remplie. Sa candidature arrive avec l’origine « Réinvité ».</p></div>
     <div class="sipas"><strong>À savoir</strong><p>Sont proposées seulement les personnes acceptées qui ont répondu Oui à être recontactées, avec un email, hors liste noire, pas déjà invitées ni déjà candidates. En mode TEST, les emails vont à l’adresse de test. Si tu coches plus de personnes que Google n’en permet aujourd’hui, rien ne part.</p></div>
   </article>
+
+  <article class="recette" id="r-planning" data-bloc>
+    <header><img src="assets/CALENDAR.png" alt="" loading="lazy" onerror="this.remove()"><div><h3>Placer un artiste ou un atelier dans le planning</h3></div></header>
+    <p class="qui"><span class="puce violet">Organisatrice principale</span></p>
+    <ol class="etapes">
+      <li>Dans le menu, presse <b class="ui">Planning</b>.</li>
+      <li>Presse <b class="ui">Ajouter un créneau</b>, ou <b class="ui">Placer</b> à côté d’une fiche de la liste <b class="ui">À placer</b>.</li>
+      <li>Cherche la fiche par son nom. Pour un atelier, choisis l’intervention.</li>
+      <li>Choisis le jour, l’heure de début et l’heure de fin, puis le lieu.</li>
+      <li>Si c’est sur inscription, coche la case et écris le nombre de places.</li>
+      <li>Coche <b class="ui">Visible dans l’app</b> quand le créneau doit apparaître.</li>
+      <li>Presse <b class="ui">Enregistrer</b>.</li>
+    </ol>
+    <div class="resultat"><strong>Tu dois voir</strong><p>Le créneau dans le jour choisi, trié par heure, avec son lieu et son statut. Les alertes sont écrites sous le créneau : lieu manquant, deux créneaux au même lieu en même temps, même personne à deux endroits.</p></div>
+    <div class="sipas"><strong>À savoir</strong><p>Les fiches viennent du Portail : on ne saisit que le quand et le où. Un créneau garde le même identifiant pour toujours, même si tu changes l’heure ou le lieu. Une fin avant le début veut dire « après minuit » (avertissement jaune). Les jours viennent des réglages premier_jour et dernier_jour du Sheet.</p></div>
+  </article>
+
+  <article class="recette" id="r-publier" data-bloc>
+    <header><img src="assets/SEND.png" alt="" loading="lazy" onerror="this.remove()"><div><h3>Publier le programme dans l’app</h3></div></header>
+    <p class="qui"><span class="puce violet">Organisatrice principale</span></p>
+    <ol class="etapes">
+      <li>Dans le menu, presse <b class="ui">Planning</b>.</li>
+      <li>Lis le message en haut : « Des changements ne sont pas encore publiés dans l’app ».</li>
+      <li>Corrige les alertes rouges si tu peux.</li>
+      <li>Presse <b class="ui">Publier le programme</b>. S’il reste une alerte rouge, presse une deuxième fois pour publier quand même.</li>
+    </ol>
+    <div class="resultat"><strong>Tu dois voir</strong><p>« Version 3 publiée : 40 créneaux, 25 fiches ». Les fiches sans photo sont nommées.</p></div>
+    <div class="sipas"><strong>À savoir</strong><p>L’app lit seulement la dernière version publiée. Seuls les créneaux marqués « Visible dans l’app » partent, avec les infos publiques des fiches : jamais d’email, de téléphone personnel, de contrat ni de montant. Les photos sont copiées dans le dossier Drive « Programme public », les originaux ne bougent pas.</p></div>
+  </article>
+
+  <article class="recette" id="r-lieux" data-bloc>
+    <header><img src="assets/HOME.png" alt="" loading="lazy" onerror="this.remove()"><div><h3>Ajouter un lieu, une info pratique ou un contact utile</h3></div></header>
+    <p class="qui"><span class="puce violet">Organisatrice principale</span></p>
+    <ol class="etapes">
+      <li>Dans le menu, presse <b class="ui">Lieux et infos</b>.</li>
+      <li>Dans la bonne section, presse <b class="ui">Ajouter un lieu</b>, <b class="ui">Ajouter une info</b> ou <b class="ui">Ajouter un contact</b>.</li>
+      <li>Remplis les champs. Pour un contact, lis la phrase sous le téléphone.</li>
+      <li>Coche <b class="ui">Visible dans l’app</b> si tout le monde doit le voir.</li>
+      <li>Presse <b class="ui">Enregistrer</b>, puis publie le programme.</li>
+    </ol>
+    <div class="resultat"><strong>Tu dois voir</strong><p>L’élément dans la liste de sa section. Un contact reste « caché de l’app » tant que tu ne coches pas la case.</p></div>
+    <div class="sipas"><strong>À savoir</strong><p>Un lieu utilisé par un créneau ne peut pas être supprimé : change d’abord le lieu des créneaux. Un numéro de téléphone coché est visible par tout le monde dans l’app.</p></div>
+  </article>
+
 
 </section>
 
