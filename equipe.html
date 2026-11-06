@@ -682,6 +682,34 @@ li .ico-btn img { width: 24px; height: 24px; }
 .edition-choix select { width: 100%; font: inherit; padding: 8px 10px; border-radius: 10px; border: 0; }
 .edition-choix p { margin: 6px 0 0; font-size: .82rem; }
 .edition-choix p:empty { display: none; }
+.plan-bloc { max-width: 760px; }
+.plan-jours { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.plan-jours button { min-height: 48px; min-width: 64px; padding: 8px 14px; border-radius: 14px; border: 2px solid var(--turquoise-clair); background: #fff; color: var(--navy); font: inherit; font-weight: 700; cursor: pointer; }
+.plan-jours button[aria-pressed="true"] { background: var(--turquoise-clair); }
+.plan-bloc-carte { margin: 10px 0; }
+.plan-carte { display: block; width: 100%; text-align: left; font: inherit; color: inherit; padding: 12px 14px; border-radius: 14px; border: 2px solid #d9d4e6; background: #fff; border-left-width: 8px; cursor: pointer; min-height: 56px; }
+.plan-carte.statut-prevu { border-left-color: var(--turquoise-clair); }
+.plan-carte.statut-modifie { border-left-color: #E8B04A; }
+.plan-carte.statut-annule { border-left-color: #B3261E; opacity: 0.75; }
+.plan-heure { font-size: 1.1rem; font-weight: 800; display: block; }
+.plan-nom { font-weight: 700; display: block; margin: 2px 0; }
+.plan-lieu { display: block; }
+.plan-pastilles { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.plan-pastille { font-size: .85rem; padding: 3px 10px; border-radius: 999px; background: #efeaf7; }
+.plan-note { display: block; font-style: italic; margin-top: 4px; }
+.plan-alertes { margin: 4px 0 0 8px; }
+.plan-alerte { display: block; padding: 4px 10px; border-radius: 10px; margin-top: 4px; font-size: .92rem; }
+.plan-alerte.rouge { background: #fde7e5; color: #8c1d18; }
+.plan-alerte.jaune { background: #fff4d6; color: #6b4e00; }
+.plan-editeur { border: 3px solid var(--turquoise-clair); border-radius: 16px; padding: 14px; margin: 12px 0; background: #fff; }
+.plan-champ { display: block; margin: 10px 0; }
+.plan-champ > span { display: block; font-weight: 700; margin-bottom: 4px; }
+.plan-champ input[type=text], .plan-champ input[type=time], .plan-champ input[type=number], .plan-champ input[type=tel], .plan-champ select, .plan-champ textarea { width: 100%; font: inherit; padding: 10px; border-radius: 10px; border: 2px solid #cfc8de; min-height: 44px; box-sizing: border-box; }
+.plan-heures { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.plan-case { display: flex; align-items: center; gap: 10px; min-height: 44px; margin: 6px 0; }
+.plan-case input { width: 22px; height: 22px; accent-color: #6B2C91; }
+.plan-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.plan-publication { margin: 12px 0; padding: 10px 14px; border-radius: 14px; background: #f3f0f9; }
 .inviter-lignes { margin: 8px 0; }
 .inviter-filtres { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
 .inviter-filtres select, #inviter-source { font: inherit; padding: 8px 10px; border-radius: 10px; margin-right: 8px; }
@@ -775,6 +803,10 @@ li .ico-btn img { width: 24px; height: 24px; }
       </button>
       <div class="sous-menu" id="sous-menu-benevoles" aria-label="Bénévoles par équipe"></div>
       <button type="button" data-vue="inviter" id="menu-inviter" hidden><span class="ico-nav" data-ico="PARTICIPANTS.png"></span>Inviter à nouveau
+      </button>
+      <button type="button" data-vue="planning" id="menu-planning" hidden><span class="ico-nav" data-ico="CALENDAR.png"></span>Planning
+      </button>
+      <button type="button" data-vue="lieux" id="menu-lieux" hidden><span class="ico-nav" data-ico="HOME.png"></span>Lieux et infos
       </button>
       <button type="button" data-vue="stats"><span class="ico-nav" data-ico="STATS.png"></span>Statistiques
       </button>
@@ -873,6 +905,8 @@ li .ico-btn img { width: 24px; height: 24px; }
     </section>
 
     <section id="vue-inviter" hidden></section>
+    <section id="vue-planning" hidden></section>
+    <section id="vue-lieux" hidden></section>
     <section id="vue-stats" hidden>
       <div class="page">
         <div class="titre-page">
@@ -891,7 +925,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.46-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.53-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 // Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
@@ -1139,7 +1173,244 @@ function dessinerListeInviter(zone) {
     const r = await enregistrer(res, envoyer, async () => appelReglages({ op: 'invitations_envoyer', token: jeton, source: inviterSource, ids: ids }), 'Invitations envoyées');
     if (r && r.ok) { res.className = 'message ok'; res.textContent = r.envoyees + ' invitation' + (r.envoyees > 1 ? 's' : '') + ' envoyée' + (r.envoyees > 1 ? 's' : '') + (r.mode === 'TEST' ? ' (mode TEST : elles sont allées à l’adresse de test).' : '.'); inviterDonnees = null; }
   });
+  if (d.apercu) {
+    const det = document.createElement('details'); det.className = 'inviter-apercu'; det.id = 'inviter-apercu';
+    const sm = document.createElement('summary'); sm.textContent = 'Voir l’email qui sera envoyé'; det.appendChild(sm);
+    det.appendChild(el('p', 'compte', 'Objet : ' + d.apercu.objet));
+    const fr = document.createElement('iframe'); fr.className = 'apercu-email'; fr.title = 'Aperçu de l’email'; fr.setAttribute('sandbox', 'allow-popups allow-popups-to-escape-sandbox');
+    fr.srcdoc = '<base target="_blank">' + d.apercu.corps_html; det.appendChild(fr);
+    det.appendChild(el('p', 'meta', 'Pour changer le texte : le Sheet, onglet « Textes emails », ligne invitation_nouvelle_edition. Garde les mots entre accolades.'));
+    zone.appendChild(det);
+  }
   zone.appendChild(resume); zone.appendChild(envoyer); zone.appendChild(res); majResume();
+}
+// ====== Planning, Lieux et infos : réservés aux organisatrices principales (le serveur refuse aux référentes) ======
+function majMenuProgramme() {
+  const ref = !!(compte && compte.role === 'referente');
+  ['menu-planning', 'menu-lieux'].forEach((id) => { const b = $(id); if (b) b.hidden = ref; });
+}
+function planChamp(libelle, controle) { const l = document.createElement('label'); l.className = 'plan-champ'; l.appendChild(el('span', '', libelle)); l.appendChild(controle); return l; }
+function planCase(libelle, id, coche) {
+  const l = document.createElement('label'); l.className = 'plan-case';
+  const c = document.createElement('input'); c.type = 'checkbox'; c.id = id; c.checked = !!coche;
+  l.appendChild(c); l.appendChild(el('span', '', libelle)); return { boite: l, saisie: c };
+}
+function planChoix(id, options, valeur) {
+  const s = document.createElement('select'); s.id = id;
+  options.forEach((o) => { const x = document.createElement('option'); x.value = o[0]; x.textContent = o[1]; s.appendChild(x); });
+  s.value = valeur === undefined ? (options[0] ? options[0][0] : '') : valeur; return s;
+}
+// La barre « Publier le programme » : la même dans Planning et dans Lieux et infos.
+let messagePublication = null;   // le résultat de la dernière publication, gardé à l'écran tant qu'on ne change rien
+function barrePublication(pub, rouges, quandPublie, prefixe) {
+  prefixe = prefixe || 'plan';
+  const b = el('div', 'plan-publication'); b.id = prefixe + '-publication';
+  b.appendChild(el('p', 'compte', !pub.version ? 'Pas encore publié dans l’app.' : 'Version ' + pub.version + ' publiée le ' + String(pub.date).slice(0, 16).replace(' ', ' à ') + '.'));
+  if (pub.non_publie) b.appendChild(el('p', 'message ko plan-non-publie', 'Des changements ne sont pas encore publiés dans l’app.'));
+  const bt = el('button', 'btn btn-ajouter', 'Publier le programme'); bt.type = 'button'; bt.id = prefixe + '-publier';
+  const st = el('div', '', ''); st.id = prefixe + '-publier-etat'; st.setAttribute('role', 'status');
+  if (messagePublication && messagePublication.version === pub.version) { st.className = 'message ok'; st.textContent = messagePublication.texte; }
+  let confirme = false;
+  bt.addEventListener('click', async () => {
+    if (rouges > 0 && !confirme) { confirme = true; st.className = 'message ko'; st.textContent = 'Il reste ' + rouges + ' alerte' + (rouges > 1 ? 's' : '') + ' rouge' + (rouges > 1 ? 's' : '') + '. Presse encore une fois pour publier quand même.'; return; }
+    const r = await enregistrer(st, bt, async () => appelReglages({ op: 'programme_publier', token: jeton }), 'Programme publié');
+    if (r && r.ok) {
+      st.className = 'message ok';
+      st.textContent = 'Version ' + r.version + ' publiée : ' + r.creneaux + ' créneau' + (r.creneaux > 1 ? 'x' : '') + ', ' + r.fiches + ' fiche' + (r.fiches > 1 ? 's' : '') + '.' + (r.sans_photo.length ? ' Sans photo : ' + r.sans_photo.join(', ') + '.' : '');
+      messagePublication = { version: r.version, texte: st.textContent };
+      if (quandPublie) quandPublie(r);
+    }
+  });
+  b.appendChild(bt); b.appendChild(st); return b;
+}
+let planDonnees = null, planJour = '', planEditeur = null;
+async function chargerPlanning() {
+  const r = await appelReglages({ op: 'planning_lire', token: jeton });
+  if (r && r.ok) { planDonnees = r; if (!planJour || r.jours.indexOf(planJour) < 0) planJour = r.jours[0] || ''; }
+  return r;
+}
+function planNomJour(j) { try { return new Date(j + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }); } catch (err) { return j; } }
+function planCompterAlertes() {
+  let rouge = 0, jaune = 0;
+  (planDonnees.creneaux || []).forEach((c) => c.alertes.forEach((a) => { if (a.niveau === 'rouge') rouge++; else jaune++; }));
+  return { rouge: rouge, jaune: jaune };
+}
+function planCarte(c) {
+  const bloc = el('div', 'plan-bloc-carte'); bloc.dataset.id = c.id;
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'plan-carte statut-' + ({ 'prévu': 'prevu', 'modifié': 'modifie', 'annulé': 'annule' })[c.statut];
+  b.appendChild(el('span', 'plan-heure', c.debut + ' → ' + c.fin));
+  b.appendChild(el('span', 'plan-nom', c.nom));
+  b.appendChild(el('span', 'plan-lieu', c.lieu_nom || 'Lieu à choisir'));
+  const pa = el('span', 'plan-pastilles', '');
+  pa.appendChild(el('span', 'plan-pastille', c.statut));
+  pa.appendChild(el('span', 'plan-pastille', c.inscription ? 'Sur inscription' + (c.places ? ' · ' + c.places + ' places' : '') : 'Ouvert à tous'));
+  pa.appendChild(el('span', 'plan-pastille', c.visible ? 'Visible dans l’app' : 'Caché de l’app'));
+  b.appendChild(pa);
+  if (c.note) b.appendChild(el('span', 'plan-note', 'Note : ' + c.note));
+  b.addEventListener('click', () => { planEditeur = { id: c.id, fiche: c.fiche, intervention: c.intervention, jour: c.jour, debut: c.debut, fin: c.fin, lieu: c.lieu, inscription: c.inscription, places: c.places, statut: c.statut, note: c.note, visible: c.visible }; dessinerPlanning(); const e = $('plan-editeur'); if (e && e.scrollIntoView) e.scrollIntoView({ block: 'start' }); });
+  bloc.appendChild(b);
+  if (c.alertes.length) { const al = el('div', 'plan-alertes', ''); c.alertes.forEach((a) => al.appendChild(el('span', 'plan-alerte ' + a.niveau, (a.niveau === 'rouge' ? '⚠ À corriger : ' : 'ℹ À savoir : ') + a.texte))); bloc.appendChild(al); }
+  return bloc;
+}
+function planEditeurDOM() {
+  const d = planEditeur, donnees = planDonnees, pan = el('div', 'plan-editeur'); pan.id = 'plan-editeur';
+  pan.appendChild(el('h3', '', d.id ? 'Modifier le créneau' : 'Nouveau créneau'));
+  const rech = document.createElement('input'); rech.type = 'text'; rech.id = 'plan-fiche-recherche'; rech.placeholder = 'Chercher un nom';
+  const fiche = document.createElement('select'); fiche.id = 'plan-fiche';
+  const interv = document.createElement('select'); interv.id = 'plan-intervention';
+  const blocInterv = planChamp('Intervention', interv);
+  const remplirFiches = () => {
+    const q = rech.value.trim().toLowerCase(), avant = fiche.value || d.fiche; fiche.textContent = '';
+    const o0 = document.createElement('option'); o0.value = ''; o0.textContent = '— Choisir une fiche —'; fiche.appendChild(o0);
+    donnees.fiches.filter((f) => !q || f.nom.toLowerCase().indexOf(q) >= 0 || (f.interventions || []).some((i) => (i.titre || '').toLowerCase().indexOf(q) >= 0)).forEach((f) => { const o = document.createElement('option'); o.value = f.id; o.textContent = f.nom + ' (' + f.pole + ')'; fiche.appendChild(o); });
+    fiche.value = avant && Array.from(fiche.options).some((o) => o.value === avant) ? avant : '';
+    majInterv();
+  };
+  const majInterv = () => {
+    const f = donnees.fiches.filter((x) => x.id === fiche.value)[0], avant = interv.value || d.intervention;
+    interv.textContent = '';
+    (f ? f.interventions : []).forEach((i) => { const o = document.createElement('option'); o.value = String(i.num); o.textContent = 'Intervention ' + i.num + (i.titre ? ' : ' + i.titre : ''); interv.appendChild(o); });
+    if (f && f.interventions.some((i) => String(i.num) === String(avant))) interv.value = String(avant);
+    blocInterv.hidden = !(f && f.pole === 'Atelier');
+  };
+  rech.addEventListener('input', remplirFiches); fiche.addEventListener('change', majInterv);
+  pan.appendChild(planChamp('Fiche (artiste ou atelier accepté)', rech)); pan.appendChild(planChamp('', fiche)); pan.appendChild(blocInterv);
+  remplirFiches();
+  const jour = planChoix('plan-jour', donnees.jours.map((j) => [j, planNomJour(j) + ' (' + j + ')']).concat(donnees.jours.indexOf(d.jour) < 0 && d.jour ? [[d.jour, d.jour]] : []), d.jour || planJour);
+  pan.appendChild(planChamp('Jour', jour));
+  const debut = document.createElement('input'); debut.type = 'time'; debut.id = 'plan-debut'; debut.value = d.debut || '';
+  const fin = document.createElement('input'); fin.type = 'time'; fin.id = 'plan-fin'; fin.value = d.fin || '';
+  const hh = el('div', 'plan-heures', ''); hh.appendChild(planChamp('Début', debut)); hh.appendChild(planChamp('Fin', fin)); pan.appendChild(hh);
+  pan.appendChild(planChamp('Lieu', planChoix('plan-lieu', [['', '— Choisir un lieu —']].concat(donnees.lieux.map((l) => [l.id, l.nom])), d.lieu || '')));
+  const insc = planCase('Sur inscription', 'plan-inscription', d.inscription);
+  const places = document.createElement('input'); places.type = 'number'; places.id = 'plan-places'; places.min = '1'; places.inputMode = 'numeric'; places.value = d.places || '';
+  const blocPlaces = planChamp('Nombre de places', places);
+  const majPlaces = () => { blocPlaces.hidden = !insc.saisie.checked; };
+  insc.saisie.addEventListener('change', majPlaces); majPlaces();
+  pan.appendChild(insc.boite); pan.appendChild(blocPlaces);
+  const note = document.createElement('input'); note.type = 'text'; note.id = 'plan-note'; note.maxLength = 200; note.value = d.note || ''; note.placeholder = 'Ex. : déplacé sous le chapiteau';
+  pan.appendChild(planChamp('Statut', planChoix('plan-statut', [['prévu', 'Prévu'], ['modifié', 'Modifié'], ['annulé', 'Annulé']], d.statut || 'prévu')));
+  pan.appendChild(planChamp('Note visible du public (courte)', note));
+  const vis = planCase('Visible dans l’app', 'plan-visible', d.visible); pan.appendChild(vis.boite);
+  const st = el('div', '', ''); st.id = 'plan-etat'; st.setAttribute('role', 'status');
+  const actions = el('div', 'plan-actions', '');
+  const bs = el('button', 'btn btn-ajouter', 'Enregistrer'); bs.type = 'button'; bs.id = 'plan-enregistrer';
+  const bf = el('button', 'btn btn-doux-clair', 'Fermer'); bf.type = 'button'; bf.id = 'plan-fermer';
+  bs.addEventListener('click', async () => {
+    const r = await enregistrer(st, bs, async () => appelReglages({ op: 'creneau_ecrire', token: jeton, id: d.id || '', fiche: fiche.value, intervention: blocInterv.hidden ? '' : interv.value, jour: jour.value, debut: debut.value, fin: fin.value, lieu: $('plan-lieu').value, inscription: insc.saisie.checked, places: places.value, statut: $('plan-statut').value, note: note.value, visible: vis.saisie.checked }), 'Créneau enregistré');
+    if (r && r.ok) { planDonnees = r; planJour = jour.value; planEditeur = null; dessinerPlanning(); }
+  });
+  bf.addEventListener('click', () => { planEditeur = null; dessinerPlanning(); });
+  actions.appendChild(bs);
+  if (d.id) {
+    const bd = el('button', 'btn btn-doux-clair', 'Supprimer'); bd.type = 'button'; bd.id = 'plan-supprimer'; let sur = false;
+    bd.addEventListener('click', async () => {
+      if (!sur) { sur = true; bd.textContent = 'Presse encore pour supprimer'; return; }
+      const r = await enregistrer(st, bd, async () => appelReglages({ op: 'creneau_supprimer', token: jeton, id: d.id }), 'Créneau supprimé');
+      if (r && r.ok) { planDonnees = r; planEditeur = null; dessinerPlanning(); }
+    });
+    actions.appendChild(bd);
+  }
+  actions.appendChild(bf); pan.appendChild(actions); pan.appendChild(st);
+  return pan;
+}
+function dessinerPlanning() {
+  const zone = $('vue-planning'); zone.textContent = '';
+  const c = el('div', 'bloc plan-bloc'); c.id = 'plan-bloc'; zone.appendChild(c);
+  c.appendChild(el('h2', '', 'Planning'));
+  if (!planDonnees) { c.appendChild(el('p', 'compte', 'Chargement…')); chargerPlanning().then(() => { if (vue === 'planning') dessinerPlanning(); }); return; }
+  const al = planCompterAlertes();
+  c.appendChild(barrePublication(planDonnees.publication, al.rouge, (r) => { planDonnees.publication = r.publication; dessinerPlanning(); }));
+  const resume = el('p', al.rouge ? 'message ko' : 'compte', al.rouge || al.jaune ? (al.rouge ? al.rouge + ' alerte' + (al.rouge > 1 ? 's' : '') + ' à corriger (rouge)' : '') + (al.rouge && al.jaune ? ', ' : '') + (al.jaune ? al.jaune + ' à savoir (jaune)' : '') + '.' : '✔️ Aucune alerte.'); resume.id = 'plan-alertes-resume'; c.appendChild(resume);
+  const np = document.createElement('details'); np.id = 'plan-nonplaces'; const sm = document.createElement('summary'); sm.textContent = 'À placer (' + planDonnees.non_places.length + ')'; np.appendChild(sm);
+  if (!planDonnees.non_places.length) np.appendChild(el('p', 'compte', 'Toutes les fiches acceptées sont placées.'));
+  planDonnees.non_places.forEach((n) => {
+    const l = el('div', 'admin-option', ''); l.appendChild(el('span', '', n.nom + (n.titre ? ' : ' + n.titre : '') + ' (' + n.pole + ')'));
+    const bp = el('button', 'btn btn-doux-clair', 'Placer'); bp.type = 'button';
+    bp.addEventListener('click', () => { planEditeur = { id: '', fiche: n.id, intervention: String(n.intervention || ''), jour: planJour, debut: '', fin: '', lieu: '', inscription: false, places: '', statut: 'prévu', note: '', visible: false }; dessinerPlanning(); });
+    l.appendChild(bp); np.appendChild(l);
+  });
+  c.appendChild(np);
+  const ajout = el('button', 'btn btn-ajouter', 'Ajouter un créneau'); ajout.type = 'button'; ajout.id = 'plan-ajouter';
+  ajout.addEventListener('click', () => { planEditeur = { id: '', fiche: '', intervention: '', jour: planJour, debut: '', fin: '', lieu: '', inscription: false, places: '', statut: 'prévu', note: '', visible: false }; dessinerPlanning(); });
+  c.appendChild(ajout);
+  if (planEditeur) c.appendChild(planEditeurDOM());
+  const jours = el('div', 'plan-jours', ''); jours.id = 'plan-jours';
+  planDonnees.jours.forEach((j) => {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.jour = j; b.textContent = planNomJour(j); b.setAttribute('aria-pressed', j === planJour ? 'true' : 'false');
+    b.addEventListener('click', () => { planJour = j; dessinerPlanning(); });
+    jours.appendChild(b);
+  });
+  c.appendChild(jours);
+  const liste = el('div', '', ''); liste.id = 'plan-liste';
+  const duJour = planDonnees.creneaux.filter((x) => x.jour === planJour).sort((a, b) => (a.debut + a.fin).localeCompare(b.debut + b.fin));
+  if (!duJour.length) liste.appendChild(el('p', 'compte', 'Aucun créneau ce jour-là.'));
+  duJour.forEach((x) => liste.appendChild(planCarte(x)));
+  c.appendChild(liste);
+}
+// ---- Lieux et infos
+let lieuxDonnees = null, lieuxEditeur = null;
+const SECTIONS_LIEUX = [
+  { type: 'lieu', titre: 'Lieux', liste: 'lieux', opE: 'lieu_ecrire', opS: 'lieu_supprimer', vide: 'Aucun lieu pour l’instant.', ajouter: 'Ajouter un lieu', champs: [{ k: 'nom', l: 'Nom du lieu', t: 'text', max: 80 }, { k: 'description', l: 'Courte description', t: 'area', max: 400 }, { k: 'acces', l: 'Accès (PMR, à l’ombre…)', t: 'text', max: 120 }], resume: (x) => x.nom + (x.acces ? ' · ' + x.acces : '') },
+  { type: 'info', titre: 'Infos pratiques', liste: 'infos', opE: 'info_ecrire', opS: 'info_supprimer', vide: 'Aucune info pour l’instant (eau, parking, camping, sanitaires, familles, espace calme…).', ajouter: 'Ajouter une info', champs: [{ k: 'titre', l: 'Titre', t: 'text', max: 80 }, { k: 'texte', l: 'Texte', t: 'area', max: 2000 }, { k: 'visible', l: 'Visible dans l’app', t: 'check', def: true }], resume: (x) => x.titre + (x.visible ? '' : ' (caché de l’app)') },
+  { type: 'contact', titre: 'Contacts utiles', liste: 'contacts', opE: 'contact_ecrire', opS: 'contact_supprimer', vide: 'Aucun contact pour l’instant (infirmière, régie…).', ajouter: 'Ajouter un contact', champs: [{ k: 'nom', l: 'Nom', t: 'text', max: 80 }, { k: 'role', l: 'Rôle (ex. infirmière)', t: 'text', max: 80 }, { k: 'telephone', l: 'Téléphone', t: 'tel', max: 25, aide: 'Ce numéro sera visible par tout le monde dans l’app.' }, { k: 'visible', l: 'Visible dans l’app', t: 'check', def: false }], resume: (x) => x.nom + (x.role ? ' · ' + x.role : '') + ' · ' + x.telephone + (x.visible ? '' : ' (caché de l’app)') }
+];
+async function chargerLieux() { const r = await appelReglages({ op: 'lieux_lire', token: jeton }); if (r && r.ok) lieuxDonnees = r; return r; }
+function lieuFormulaire(s, objet) {
+  const f = el('div', 'plan-editeur lieu-formulaire'); f.dataset.type = s.type;
+  const saisies = {};
+  f.appendChild(el('h3', '', objet.id ? 'Modifier' : s.ajouter));
+  s.champs.forEach((ch) => {
+    if (ch.t === 'check') { const c = planCase(ch.l, 'lf-' + s.type + '-' + ch.k, objet.id ? objet[ch.k] : ch.def); saisies[ch.k] = c.saisie; f.appendChild(c.boite); return; }
+    const x = ch.t === 'area' ? document.createElement('textarea') : document.createElement('input');
+    if (ch.t !== 'area') x.type = ch.t === 'tel' ? 'tel' : 'text'; else x.rows = 4;
+    x.id = 'lf-' + s.type + '-' + ch.k; x.maxLength = ch.max; x.value = objet[ch.k] || ''; saisies[ch.k] = x;
+    f.appendChild(planChamp(ch.l, x)); if (ch.aide) f.appendChild(el('p', 'compte', ch.aide));
+  });
+  const st = el('div', '', ''); st.setAttribute('role', 'status');
+  const actions = el('div', 'plan-actions', '');
+  const bs = el('button', 'btn btn-ajouter', 'Enregistrer'); bs.type = 'button'; bs.className += ' lf-enregistrer';
+  const bf = el('button', 'btn btn-doux-clair', 'Fermer'); bf.type = 'button';
+  bs.addEventListener('click', async () => {
+    const corps = { op: s.opE, token: jeton, id: objet.id || '' };
+    s.champs.forEach((ch) => { corps[ch.k] = ch.t === 'check' ? saisies[ch.k].checked : saisies[ch.k].value; });
+    const r = await enregistrer(st, bs, async () => appelReglages(corps), 'Enregistré');
+    if (r && r.ok) { lieuxDonnees = r; lieuxEditeur = null; dessinerLieux(); }
+  });
+  bf.addEventListener('click', () => { lieuxEditeur = null; dessinerLieux(); });
+  actions.appendChild(bs);
+  if (objet.id) {
+    const bd = el('button', 'btn btn-doux-clair', 'Supprimer'); bd.type = 'button'; bd.className += ' lf-supprimer'; let sur = false;
+    bd.addEventListener('click', async () => {
+      if (!sur) { sur = true; bd.textContent = 'Presse encore pour supprimer'; return; }
+      const r = await enregistrer(st, bd, async () => appelReglages({ op: s.opS, token: jeton, id: objet.id }), 'Supprimé');
+      if (r && r.ok) { lieuxDonnees = r; lieuxEditeur = null; dessinerLieux(); }
+    });
+    actions.appendChild(bd);
+  }
+  actions.appendChild(bf); f.appendChild(actions); f.appendChild(st);
+  return f;
+}
+function dessinerLieux() {
+  const zone = $('vue-lieux'); zone.textContent = '';
+  const c = el('div', 'bloc plan-bloc'); c.id = 'lieux-bloc'; zone.appendChild(c);
+  c.appendChild(el('h2', '', 'Lieux et infos'));
+  if (!lieuxDonnees) { c.appendChild(el('p', 'compte', 'Chargement…')); chargerLieux().then(() => { if (vue === 'lieux') dessinerLieux(); }); return; }
+  c.appendChild(barrePublication(lieuxDonnees.publication, 0, (r) => { lieuxDonnees.publication = r.publication; dessinerLieux(); }, 'lieux'));
+  SECTIONS_LIEUX.forEach((s) => {
+    const sec = el('div', 'bloc', ''); sec.id = 'lieux-' + s.type; sec.appendChild(el('h3', '', s.titre));
+    const liste = lieuxDonnees[s.liste] || [];
+    if (!liste.length) sec.appendChild(el('p', 'compte', s.vide));
+    liste.forEach((x) => {
+      const l = el('div', 'admin-option lieu-ligne', ''); l.dataset.id = x.id; l.appendChild(el('span', '', s.resume(x)));
+      const bm = el('button', 'btn btn-doux-clair', 'Modifier'); bm.type = 'button';
+      bm.addEventListener('click', () => { lieuxEditeur = { type: s.type, objet: x }; dessinerLieux(); });
+      l.appendChild(bm); sec.appendChild(l);
+    });
+    if (lieuxEditeur && lieuxEditeur.type === s.type) sec.appendChild(lieuFormulaire(s, lieuxEditeur.objet));
+    else { const ba = el('button', 'btn btn-ajouter', s.ajouter); ba.type = 'button'; ba.className += ' lf-ajouter'; ba.addEventListener('click', () => { lieuxEditeur = { type: s.type, objet: {} }; dessinerLieux(); }); sec.appendChild(ba); }
+    c.appendChild(sec);
+  });
 }
 function majBandeauPause() { const b = $('bandeau-pause'); if (b) b.hidden = !(config && config.licence && config.licence.pause); }
 function nomStatutEdition(s) { return ({ brouillon: 'Brouillon', ouverte: 'Ouverte', fermee: 'Fermée', archivee: 'Archivée' })[s] || s; }
@@ -1184,7 +1455,7 @@ async function charger() {
     appliquerRole();
     naviguer(vue === 'detail' ? 'candidatures' : vue);
     chargerEditions();
-    majExport(); majBandeauPause(); majMenuInviter();
+    majExport(); majBandeauPause(); majMenuInviter(); majMenuProgramme();
     chargerEnArrierePlan();
   } catch (err) {
     montrerConnexion('Impossible de charger les données. Réessaie dans un instant.');
@@ -1410,13 +1681,15 @@ document.addEventListener('visibilitychange', () => {
 });
 
 function naviguer(nom) {
-  vue = ['candidatures', 'participants', 'benevoles', 'stats', 'reglages', 'detail', 'inviter'].indexOf(nom) >= 0 ? nom : 'accueil';
+  vue = ['candidatures', 'participants', 'benevoles', 'stats', 'reglages', 'detail', 'inviter', 'planning', 'lieux'].indexOf(nom) >= 0 ? nom : 'accueil';
   $('vue-accueil').hidden = vue !== 'accueil';
   $('vue-candidatures').hidden = vue !== 'candidatures';
   $('vue-participants').hidden = vue !== 'participants';
   $('vue-benevoles').hidden = vue !== 'benevoles';
   $('vue-stats').hidden = vue !== 'stats';
   $('vue-inviter').hidden = vue !== 'inviter';
+  $('vue-planning').hidden = vue !== 'planning';
+  $('vue-lieux').hidden = vue !== 'lieux';
   $('vue-reglages').hidden = vue !== 'reglages';
   $('vue-detail').hidden = vue !== 'detail';
   majBarreRetour();
@@ -1428,6 +1701,8 @@ function naviguer(nom) {
   if (vue === 'accueil') dessinerAccueil(); else if (vue === 'candidatures') dessinerCandidatures();
   else if (vue === 'stats') chargerStatsDetail(false);
   else if (vue === 'inviter') dessinerInviter();
+  else if (vue === 'planning') dessinerPlanning();
+  else if (vue === 'lieux') dessinerLieux();
   else if (vue === 'reglages') chargerReglages();
   else if (vue === 'participants') { dessinerParticipants(); if (!participants) chargerParticipants(); }
   else if (vue === 'benevoles') { dessinerBenevoles(); if (!benevoles) chargerBenevoles(); }
@@ -1500,6 +1775,7 @@ function champReglage(libelle, valeur, opts) {
   if (opts.nom) { saisie.dataset.champ = opts.nom; }
   const id = 'reg-' + (opts.nom || Math.random().toString(36).slice(2)); saisie.id = id; lab.htmlFor = id;
   boite.appendChild(lab); boite.appendChild(saisie);
+  if (!opts.long && opts.type === 'password') ajouterOeil(saisie);   // tout champ de mot de passe a son œil (afficher / cacher)
   if (opts.aide) boite.appendChild(el('p', 'aide-statut', opts.aide));
   return { boite: boite, saisie: saisie };
 }
@@ -2607,7 +2883,7 @@ function puce(texte, classe) {
   return s;
 }
 // Noms montrés aux personnes (les valeurs gardées restent « Atelier » et « Artisan »).
-const NOMS_AFFICHES = { 'Atelier': 'Ateliers', 'Artisan': 'Artisanat' };
+const NOMS_AFFICHES = { 'Atelier': 'Workshops', 'Artisan': 'Artisanat' };
 function nomPole(n) { return NOMS_AFFICHES[n] || n; }
 function puceCategorie(pole) {
   const s = puce(nomPole(pole));
@@ -3400,6 +3676,7 @@ function dessinerDetail(d, listes, mode) {
   const message = el('p', 'message'); message.setAttribute('role', 'status');
   const emailZone = el('section', 'carte email-pret'); emailZone.dataset.aide = 'r-acceptation';
   let statuts = d.statuts;
+  let majVisibiliteContrat = () => {};   // la carte « Contrat à envoyer » n'apparaît que quand elle sert (définie plus bas)
 
   function verrouiller(oui) {
     cs.querySelectorAll('button, select').forEach((x) => { x.disabled = oui; });
@@ -3691,7 +3968,7 @@ function dessinerDetail(d, listes, mode) {
 
   // ----- Contrat à envoyer (candidatures) : un PDF personnel et privé, joint à l'email d'acceptation -----
   let carteContrat = null;
-  if (genre === 'candidature') {
+  if (genre === 'candidature' || genre === 'benevole') {
     carteContrat = carte('Contrat à envoyer (le nôtre)'); carteContrat.classList.add('carte-contrat');
     carteContrat.appendChild(el('p', 'compte', "Prépare le contrat de cette personne (avec son nom), puis ajoute-le ici : PDF, 10 Mo au maximum. Seule l'équipe le voit. Il part en pièce jointe de l'email d'acceptation."));
     const etatC = el('p', 'contrat-etat-fiche'); etatC.id = 'contrat-fiche-etat';
@@ -3706,13 +3983,15 @@ function dessinerDetail(d, listes, mode) {
     const dessinerC = () => {
       const cj = d.contrat_joint;
       etatC.className = 'contrat-etat-fiche ' + (cj ? 'ok' : 'ko');
-      etatC.textContent = cj ? '✓ Contrat ajouté : ' + cj.nom + ' (le ' + cj.date + ')' : (d.contrat_requis === false ? "Aucun contrat ajouté. Il n'est pas obligatoire pour le moment." : "Aucun contrat ajouté. L'email d'acceptation ne peut pas partir sans lui.");
+      etatC.textContent = cj ? '✓ Contrat ajouté : ' + cj.nom + ' (le ' + cj.date + ')' : ((d.contrat_obligatoire !== undefined ? d.contrat_obligatoire : d.contrat_requis) === false ? "Aucun contrat ajouté. Il n'est pas obligatoire pour le moment." : "Aucun contrat ajouté. L'email d'acceptation ne peut pas partir sans lui.");
       boutonC.textContent = cj ? 'Remplacer le contrat' : 'Ajouter le contrat';
       retirerC.hidden = !cj; confirmeRetrait = false; retirerC.textContent = 'Retirer le contrat';
       ouvrirC.textContent = ''; if (cj && cj.url) ouvrirC.appendChild(boutonDocument('Ouvrir le contrat', cj.url, { id: d.id, tab: '' }));
       envoyerC.hidden = !cj; confirmeEnvoiC = false; envoyerC.textContent = 'Envoyer le contrat par email';
+      majVisibiliteContrat();
       signeC.textContent = '';
-      if (d.contrat_signe) { signeC.appendChild(el('strong', '', 'Contrat signé (renvoyé par la personne) : ')); signeC.appendChild(boutonDocument('Ouvrir le contrat signé', d.contrat_signe, { id: d.id, tab: '' })); }
+      if (genre === 'benevole') { /* le contrat signé d'un bénévole a sa propre carte */ }
+      else if (d.contrat_signe) { signeC.appendChild(el('strong', '', 'Contrat signé (renvoyé par la personne) : ')); signeC.appendChild(boutonDocument('Ouvrir le contrat signé', d.contrat_signe, { id: d.id, tab: '' })); }
       else signeC.appendChild(el('span', 'meta', 'Contrat signé (renvoyé par la personne) : pas encore reçu.'));
     };
     const apres = (r) => {
@@ -3751,11 +4030,18 @@ function dessinerDetail(d, listes, mode) {
       if (r && r.ok && r.emails) redessinerHistorique(r.emails);
     });
     carteContrat.appendChild(etatC); carteContrat.appendChild(ouvrirC); carteContrat.appendChild(signeC); carteContrat.appendChild(fichierC); carteContrat.appendChild(boutonC); carteContrat.appendChild(retirerC); carteContrat.appendChild(envoyerC); carteContrat.appendChild(resC);
+    // Elle sert quand la personne est acceptée (le contrat part avec l'email d'acceptation), ou quand un contrat est déjà ajouté ou reçu. Sinon elle reste cachée.
+    majVisibiliteContrat = () => {
+      const pertinent = ((statuts && statuts['Sélection']) === 'Accepté') || !!d.contrat_joint || (genre === 'candidature' && !!d.contrat_signe);
+      carteContrat.style.display = pertinent ? '' : 'none';
+    };
+    const redessinerStatutsBase = redessinerStatuts;
+    redessinerStatuts = function () { redessinerStatutsBase(); majVisibiliteContrat(); };
     dessinerC();
   }
   redessinerStatuts(); redessinerAlerte(); redessinerEmail(d.email_pret);
   redessinerHistorique(d.emails || []);
-  activerEmailOnglet(d.email_pret ? 'pret' : 'historique');
+  activerEmailOnglet('pret');   // l'onglet « Email prêt » s'ouvre toujours en premier
   if (genre === 'participant') {
     // Trois onglets : le suivi, ce qui sert à la page du site, et les infos techniques.
     const panneaux = { suivi: el('div', 'onglet-contenu'), presentation: el('div', 'onglet-contenu'), technique: el('div', 'onglet-contenu') };
