@@ -298,6 +298,7 @@ footer strong { color: var(--navy); }
     <a class="tuile" href="#r-planning"><img src="assets/CALENDAR.png" alt="" loading="lazy" onerror="this.remove()">Placer un artiste ou un atelier dans le planning</a>
     <a class="tuile" href="#r-publier"><img src="assets/SEND.png" alt="" loading="lazy" onerror="this.remove()">Publier le programme dans l’app</a>
     <a class="tuile" href="#r-lieux"><img src="assets/HOME.png" alt="" loading="lazy" onerror="this.remove()">Ajouter un lieu, une info pratique ou un contact utile</a>
+    <a class="tuile" href="#r-expediteur"><img src="assets/SEND.png" alt="" loading="lazy" onerror="this.remove()">Envoyer les emails depuis l’adresse du festival</a>
     <a class="tuile" href="#installer"><img src="assets/PHONE.png" alt="" loading="lazy" onerror="this.remove()">Installer l’application</a>
   </div>
 </section>
@@ -747,6 +748,22 @@ footer strong { color: var(--navy); }
     <div class="resultat"><strong>Tu dois voir</strong><p>L’élément dans la liste de sa section. Un contact reste « caché de l’app » tant que tu ne coches pas la case.</p></div>
     <div class="sipas"><strong>À savoir</strong><p>Un lieu utilisé par un créneau ne peut pas être supprimé : change d’abord le lieu des créneaux. Un numéro de téléphone coché est visible par tout le monde dans l’app.</p></div>
   </article>
+
+  <article class="recette" id="r-expediteur" data-bloc>
+    <header><img src="assets/SEND.png" alt="" loading="lazy" onerror="this.remove()"><div><h3>Envoyer les emails depuis l’adresse du festival</h3></div></header>
+    <p class="qui"><span class="puce violet">Administrateur</span></p>
+    <ol class="etapes">
+      <li>Crée la boîte mail sur ton nom de domaine (chez OVH : une vraie boîte, pas seulement une redirection).</li>
+      <li>Dans le Gmail du Portail : Réglages, Comptes et importation, « Envoyer en tant que », ajoute cette adresse (serveur d’envoi OVH : ssl0.ovh.net).</li>
+      <li>Une seule fois dans Apps Script, lance la fonction <code>autoriserEnvoiGmail</code> et accepte l’autorisation, puis fais un nouveau déploiement.</li>
+      <li>Dans le Portail, presse <b class="ui">Réglages</b>, puis <b class="ui">Administration</b>, et ouvre l’administration.</li>
+      <li>Dans <b class="ui">Adresse qui envoie les emails</b>, écris l’adresse et presse <b class="ui">Enregistrer l’adresse</b>.</li>
+      <li>Presse <b class="ui">Envoyer un email de test</b> vers ton adresse Outlook ou Gmail, et regarde où il arrive.</li>
+    </ol>
+    <div class="resultat"><strong>Tu dois voir</strong><p>« Aujourd’hui les emails partent de : contact@… (adresse du festival) », et le test reçu avec cette adresse en expéditeur.</p></div>
+    <div class="sipas"><strong>À savoir</strong><p>Les réponses des gens vont toujours à la référente du pôle. Si l’adresse n’est pas branchée dans Gmail, rien ne casse : les emails partent comme avant. Pour revenir en arrière, efface l’adresse.</p></div>
+  </article>
+
 
 
 </section>
