@@ -925,7 +925,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.53-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.56-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 // Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
@@ -2127,8 +2127,8 @@ function construirePole(z, p, r) {
   bC.appendChild(el('p', 'aide-statut', "À activer seulement quand elle est d'accord : son email devient visible de tout le monde."));
   det.appendChild(bC);
   const sP = el('div', '', ''); sP.setAttribute('role', 'status'); const bP = el('button', 'btn', 'Enregistrer'); bP.type = 'button'; bP.dataset.enregistrerPole = p.nom;
-  bP.addEventListener('click', () => enregistrer(sP, bP, async () => { const ch = { payant: sel.value, afficher_contact: selC.value }; Object.keys(cs).forEach((k) => { ch[k] = cs[k].value; }); return gardeReglages(await appelReglages({ op: 'pole_ecrire', nom: p.nom, champs: ch })); }));
-  det.appendChild(bP); det.appendChild(sP); inf.appendChild(det);
+  bP.addEventListener('click', async () => { const r = await enregistrer(sP, bP, async () => { const ch = { payant: sel.value, afficher_contact: selC.value }; Object.keys(cs).forEach((k) => { ch[k] = cs[k].value; }); return gardeReglages(await appelReglages({ op: 'pole_ecrire', nom: p.nom, champs: ch })); }); if (r && r.ok && r.avertissement) { sP.className = 'message ko'; sP.textContent = '✓ Enregistré. ⚠ ' + r.avertissement; } });
+    det.appendChild(bP); det.appendChild(sP); inf.appendChild(det);
   // --- À fournir : une liste à cocher
   const fo = parties.fournir; const ck = el('section', 'carte reglage-bloc'); ck.dataset.fournir = p.nom;
   ck.appendChild(el('h2', '', 'Ce que la personne doit préparer')); ck.appendChild(lienAide('r-documents-liste'));
@@ -2251,6 +2251,35 @@ function blocLicenceAdmin() {
   bloc.appendChild(client.boite); bloc.appendChild(fin.boite); bloc.appendChild(lp); bloc.appendChild(b); bloc.appendChild(st);
   return bloc;
 }
+// Administration : l'adresse qui envoie les emails (ex. contact@ton-festival.fr), branchée dans le Gmail du Portail. Les réponses vont toujours à la référente du pôle.
+let adminExpediteur = null;
+async function chargerExpediteur() { const r = await appelAdmin({ op: 'expediteur_lire' }); if (r && r.ok) { adminExpediteur = r; dessinerAdmin(); } }
+function blocExpediteurAdmin() {
+  const bloc = el('div', 'admin-expediteur'); bloc.id = 'admin-expediteur';
+  bloc.appendChild(el('h3', '', 'Adresse qui envoie les emails'));
+  if (!adminExpediteur) { bloc.appendChild(el('p', 'compte', 'Chargement…')); chargerExpediteur(); return bloc; }
+  const x = adminExpediteur;
+  bloc.appendChild(el('p', 'compte', 'Aujourd’hui les emails partent de : ' + (x.branchee ? x.adresse + ' (adresse du festival).' : (x.compte || 'le compte Google du Portail') + (x.adresse ? ' (l’adresse ' + x.adresse + ' n’est pas encore branchée dans Gmail, donc l’envoi se fait comme avant).' : '.'))));
+  bloc.appendChild(el('p', 'compte', 'Les réponses des gens vont toujours à la référente du pôle. Avant de régler une adresse ici, branche-la dans le Gmail du Portail : Gmail, Réglages, Comptes et importation, « Envoyer en tant que ».'));
+  if (x.aliases && x.aliases.length) bloc.appendChild(el('p', 'compte', 'Adresses branchées dans Gmail : ' + x.aliases.join(', ') + '.'));
+  if (x.erreur) bloc.appendChild(el('p', 'message ko', 'Google n’a pas encore donné l’autorisation d’envoyer depuis une autre adresse (voir le guide).'));
+  const champ = champReglage('Adresse d’envoi (laisse vide pour envoyer comme avant)', x.adresse || '', { nom: 'admin-expediteur-adresse' });
+  const b = el('button', 'btn', 'Enregistrer l’adresse'); b.type = 'button'; b.id = 'admin-expediteur-enregistrer';
+  const st = el('div', '', ''); st.setAttribute('role', 'status');
+  b.addEventListener('click', async () => {
+    const rep = await enregistrer(st, b, () => appelAdmin({ op: 'expediteur_ecrire', adresse: champ.saisie.value }), 'Adresse enregistrée');
+    if (rep && rep.ok) { adminExpediteur = rep; dessinerAdmin(); }
+  });
+  const vers = champReglage('Envoyer un email de test à (laisse vide : ton adresse de test)', '', { nom: 'admin-expediteur-vers' });
+  const bt = el('button', 'btn btn-doux-clair', 'Envoyer un email de test'); bt.type = 'button'; bt.id = 'admin-expediteur-tester';
+  const st2 = el('div', '', ''); st2.setAttribute('role', 'status'); st2.id = 'admin-expediteur-resultat';
+  bt.addEventListener('click', async () => {
+    const rep = await enregistrer(st2, bt, () => appelAdmin({ op: 'expediteur_tester', vers: vers.saisie.value }), 'Test envoyé');
+    if (rep && rep.ok) { st2.className = 'message ok'; st2.textContent = 'Test envoyé à ' + rep.vers + ' depuis ' + rep.depuis + '. Regarde où il est arrivé : boîte de réception ou courrier indésirable.'; }
+  });
+  bloc.appendChild(champ.boite); bloc.appendChild(b); bloc.appendChild(st); bloc.appendChild(vers.boite); bloc.appendChild(bt); bloc.appendChild(st2);
+  return bloc;
+}
 // Administration : les éditions (statut) et la création d'une nouvelle édition.
 function blocEditionsAdmin() {
   const bloc = el('div', 'admin-editions'); bloc.id = 'admin-editions';
@@ -2302,7 +2331,7 @@ function dessinerAdmin() {
   const v = adminDonnees || {};
   const barreTop = el('div', 'admin-barre'); barreTop.appendChild(el('span', 'compte', 'Accès administrateur ouvert pendant 30 minutes.'));
   const bf = el('button', 'btn btn-doux-clair', "Fermer l'administration"); bf.type = 'button'; bf.id = 'admin-fermer';
-  bf.addEventListener('click', () => { adminJeton = ''; adminDonnees = null; adminOptions = null; adminLicence = null; dessinerAdmin(); }); barreTop.appendChild(bf); adm.appendChild(barreTop);
+  bf.addEventListener('click', () => { adminJeton = ''; adminDonnees = null; adminOptions = null; adminLicence = null; adminExpediteur = null; dessinerAdmin(); }); barreTop.appendChild(bf); adm.appendChild(barreTop);
   // mode TEST / REEL
   const mode = el('div', 'admin-mode ' + (v.mode_envoi === 'REEL' ? 'mode-reel' : 'mode-test')); mode.id = 'admin-mode';
   mode.appendChild(el('strong', '', v.mode_envoi === 'REEL' ? 'Mode REEL : les emails partent vers les vraies personnes.' : "Mode TEST : tous les emails vont à l'adresse de test, personne d'autre ne reçoit rien."));
@@ -2326,6 +2355,7 @@ function dessinerAdmin() {
   adm.appendChild(blocEditionsAdmin());
   adm.appendChild(blocOptionsAdmin());
   adm.appendChild(blocLicenceAdmin());
+  adm.appendChild(blocExpediteurAdmin());
   // autres réglages
   const champs = [['email_test', "Adresse de test (reçoit tous les emails en mode TEST)", { type: 'email' }], ['nom_expediteur', "Nom de l'expéditeur (affiché dans la boîte mail)", {}], ['edition', "Nom de l'édition", {}],
     ['logo_portail', 'Logo du Portail (adresse https ou nom de fichier)', {}], ['image_accueil', "Grande image de l'accueil (adresse https ou nom de fichier)", {}]];
@@ -3970,10 +4000,11 @@ function dessinerDetail(d, listes, mode) {
   let carteContrat = null;
   if (genre === 'candidature' || genre === 'benevole') {
     carteContrat = carte('Contrat à envoyer (le nôtre)'); carteContrat.classList.add('carte-contrat');
-    carteContrat.appendChild(el('p', 'compte', "Prépare le contrat de cette personne (avec son nom), puis ajoute-le ici : PDF, 10 Mo au maximum. Seule l'équipe le voit. Il part en pièce jointe de l'email d'acceptation."));
+    carteContrat.appendChild(el('p', 'compte', "Prépare le contrat de cette personne (avec son nom), puis choisis-le ici : PDF, 10 Mo au maximum. Il est ajouté dès que tu le choisis. Seule l'équipe le voit. Il part en pièce jointe de l'email d'acceptation."));
     const etatC = el('p', 'contrat-etat-fiche'); etatC.id = 'contrat-fiche-etat';
     const fichierC = document.createElement('input'); fichierC.type = 'file'; fichierC.accept = 'application/pdf,.pdf'; fichierC.id = 'contrat-fiche-fichier';
-    const boutonC = el('button', 'btn', 'Ajouter le contrat'); boutonC.type = 'button'; boutonC.id = 'contrat-fiche-envoyer';
+    const boutonC = el('button', 'btn', 'Ajouter le contrat'); boutonC.type = 'button'; boutonC.id = 'contrat-fiche-envoyer'; boutonC.hidden = true;   // plus de bouton : le PDF est ajouté dès qu'on le choisit
+    const indiceC = el('p', 'meta', ''); indiceC.id = 'contrat-fiche-indice';
     const retirerC = el('button', 'btn btn-doux-clair', 'Retirer le contrat'); retirerC.type = 'button'; retirerC.id = 'contrat-fiche-retirer';
     const resC = el('div', '', ''); resC.setAttribute('role', 'status');
     const ouvrirC = el('div', 'contrat-ouvrir'); const signeC = el('div', 'contrat-signe');
@@ -3985,6 +4016,7 @@ function dessinerDetail(d, listes, mode) {
       etatC.className = 'contrat-etat-fiche ' + (cj ? 'ok' : 'ko');
       etatC.textContent = cj ? '✓ Contrat ajouté : ' + cj.nom + ' (le ' + cj.date + ')' : ((d.contrat_obligatoire !== undefined ? d.contrat_obligatoire : d.contrat_requis) === false ? "Aucun contrat ajouté. Il n'est pas obligatoire pour le moment." : "Aucun contrat ajouté. L'email d'acceptation ne peut pas partir sans lui.");
       boutonC.textContent = cj ? 'Remplacer le contrat' : 'Ajouter le contrat';
+      indiceC.textContent = cj ? 'Pour le remplacer, choisis un autre PDF : il est ajouté tout de suite.' : 'Choisis le PDF : il est ajouté tout de suite.';
       retirerC.hidden = !cj; confirmeRetrait = false; retirerC.textContent = 'Retirer le contrat';
       ouvrirC.textContent = ''; if (cj && cj.url) ouvrirC.appendChild(boutonDocument('Ouvrir le contrat', cj.url, { id: d.id, tab: '' }));
       envoyerC.hidden = !cj; confirmeEnvoiC = false; envoyerC.textContent = 'Envoyer le contrat par email';
@@ -4018,6 +4050,7 @@ function dessinerDetail(d, listes, mode) {
         lecteur.readAsDataURL(f);
       }), 'Contrat enregistré');
     });
+    fichierC.addEventListener('change', () => { if (fichierC.files && fichierC.files[0]) boutonC.click(); });   // le PDF part dès qu'il est choisi
     retirerC.addEventListener('click', async () => {
       if (!confirmeRetrait) { confirmeRetrait = true; retirerC.textContent = 'Confirmer : retirer ce contrat'; return; }
       const r = await enregistrer(resC, retirerC, async () => { const rep = await appel({ op: 'contrat_personne_retirer', token: jeton, id: sid }); return sessionExpiree(rep) ? null : rep; }, 'Contrat retiré');
@@ -4029,7 +4062,7 @@ function dessinerDetail(d, listes, mode) {
       confirmeEnvoiC = false; envoyerC.textContent = 'Envoyer le contrat par email';
       if (r && r.ok && r.emails) redessinerHistorique(r.emails);
     });
-    carteContrat.appendChild(etatC); carteContrat.appendChild(ouvrirC); carteContrat.appendChild(signeC); carteContrat.appendChild(fichierC); carteContrat.appendChild(boutonC); carteContrat.appendChild(retirerC); carteContrat.appendChild(envoyerC); carteContrat.appendChild(resC);
+    carteContrat.appendChild(etatC); carteContrat.appendChild(ouvrirC); carteContrat.appendChild(signeC); carteContrat.appendChild(indiceC); carteContrat.appendChild(fichierC); carteContrat.appendChild(boutonC); carteContrat.appendChild(retirerC); carteContrat.appendChild(envoyerC); carteContrat.appendChild(resC);
     // Elle sert quand la personne est acceptée (le contrat part avec l'email d'acceptation), ou quand un contrat est déjà ajouté ou reçu. Sinon elle reste cachée.
     majVisibiliteContrat = () => {
       const pertinent = ((statuts && statuts['Sélection']) === 'Accepté') || !!d.contrat_joint || (genre === 'candidature' && !!d.contrat_signe);
