@@ -925,7 +925,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.56-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.58-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 // Une icône aquarelle par pôle (dossier assets/ du dépôt GitHub, noms exacts des fichiers du Drive).
@@ -3622,6 +3622,36 @@ function majEmailAEnvoyer(genre, d, pret) {
   if (i) i.email_a_envoyer = !!pret;
 }
 
+/* ---------- Supprimer un profil (administrateur) : pour nettoyer les essais ---------- */
+// Efface la personne partout (Sheet, suivi, emails, contrat, IBAN, planning) et met son dossier Drive à la corbeille du Drive.
+// Il faut avoir ouvert l'Administration (mot de passe administrateur) : le serveur le vérifie, le bouton caché n'est pas la protection.
+function blocSuppressionProfil(genre, d) {
+  const boite = carte('Supprimer ce profil'); boite.id = 'zone-suppression';
+  if (!adminJeton) {
+    boite.appendChild(el('p', 'meta', "Réservé à l'administrateur. Ouvre d'abord l'Administration avec le mot de passe administrateur, puis reviens sur cette fiche."));
+    return boite;
+  }
+  boite.appendChild(el('p', 'meta', "Efface cette personne partout : ligne du Sheet, suivi, emails envoyés, contrat, IBAN et créneaux du planning. Son dossier Drive va à la corbeille du Drive (récupérable environ 30 jours). Une sauvegarde du Sheet est faite juste avant."));
+  const etat = el('p', 'compte'); etat.id = 'suppression-etat'; etat.setAttribute('role', 'status');
+  const b = el('button', 'btn btn-doux-clair compte-supprimer', 'Supprimer ce profil'); b.type = 'button'; b.id = 'profil-supprimer';
+  let sur = false;
+  b.addEventListener('click', async () => {
+    if (!sur) { sur = true; b.textContent = 'Presse encore pour supprimer pour de bon'; etat.textContent = ''; return; }
+    b.disabled = true; etat.textContent = 'Suppression en cours...';
+    const rep = await appelAdmin({ op: 'profil_supprimer', id: d.id, confirmation: 'SUPPRIMER' });
+    if (rep && rep.ok) {
+      participants = null; benevoles = null;
+      await charger();
+      naviguer(({ candidature: 'candidatures', participant: 'participants', benevole: 'benevoles' })[genre]);
+    } else {
+      sur = false; b.disabled = false; b.textContent = 'Supprimer ce profil';
+      etat.textContent = (rep && rep.error) || "La suppression n'a pas pu se faire. Rien n'a été effacé, tu peux réessayer.";
+    }
+  });
+  boite.appendChild(etat); boite.appendChild(b);
+  return boite;
+}
+
 function dessinerDetail(d, listes, mode) {
   const genre = d.genre || 'candidature';
   const sid = d.suivi_id !== undefined ? d.suivi_id : d.id;      // la ligne de Suivi qui porte les statuts et les emails
@@ -3666,6 +3696,7 @@ function dessinerDetail(d, listes, mode) {
   // Trois gros boutons avec icône
   const grands = el('div', 'actions-grandes');
   grands.appendChild(grosBouton('teal', 'doc', 'Fiche Google Docs', d.fiche || '', null));
+  if (d.fiche_pdf) grands.appendChild(grosBouton('teal', 'doc', 'Fiche PDF', d.fiche_pdf, null));   // copie PDF de la fiche : s'ouvre bien sur téléphone
   let activerOnglet = null;
   grands.appendChild(grosBouton('rose', 'image', genre === 'benevole' ? 'Portrait' : 'Photos', null, () => { if (activerOnglet) activerOnglet('presentation'); const c = $('carte-photos'); if (c && typeof c.scrollIntoView === 'function') c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
   grands.appendChild(grosBouton('violet', 'dossier', 'Dossier Drive', d.dossier || '', null));
@@ -4104,6 +4135,7 @@ function dessinerDetail(d, listes, mode) {
     }
     ordre.forEach((bloc) => { if (bloc) zone.appendChild(bloc); });
   }
+  zone.appendChild(blocSuppressionProfil(genre, d));   // tout en bas, réservé à l'administrateur
 }
 
 remplirSignatures();
