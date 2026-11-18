@@ -942,7 +942,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.62-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.63-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 const STATUTS_BENEVOLES = STATUTS.concat(['Confirmé', 'Désistement']);   // un bénévole peut aussi être confirmé, ou se désister
@@ -3830,7 +3830,7 @@ function dessinerDetail(d, listes, mode) {
         const a = grosBouton('teal', 'doc', 'Fiche PDF', rep.url, null);
         bpdf.replaceWith(a);
         window.open(rep.url, '_blank', 'noopener');
-      } else { t.textContent = (rep && rep.error) || 'PDF non créé, réessaie'; setTimeout(() => { t.textContent = avant; }, 4000); }
+      } else { t.textContent = (rep && rep.error) || 'PDF non créé, réessaie'; setTimeout(() => { t.textContent = avant; }, 9000); }
     });
     grands.appendChild(bpdf);
   }
