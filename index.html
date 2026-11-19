@@ -1018,7 +1018,7 @@ html[lang=en] .note-en { display: block; }
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.63-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.65-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec',
@@ -1416,7 +1416,17 @@ function signalerMembre(m) {
   const liste = m.manque.length > 1 ? m.manque.slice(0, -1).join(', ') + ' et ' + m.manque[m.manque.length - 1] : m.manque[0];
   return erreur(1, (m.total > 1 ? 'Personne ' + m.numero + ' : il' : 'Il') + ' manque ' + liste + '.');
 }
+// Une personne seule : son prénom et son nom viennent des champs du haut. La recopie se faisait seulement à la frappe : un remplissage automatique,
+// une dictée ou un collage pouvaient la sauter et le formulaire disait « nom manquant » alors qu'il était rempli. On recopie donc juste avant de vérifier et d'envoyer.
+function recopierNomSeul() {
+  if (!groupeActif()) return;
+  const cartes = document.querySelectorAll('.membre');
+  if (cartes.length !== 1 || $('contact-different').checked) return;
+  cartes[0].querySelector('.membre-prenom').value = valeur('first_name');
+  cartes[0].querySelector('.membre-nom').value = valeur('last_name');
+}
 function valider1() {
+  recopierNomSeul();
   if (!etat.category) return erreur(1, 'Choisis ta cat\u00e9gorie.');
   if (etat.category === 'Artiste' && !etat.artist_type)
     return erreur(1, 'Choisis ton type d\u2019artiste.');
@@ -2189,8 +2199,7 @@ function actualiserMembres() {
   }
   afficherPortraits();
 }
-$('first_name').addEventListener('input', actualiserMembres);
-$('last_name').addEventListener('input', actualiserMembres);
+['input', 'change', 'blur'].forEach(ev => { $('first_name').addEventListener(ev, actualiserMembres); $('last_name').addEventListener(ev, actualiserMembres); });
 function afficherPortraits() {
   const c=$('liste-portraits'); c.innerHTML='';
   Array.from(document.querySelectorAll('.membre')).forEach((m,i)=>{
@@ -2232,6 +2241,7 @@ const volunteerPortrait={portraitData:null};
 $('vol-portrait').onchange=()=>ouvrirPortrait($('vol-portrait'),volunteerPortrait,'portrait bénévole');
 async function lireMembres(){
   if(!groupeActif())return [];
+  recopierNomSeul();
   return Array.from(document.querySelectorAll('.membre')).map(el=>({
     first_name:el.querySelector('.membre-prenom').value.trim(),
     last_name:el.querySelector('.membre-nom').value.trim(),
@@ -2631,7 +2641,7 @@ function candChamp(f) {
     if (f.t === 'a') { el.rows = 3; el.maxLength = 2000; } else { el.type = f.type || 'text'; el.maxLength = f.t === 'n' ? 20 : 300; if (f.mode) el.inputMode = f.mode; }
     if (f.t === 'n') el.inputMode = 'decimal';   // un champ « nombre » du navigateur vide la réponse quand on écrit « 3,5 » ou « 4 m » : on garde un champ texte et on lit le nombre nous-mêmes
     el.value = cand.vals[f.k] || '';
-    el.addEventListener('input', () => { cand.vals[f.k] = el.value.trim(); if (f.t === 'a') autoGrow(el); });
+    ['input', 'change', 'blur'].forEach(ev => el.addEventListener(ev, () => { cand.vals[f.k] = el.value.trim(); if (f.t === 'a') autoGrow(el); }));   // v3.65 : change et blur aussi (remplissage automatique, dictée)
     div.appendChild(el);
   }
   return div;
@@ -2641,7 +2651,12 @@ function candRendre(idConteneur, champs) {
   champs.forEach(f => c.appendChild(candChamp(f)));
   candActualiserVisibilite();
 }
+// v3.65 : relit les champs texte affichés juste avant de vérifier et d'envoyer, au cas où un remplissage automatique n'a pas déclenché la frappe.
+function candRelireChamps() {
+  document.querySelectorAll('[id^="cand-champ-"]').forEach(el => { if (el.name && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) { const t = el.value.trim(); if (t && !cand.vals[el.name]) cand.vals[el.name] = t; } });   // ne comble que les réponses absentes (remplissage automatique) : jamais d'écrasement ni d'effacement
+}
 function candValider(champs) {
+  candRelireChamps();
   for (const f of champs) {
     if (!f.r || !candVisible(f)) continue;
     const v = cand.vals[f.k];

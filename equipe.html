@@ -137,6 +137,29 @@ main { padding: 0 0 40px; min-width: 0; }
 .outils { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 14px; }
 .recherche { flex: 1 1 260px; padding: 11px 14px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte); }
 .recherche:focus { border-color: var(--turquoise-vif); outline: none; }
+.barre-filtres { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+.barre-filtres .recherche { flex: 1 1 220px; min-width: 180px; }
+.barre-filtres select { padding: 10px 12px; border: 2px solid var(--ligne); border-radius: 12px; background: var(--carte); color: var(--navy); font-weight: 600; max-width: 220px; }
+.barre-filtres select.actif { border-color: var(--turquoise-vif); background: var(--p-turq); }
+.btn-doux.petit, .btn.petit { padding: 8px 14px; font-size: .9rem; }
+.filtres-ligne { margin-bottom: 8px; gap: 6px; }
+.filtres-ligne .filtre { padding: 4px 10px; font-size: .88rem; }
+.barre-liste { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; margin: 4px 0 12px; }
+.barre-liste .compte { margin: 0; }
+.barre-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.voile { position: fixed; inset: 0; background: rgba(28, 27, 58, .45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+.voile[hidden] { display: none; }
+.fenetre { background: #fff; border-radius: 20px; padding: 22px; width: min(640px, 100%); max-height: 92vh; overflow: auto; box-shadow: 0 12px 40px rgba(28, 27, 58, .3); }
+.fenetre h2 { margin: 0 0 12px; }
+.fenetre label { display: block; font-weight: 700; margin: 14px 0 6px; }
+.fenetre input[type="text"], .fenetre textarea { width: 100%; box-sizing: border-box; padding: 11px 14px; border: 2px solid var(--ligne); border-radius: 12px; font: inherit; }
+.fenetre textarea { min-height: 200px; resize: vertical; }
+.destinataires { display: flex; flex-wrap: wrap; gap: 6px; max-height: 96px; overflow: auto; padding: 8px; background: rgba(28, 27, 58, .04); border-radius: 12px; }
+.destinataires .dest { background: var(--p-turq); color: var(--p-turq-t); border-radius: 999px; padding: 3px 10px; font-size: .85rem; font-weight: 600; }
+.actions-fenetre { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.historique details { grid-column: 1 / -1; margin-top: 2px; }
+.historique details summary { cursor: pointer; font-weight: 600; color: var(--p-violet-t); }
+.historique .email-texte { margin-top: 6px; padding: 10px 12px; background: rgba(28, 27, 58, .04); border-radius: 12px; white-space: pre-wrap; word-break: break-word; font-size: .92rem; }
 .groupe-filtres { margin-bottom: 12px; }
 .groupe-filtres .etiquette { display: block; font-weight: 700; font-size: .9rem; color: var(--doux); margin-bottom: 6px; }
 .filtres { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -888,26 +911,37 @@ li .ico-btn img { width: 24px; height: 24px; }
           <div class="rond" data-ico="BENEVOLES.png"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/></svg></div>
           <div><h1>Bénévoles</h1><p>Une équipe au coeur du festival</p></div>
         </div>
-        <div class="outils"><input class="recherche" id="recherche-b" type="search" placeholder="Chercher un nom, un email" aria-label="Chercher un bénévole"></div>
-        <div class="groupe-filtres"><span class="etiquette">Équipe préférée</span><div class="filtres" id="filtres-b-equipe" role="group" aria-label="Filtrer par équipe"></div></div>
-        <div class="groupe-filtres"><span class="etiquette">Sélection</span><div class="filtres" id="filtres-b-statut" role="group" aria-label="Filtrer par sélection"></div></div>
-        <div class="groupe-filtres"><span class="etiquette">Quel choix</span><div class="filtres" id="filtres-b-choix" role="group" aria-label="Premier ou deuxième choix"></div></div>
-        <div class="groupe-filtres"><span class="etiquette">Expérience</span><div class="filtres" id="filtres-b-exp" role="group" aria-label="Filtrer par expérience"></div></div>
-        <div class="groupe-filtres"><span class="etiquette">Disponible le</span><div class="filtres"><select id="filtre-b-date" aria-label="Disponible le"></select></div></div>
-        <p class="compte" id="compte-b"></p>
-        <div class="outils" id="outils-b-groupe">
-          <button type="button" class="btn" id="btn-b-tout">Tout sélectionner</button>
-          <button type="button" class="btn" id="btn-b-mail" disabled>Écrire aux sélectionné·es</button>
-          <button type="button" class="btn" id="btn-b-csv">Exporter la liste (CSV)</button>
+        <div class="barre-filtres">
+          <input class="recherche" id="recherche-b" type="search" placeholder="Chercher un nom, un email" aria-label="Chercher un bénévole">
+          <select id="filtre-b-choix" aria-label="Premier ou deuxième choix"></select>
+          <select id="filtre-b-exp" aria-label="Expérience"></select>
+          <select id="filtre-b-date" aria-label="Disponible le"></select>
+          <button type="button" class="btn-doux petit" id="btn-b-reset" hidden>Tout effacer</button>
         </div>
-        <div class="carte" id="panneau-mail-b" hidden>
-          <h2>Email aux bénévoles sélectionné·es</h2>
-          <p class="meta" id="mail-b-dest"></p>
-          <label for="mail-b-objet">Objet</label><input id="mail-b-objet" type="text" maxlength="200" autocomplete="off">
-          <label for="mail-b-corps">Texte</label><textarea id="mail-b-corps" rows="8" maxlength="20000"></textarea>
-          <p class="aide-statut">Chaque personne reçoit son propre email (les adresses ne sont pas visibles des autres). Il apparaît dans l'historique de chaque fiche. Une personne sans ligne de suivi est ignorée.</p>
-          <button type="button" class="btn btn-envoi" id="btn-b-envoyer">Envoyer</button> <button type="button" class="btn" id="btn-b-annuler">Annuler</button>
-          <div class="message" id="mail-b-resultat" role="status"></div>
+        <div class="filtres filtres-ligne" id="filtres-b-statut" role="group" aria-label="Filtrer par sélection"></div>
+        <div class="barre-liste">
+          <span class="compte" id="compte-b"></span>
+          <span class="barre-actions">
+            <button type="button" class="btn-doux petit" id="btn-b-tout">Tout sélectionner</button>
+            <button type="button" class="btn petit" id="btn-b-mail" disabled>Écrire aux sélectionné·es</button>
+            <button type="button" class="btn-doux petit" id="btn-b-csv">Exporter (CSV)</button>
+          </span>
+        </div>
+        <div class="voile" id="panneau-mail-b" hidden>
+          <div class="fenetre" role="dialog" aria-modal="true" aria-labelledby="mail-b-titre">
+            <h2 id="mail-b-titre">Écrire aux bénévoles sélectionné·es</h2>
+            <div class="destinataires" id="mail-b-dest" aria-label="Destinataires"></div>
+            <label for="mail-b-objet">Objet</label>
+            <input id="mail-b-objet" type="text" maxlength="200" autocomplete="off">
+            <label for="mail-b-corps">Texte</label>
+            <textarea id="mail-b-corps" rows="10" maxlength="20000"></textarea>
+            <p class="aide-statut">Chaque personne reçoit son propre email : les adresses ne sont pas visibles des autres. Le texte envoyé est gardé dans l'historique de chaque fiche. **gras** et les liens https:// fonctionnent.</p>
+            <div class="message" id="mail-b-resultat" role="status"></div>
+            <div class="actions-fenetre">
+              <button type="button" class="btn btn-envoi" id="btn-b-envoyer">Envoyer</button>
+              <button type="button" class="btn-doux" id="btn-b-annuler">Fermer</button>
+            </div>
+          </div>
         </div>
         <div class="liste" id="liste-b"></div>
       </div>
@@ -942,7 +976,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.63-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.65-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 const STATUTS_BENEVOLES = STATUTS.concat(['Confirmé', 'Désistement']);   // un bénévole peut aussi être confirmé, ou se désister
@@ -3057,7 +3091,7 @@ function ouvrirAjoutPersonne() {
   const annuler = el('button', 'btn btn-doux-clair', 'Annuler'); annuler.type = 'button'; annuler.id = 'ajout-annuler';
   actions.appendChild(valider); actions.appendChild(annuler); zone.appendChild(actions); zone.appendChild(etat);
   let confirmerDoublon = false;
-  f.email.addEventListener('input', () => { confirmerDoublon = false; valider.textContent = 'Ajouter et ouvrir sa fiche'; });
+  ['input', 'change'].forEach((ev) => f.email.addEventListener(ev, () => { confirmerDoublon = false; valider.textContent = 'Ajouter et ouvrir sa fiche'; }));
   annuler.addEventListener('click', () => { zone.hidden = true; zone.innerHTML = ''; });
   valider.addEventListener('click', async () => {
     etat.className = ''; etat.textContent = '';
@@ -3279,41 +3313,34 @@ $('recherche-p').addEventListener('input', dessinerParticipants);
 function dessinerBenevoles() {
   const liste = $('liste-b');
   if (!benevoles) {
-    $('filtres-b-equipe').innerHTML = ''; $('filtres-b-statut').innerHTML = ''; $('compte-b').textContent = '';
+    $('filtres-b-statut').innerHTML = ''; $('compte-b').textContent = '';
     if (erreurListes.benevoles) messageErreurListe(liste, 'Impossible de charger les bénévoles.', () => { erreurListes.benevoles = false; dessinerBenevoles(); chargerBenevoles(true); });
     else messageChargement(liste, 'Chargement des bénévoles… Cela peut prendre quelques secondes.');
     return;
   }
   const choisi = (i, t) => bChoix === '1' ? i.choix1 === t : bChoix === '2' ? i.choix2 === t : i.equipes.indexOf(t) >= 0;
-  const ze = $('filtres-b-equipe'); ze.innerHTML = '';
-  boutonFiltre(ze, 'Toutes', benevoles.length, bEquipe === 'Toutes', '', () => { bEquipe = 'Toutes'; dessinerBenevoles(); dessinerSousMenu(); });
-  equipesBenevoles().forEach((t) => boutonFiltre(ze, equipeCourte(t), benevoles.filter((i) => choisi(i, t)).length, bEquipe === t, '', () => { bEquipe = t; dessinerBenevoles(); dessinerSousMenu(); }));
-  const zc = $('filtres-b-choix'); zc.innerHTML = '';
-  const compteChoix = (c) => bEquipe === 'Toutes' ? benevoles.length : benevoles.filter((i) => (c === '1' ? i.choix1 === bEquipe : c === '2' ? i.choix2 === bEquipe : i.equipes.indexOf(bEquipe) >= 0)).length;
-  [['tous', 'Premier ou deuxième'], ['1', 'Premier choix'], ['2', 'Deuxième choix']].forEach((c) => boutonFiltre(zc, c[1], compteChoix(c[0]), bChoix === c[0], '', () => { bChoix = c[0]; dessinerBenevoles(); }));
   const parEquipe = benevoles.filter((i) => bEquipe === 'Toutes' || choisi(i, bEquipe));
-  const zx = $('filtres-b-exp'); zx.innerHTML = '';
-  boutonFiltre(zx, 'Tous', parEquipe.length, bExp === '', '', () => { bExp = ''; dessinerBenevoles(); });
-  boutonFiltre(zx, 'Déjà bénévole au Mantra Joie', parEquipe.filter((i) => i.deja_mantra).length, bExp === 'mantra', '', () => { bExp = bExp === 'mantra' ? '' : 'mantra'; dessinerBenevoles(); });
-  boutonFiltre(zx, 'Bénévole dans d’autres festivals', parEquipe.filter((i) => i.autres_festivals).length, bExp === 'autres', '', () => { bExp = bExp === 'autres' ? '' : 'autres'; dessinerBenevoles(); });
-  const sd = $('filtre-b-date');
-  if (!sd.options.length) {
-    const o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Toutes les dates'; sd.appendChild(o0);
-    for (let k = 0; k < 11; k++) { const dd = new Date(Date.UTC(2027, 4, 22 + k)); const v = String(dd.getUTCDate()).padStart(2, '0') + '/' + String(dd.getUTCMonth() + 1).padStart(2, '0'); const o = document.createElement('option'); o.value = v; o.textContent = v; sd.appendChild(o); }
-  }
-  sd.value = bDate;
+  // Une seule barre de filtres : le pôle se choisit dans le menu de gauche, le reste dans des listes.
+  const remplir = (id, options, valeur) => { const sel = $(id); sel.innerHTML = ''; options.forEach((o) => { const op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; sel.appendChild(op); }); sel.value = valeur; sel.classList.toggle('actif', !!valeur && valeur !== 'tous'); };
+  const compteChoix = (c) => bEquipe === 'Toutes' ? benevoles.length : benevoles.filter((i) => (c === '1' ? i.choix1 === bEquipe : c === '2' ? i.choix2 === bEquipe : i.equipes.indexOf(bEquipe) >= 0)).length;
+  remplir('filtre-b-choix', [['tous', 'Tous les choix (' + compteChoix('tous') + ')'], ['1', '1er choix (' + compteChoix('1') + ')'], ['2', '2e choix (' + compteChoix('2') + ')']], bChoix);
+  remplir('filtre-b-exp', [['', 'Toute expérience'], ['mantra', 'Déjà au Mantra Joie (' + parEquipe.filter((i) => i.deja_mantra).length + ')'], ['autres', 'Bénévole ailleurs (' + parEquipe.filter((i) => i.autres_festivals).length + ')']], bExp);
+  const optDates = [['', 'Toutes les dates']];
+  for (let k = 0; k < 11; k++) { const dd = new Date(Date.UTC(2027, 4, 22 + k)); const v = String(dd.getUTCDate()).padStart(2, '0') + '/' + String(dd.getUTCMonth() + 1).padStart(2, '0'); optDates.push([v, 'Dispo le ' + v + ' (' + parEquipe.filter((i) => (i.jours || []).indexOf(v) >= 0).length + ')']); }
+  remplir('filtre-b-date', optDates, bDate);
   const zs = $('filtres-b-statut'); zs.innerHTML = '';
   boutonFiltre(zs, 'Tous', parEquipe.length, bStatut === 'Tous', 'statut', () => { bStatut = 'Tous'; dessinerBenevoles(); });
   STATUTS_BENEVOLES.forEach((s) => boutonFiltre(zs, s, parEquipe.filter((i) => statutDe(i) === s).length, bStatut === s, 'statut', () => { bStatut = s; dessinerBenevoles(); }));
   const contratManque = (i) => statutDe(i) === 'Accepté' && !i.contrat_signe;   // accepté, mais pas encore de contrat signé reçu
   boutonFiltre(zs, 'Contrat manquant', parEquipe.filter(contratManque).length, bContratManquant, 'statut', () => { bContratManquant = !bContratManquant; dessinerBenevoles(); });
+  $('btn-b-reset').hidden = !(bChoix !== 'tous' || bExp || bDate || bStatut !== 'Tous' || bContratManquant || $('recherche-b').value);
   const mot = normaliser($('recherche-b').value);
   const visibles = parEquipe.filter((i) => (bStatut === 'Tous' || statutDe(i) === bStatut) && (!bContratManquant || contratManque(i))
     && (bExp === '' || (bExp === 'mantra' ? i.deja_mantra : i.autres_festivals)) && (!bDate || (i.jours || []).indexOf(bDate) >= 0)
     && (!mot || normaliser([i.nom, i.email, i.equipes.join(' ')].join(' ')).indexOf(mot) >= 0));
   window.__visiblesB = visibles;
   const attribues = benevoles.filter((i) => i.pole_definitif).length;
-  $('compte-b').textContent = visibles.length + ' bénévole' + (visibles.length > 1 ? 's' : '') + ' sur ' + benevoles.length + ' · pôle définitif attribué : ' + attribues + ' sur ' + benevoles.length;
+  $('compte-b').textContent = (bEquipe !== 'Toutes' ? equipeCourte(bEquipe) + ' : ' : '') + visibles.length + ' bénévole' + (visibles.length > 1 ? 's' : '') + ' sur ' + benevoles.length + ' · pôle définitif attribué : ' + attribues + ' sur ' + benevoles.length;
   majBoutonsGroupeB();
   liste.innerHTML = '';
   if (!visibles.length) { const v = document.createElement('div'); v.className = 'vide'; v.textContent = benevoles.length ? 'Aucun bénévole ne correspond. Change les filtres ou la recherche.' : "Aucune candidature de bénévole pour l'instant."; liste.appendChild(v); return; }
@@ -3345,6 +3372,9 @@ function dessinerBenevoles() {
 }
 $('recherche-b').addEventListener('input', dessinerBenevoles);
 $('filtre-b-date').addEventListener('change', () => { bDate = $('filtre-b-date').value; dessinerBenevoles(); });
+$('filtre-b-choix').addEventListener('change', () => { bChoix = $('filtre-b-choix').value; dessinerBenevoles(); });
+$('filtre-b-exp').addEventListener('change', () => { bExp = $('filtre-b-exp').value; dessinerBenevoles(); });
+$('btn-b-reset').addEventListener('click', () => { bChoix = 'tous'; bExp = ''; bDate = ''; bStatut = 'Tous'; bContratManquant = false; $('recherche-b').value = ''; dessinerBenevoles(); });
 function majBoutonsGroupeB() {
   const n = (benevoles || []).filter((i) => bSel.has(i.id)).length;
   $('btn-b-mail').disabled = !n; $('btn-b-mail').textContent = n ? 'Écrire aux ' + n + ' sélectionné·e' + (n > 1 ? 's' : '') : 'Écrire aux sélectionné·es';
@@ -3362,11 +3392,15 @@ $('btn-b-csv').addEventListener('click', () => {
 });
 $('btn-b-mail').addEventListener('click', () => {
   const dest = (benevoles || []).filter((i) => bSel.has(i.id));
-  $('mail-b-dest').textContent = 'À : ' + dest.length + ' personne' + (dest.length > 1 ? 's' : '') + ' (' + dest.slice(0, 4).map((i) => i.nom).join(', ') + (dest.length > 4 ? '...' : '') + ')';
+  const zd = $('mail-b-dest'); zd.innerHTML = '';
+  dest.forEach((i) => zd.appendChild(el('span', 'dest', i.nom)));
   $('mail-b-resultat').className = 'message'; $('mail-b-resultat').textContent = ''; $('btn-b-envoyer').textContent = 'Envoyer';
   $('panneau-mail-b').hidden = false; $('mail-b-objet').focus();
+  $('mail-b-titre').textContent = 'Écrire à ' + dest.length + ' bénévole' + (dest.length > 1 ? 's' : '');
 });
 $('btn-b-annuler').addEventListener('click', () => { $('panneau-mail-b').hidden = true; });
+$('panneau-mail-b').addEventListener('click', (e) => { if (e.target === $('panneau-mail-b')) $('panneau-mail-b').hidden = true; });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('panneau-mail-b').hidden) $('panneau-mail-b').hidden = true; });
 let confirmeGroupeB = false;
 ['mail-b-objet', 'mail-b-corps'].forEach((id) => $(id).addEventListener('input', () => { confirmeGroupeB = false; $('btn-b-envoyer').textContent = 'Envoyer'; }));
 $('btn-b-envoyer').addEventListener('click', async () => {
@@ -4105,6 +4139,12 @@ function dessinerDetail(d, listes, mode) {
       li.appendChild(puce(m.statut === 'À envoyer' ? 'Pas encore envoyé' : m.statut, classe));
       li.appendChild(el('span', 'quand', m.date + (m.mode ? ' (' + m.mode + ')' : '')));
       li.appendChild(el('span', 'quand', m.detail));
+      if (m.objet || m.corps) {   // ce qui est réellement parti : l'équipe peut le relire
+        const det = document.createElement('details');
+        det.appendChild(el('summary', '', "Voir l'email envoyé"));
+        const bloc = el('div', 'email-texte'); bloc.appendChild(el('strong', '', 'Objet : ' + m.objet)); bloc.appendChild(document.createTextNode('\n\n' + m.corps));
+        det.appendChild(bloc); li.appendChild(det);
+      }
       ul.appendChild(li);
     });
     histZone.appendChild(ul);
