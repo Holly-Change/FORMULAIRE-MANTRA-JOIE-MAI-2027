@@ -1055,7 +1055,7 @@ html[lang=en] .note-en { display: block; }
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.71-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.73-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec',
@@ -1225,17 +1225,34 @@ function petitApercu(dataUrl) {
   });
 }
 // Un envoi à la fois (la photo et son original partaient en même temps et l'un pouvait échouer), avec un nouvel essai.
-let fileEnvois = Promise.resolve();
+// v3.73 : un fichier est compté dès qu'il est ajouté (« en cours d'envoi »), les photos recadrées partent avant les originaux, et la page prévient avant d'être fermée pendant un envoi.
+const fileEnvoisListe = []; let fileEnvoisActive = false;
 function envoiTemp(slot, dataUrl, nom, avecApercu, type) {
-  const t = fileEnvois.then(() => envoiTempUn(slot, dataUrl, nom, avecApercu, type));
-  fileEnvois = t.catch(() => {});
-  return t;
+  if (!etat.jeton || typeof dataUrl !== 'string' || dataUrl.indexOf('data:') !== 0) return Promise.resolve();
+  etat.envois[slot] = { nom: nom || slot, type: type || (/^data:([^;]+);/.exec(dataUrl) || [])[1] || '', apercu: '', envoye: false };
+  majEtatEnvois();
+  return new Promise((fini) => { fileEnvoisListe.push({ original: /_orig/.test(slot), args: [slot, dataUrl, nom, avecApercu, type], fini: fini }); Promise.resolve().then(lancerFileEnvois); });   // le départ attend la fin du clic : toutes les photos du même geste sont déjà dans la file, les recadrées passent en premier
 }
+async function lancerFileEnvois() {
+  if (fileEnvoisActive) return;
+  fileEnvoisActive = true;
+  while (fileEnvoisListe.length) {
+    let i = fileEnvoisListe.findIndex(x => !x.original); if (i < 0) i = 0;
+    const t = fileEnvoisListe.splice(i, 1)[0];
+    try { await envoiTempUn.apply(null, t.args); } catch (e) { /* le fichier partira avec le dossier */ }
+    t.fini();
+  }
+  fileEnvoisActive = false;
+}
+function envoisEnCours() { return Object.keys(etat.envois).filter(k => !etat.envois[k].envoye && !etat.envois[k].erreur).length; }
+window.addEventListener('beforeunload', (e) => { if (envoisEnCours() > 0) { e.preventDefault(); e.returnValue = ''; return ''; } });
 async function envoiTempUn(slot, dataUrl, nom, avecApercu, type) {
   if (!etat.jeton || typeof dataUrl !== 'string' || dataUrl.indexOf('data:') !== 0) return;
+  if (!etat.envois[slot]) return;   // retiré entre-temps : rien à envoyer
   let apercu = '';
   if (avecApercu && /^data:image/.test(dataUrl)) { try { apercu = await petitApercu(dataUrl); } catch (e) { apercu = ''; } }
-  etat.envois[slot] = { nom: nom || slot, type: type || (/^data:([^;]+);/.exec(dataUrl) || [])[1] || '', apercu: apercu, envoye: false };
+  if (!etat.envois[slot]) return;
+  etat.envois[slot].apercu = apercu; etat.envois[slot].envoye = false;
   for (let essai = 1; essai <= 2 && !etat.envois[slot].envoye; essai++) {
     try {
       const r = await (await fetch(CONFIG.scriptUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: jsonEd({ kind: 'dossier_fichier', token: etat.jeton, slot: slot, nom: nom || '', data: dataUrl, apercu: apercu }) })).json();
@@ -1254,8 +1271,8 @@ function retirerTemp(slot) {
 function majEtatEnvois() {
   const el = $('envois-etat'); if (!el) return;
   const liste = Object.keys(etat.envois).map(k => etat.envois[k]);
-  const n = liste.filter(e => e.envoye).length, pb = liste.filter(e => e.erreur).length;
-  el.textContent = (n ? '☁️ ' + n + ' fichier' + (n > 1 ? 's' : '') + ' déjà envoyé' + (n > 1 ? 's' : '') + ' : tu peux quitter la page et revenir avec ton lien.' : '') + (pb ? ' ⚠️ ' + pb + ' fichier' + (pb > 1 ? 's' : '') + ' n’a pas pu être envoyé en avance : il partira avec ton dossier.' : '');
+  const n = liste.filter(e => e.envoye).length, pb = liste.filter(e => e.erreur).length, att = liste.filter(e => !e.envoye && !e.erreur).length;
+  el.textContent = (att ? '⏳ ' + att + ' fichier' + (att > 1 ? 's' : '') + ' en cours d’envoi : garde la page ouverte. ' : '') + (n ? '☁️ ' + n + ' fichier' + (n > 1 ? 's' : '') + ' déjà envoyé' + (n > 1 ? 's' : '') + ' : tu peux quitter la page et revenir avec ton lien.' : '') + (pb ? ' ⚠️ ' + pb + ' fichier' + (pb > 1 ? 's' : '') + ' n’a pas pu être envoyé en avance : il partira avec ton dossier.' : '');
   majIndicateursDocs();
 }
 const DOCS_ENVOIS = [['contract_file', 'contrat', 'contrat'], ['payment_proof', 'preuve', 'preuve de paiement'], ['insurance_file', 'assurance', 'attestation d’assurance'], ['hygiene_file', 'hygiene', 'justificatif d’hygiène'], ['tech_sheet', 'fiche_tech', 'fiche technique']];
@@ -3230,6 +3247,7 @@ const I18N_REGLES = [
   [/^✅ Modifications enregistrées le (.+)\. Ta référente est prévenue\.$/, m => '✅ Changes saved on ' + m[1] + '. Your referent has been notified.'],
   [/^Tes réponses enregistrées le (.+) sont remplies\. Vérifie et continue\. Tes photos et documents déjà envoyés sont aussi là\.$/, m => 'Your answers saved on ' + m[1] + ' are filled in. Check them and continue. Your photos and documents already sent are here too.'],
   [/^Enregistré le (.+?)\. Tu peux fermer cette page et revenir avec le MÊME lien \(celui reçu par email\) : tes réponses, tes liens et tes photos et documents déjà envoyés seront là\.$/, m => 'Saved on ' + m[1] + '. You can close this page and come back with the SAME link (the one from your email): your answers, your links and your photos and documents already sent will be there.'],
+  [/^⏳ (\d+) fichiers? en cours d’envoi : garde la page ouverte\. ?(.*)$/, m => '⏳ ' + m[1] + ' file' + (m[1] > 1 ? 's' : '') + ' being sent: keep the page open.' + (m[2] ? ' ' + tr(m[2]) : '')],
   [/^☁️ (\d+) fichiers? déjà envoyés?\s?: tu peux quitter la page et revenir avec ton lien\.(?: ⚠️ (\d+) fichiers? n’a pas pu être envoyé en avance : il partira avec ton dossier\.)?$/, m => '☁️ ' + m[1] + ' file' + (m[1] > 1 ? 's' : '') + ' already sent: you can leave the page and come back with your link.' + (m[2] ? ' ⚠️ ' + m[2] + ' file' + (m[2] > 1 ? 's' : '') + ' could not be sent in advance: it will go with your dossier.' : '')],
   [/^⚠️ (\d+) fichiers? n’a pas pu être envoyé en avance : il partira avec ton dossier\.$/, m => '⚠️ ' + m[1] + ' file' + (m[1] > 1 ? 's' : '') + ' could not be sent in advance: it will go with your dossier.'],
   [/^✔ (.+) : déjà envoyé\. Tu peux le remplacer en choisissant un autre fichier\.$/, m => '✔ ' + m[1] + ': already sent. You can replace it by choosing another file.'],
