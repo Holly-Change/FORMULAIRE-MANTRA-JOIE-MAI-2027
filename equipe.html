@@ -976,7 +976,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.67-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.71-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 const STATUTS_BENEVOLES = STATUTS.concat(['Confirmé', 'Désistement']);   // un bénévole peut aussi être confirmé, ou se désister
@@ -2098,6 +2098,7 @@ function construireGeneral(z, r) {
   // Dates et liens
   const dl = blocReglages('Dates et liens', 'Ces dates et ces liens se remplissent tout seuls dans les emails.');
   const bDL = champsEnregistrables(dl, [['date_reponses', 'Date des réponses', r.dates.date_reponses, 'ex. 15 janvier 2027'], ['date_limite_dossier', 'Date limite du dossier final', r.dates.date_limite_dossier, 'ex. 31 janvier 2027'],
+    ['modification_invite_limite', 'Dernier jour pour changer son invité (général)', r.dates.modification_invite_limite, 'jj/mm/aaaa, ex. 21/05/2027'], ['modification_invite_limite_artiste', 'Idem, artistes seulement (facultatif)', r.dates.modification_invite_limite_artiste, 'jj/mm/aaaa, vide = date générale'], ['modification_invite_limite_atelier', 'Idem, workshops seulement (facultatif)', r.dates.modification_invite_limite_atelier, 'jj/mm/aaaa, vide = date générale'],
     ['lien_faq', 'Lien de la FAQ', r.liens.lien_faq, 'https://'], ['lien_infos_pratiques', 'Lien des infos pratiques', r.liens.lien_infos_pratiques, 'https://'],
     ['lien_whatsapp', 'Lien du groupe WhatsApp (général, si un pôle n’a pas le sien)', r.liens.lien_whatsapp, 'https://'], ['lien_whatsapp_benevoles', 'Lien du groupe WhatsApp des bénévoles', r.liens.lien_whatsapp_benevoles, 'https://'], ['lien_formulaire_final', 'Lien du formulaire du dossier final', r.liens.lien_formulaire_final, 'https://'],
     ['lien_dossier_images', "Dossier Drive des visuels (bouton « Dossier images » dans le menu)", r.liens.lien_dossier_images, 'https://']]);
@@ -2307,6 +2308,30 @@ function blocLicenceAdmin() {
 }
 // Administration : l'adresse qui envoie les emails (ex. contact@ton-festival.fr), branchée dans le Gmail du Portail. Les réponses vont toujours à la référente du pôle.
 let adminExpediteur = null;
+let adminCorbeille = null;
+async function chargerCorbeille() { const r = await appelAdmin({ op: 'corbeille_lire' }); if (r && r.ok) { adminCorbeille = r.items; dessinerAdmin(); } }
+function blocCorbeilleAdmin() {
+  const bloc = el('div', 'admin-corbeille'); bloc.id = 'admin-corbeille';
+  bloc.appendChild(el('h3', '', 'Corbeille'));
+  bloc.appendChild(el('p', 'compte', "Les profils mis à la corbeille par l'équipe. Restaurer remet les lignes du Sheet et le dossier Drive à leur place."));
+  if (!adminCorbeille) { bloc.appendChild(el('p', 'compte', 'Chargement…')); chargerCorbeille(); return bloc; }
+  if (!adminCorbeille.length) { bloc.appendChild(el('p', 'compte', 'La corbeille est vide.')); return bloc; }
+  const st = el('p', 'compte'); st.setAttribute('role', 'status');
+  adminCorbeille.forEach((it) => {
+    const ligne = el('div', 'corbeille-ligne');
+    ligne.appendChild(el('span', '', (it.projet || it.id) + ' — ' + it.date + ' (' + it.par + ')'));
+    const b = el('button', 'btn btn-doux-clair', 'Restaurer'); b.type = 'button'; b.dataset.id = it.id;
+    b.addEventListener('click', async () => {
+      b.disabled = true; st.textContent = 'Restauration...';
+      const rep = await appelAdmin({ op: 'profil_restaurer', id: it.id });
+      if (rep && rep.ok) { adminCorbeille = null; participants = null; benevoles = null; await charger(); dessinerAdmin(); }
+      else { b.disabled = false; st.textContent = (rep && rep.error) || 'La restauration a échoué.'; }
+    });
+    ligne.appendChild(b); bloc.appendChild(ligne);
+  });
+  bloc.appendChild(st);
+  return bloc;
+}
 async function chargerExpediteur() { const r = await appelAdmin({ op: 'expediteur_lire' }); if (r && r.ok) { adminExpediteur = r; dessinerAdmin(); } }
 function blocExpediteurAdmin() {
   const bloc = el('div', 'admin-expediteur'); bloc.id = 'admin-expediteur';
@@ -2410,6 +2435,7 @@ function dessinerAdmin() {
   adm.appendChild(blocOptionsAdmin());
   adm.appendChild(blocLicenceAdmin());
   adm.appendChild(blocExpediteurAdmin());
+  adm.appendChild(blocCorbeilleAdmin());
   // autres réglages
   const champs = [['email_test', "Adresse de test (reçoit tous les emails en mode TEST)", { type: 'email' }], ['nom_expediteur', "Nom de l'expéditeur (affiché dans la boîte mail)", {}], ['edition', "Nom de l'édition", {}],
     ['logo_portail', 'Logo du Portail (adresse https ou nom de fichier)', {}], ['image_accueil', "Grande image de l'accueil (adresse https ou nom de fichier)", {}]];
@@ -3779,8 +3805,91 @@ function majEmailAEnvoyer(genre, d, pret) {
 /* ---------- Supprimer un profil (administrateur) : pour nettoyer les essais ---------- */
 // Efface la personne partout (Sheet, suivi, emails, contrat, IBAN, planning) et met son dossier Drive à la corbeille du Drive.
 // Il faut avoir ouvert l'Administration (mot de passe administrateur) : le serveur le vérifie, le bouton caché n'est pas la protection.
+const ACC_LIBELLES = {
+  arrival_date: ['Jour d’arrivée', 'date'], arrival_time: ['Heure d’arrivée', 'time'], transport: ['Transport', 'select', ['Voiture', 'Train', 'Avion', 'Autre']],
+  transport_details: ['Numéro de vol ou de train', 'text'], transfer: ['À venir chercher ?', 'select', ['Non', 'Oui']], transfer_details: ['Gare ou aéroport où venir le chercher', 'text'],
+  invite: ['Vient avec un invité', 'select', ['Oui', 'Non']], guest_last: ['Nom de l’invité', 'text'], guest_first: ['Prénom de l’invité', 'text'],
+  guest_email: ['Email de l’invité', 'email'], guest_phone: ['Téléphone de l’invité', 'tel'],
+  guest_arrival_date: ['Jour d’arrivée de l’invité', 'date'], guest_arrival_time: ['Heure d’arrivée de l’invité', 'time'],
+  departure_date: ['Jour de départ', 'date'], departure_time: ['Heure de départ', 'time'], departure_station: ['Gare ou aéroport de départ', 'text'], departure_station_time: ['Heure à la gare ou à l’aéroport', 'time'],
+  guest_departure_date: ['Jour de départ de l’invité', 'date'], guest_departure_time: ['Heure de départ de l’invité', 'time'],
+  food_needs: ['Régime et repas', 'text'], allergies: ['Allergies', 'text']
+};
+const ACC_ORDRE = Object.keys(ACC_LIBELLES);
+function carteAccueil(d) {
+  const boite = carte('Accueil et invité'); boite.id = 'carte-accueil';
+  const texte = el('div', 'accueil-texte');
+  const dessinerTexte = () => {
+    texte.textContent = '';
+    if (!d.accueil) { texte.appendChild(el('p', 'meta', "Rien n'a encore été renseigné par la personne.")); return; }
+    String(d.accueil).split('\n').forEach((l) => texte.appendChild(el('p', '', l)));
+  };
+  dessinerTexte();
+  boite.appendChild(texte);
+  const st = el('p', 'compte'); st.setAttribute('role', 'status');
+  const modif = el('button', 'btn', 'Modifier'); modif.type = 'button'; modif.id = 'accueil-modifier';
+  const zone = el('div', 'accueil-editeur'); zone.hidden = true;
+  modif.addEventListener('click', () => {
+    zone.textContent = ''; zone.hidden = false; modif.hidden = true;
+    const valeurs = Object.assign({}, d.accueil_data || {});
+    const champs = {};
+    const cles = ACC_ORDRE.filter((k) => valeurs[k] !== undefined || k === 'invite').concat(Object.keys(valeurs).filter((k) => !ACC_LIBELLES[k]));
+    cles.forEach((k) => {
+      const def = ACC_LIBELLES[k] || [k, 'text'];
+      const boiteChamp = el('div', 'champ');
+      const idc = 'acc-' + k;
+      const lab = el('label', '', def[0]); lab.setAttribute('for', idc);
+      let saisie;
+      if (def[1] === 'select') {
+        saisie = el('select'); [''].concat(def[2]).forEach((o) => { const op = el('option', '', o || '—'); op.value = o; saisie.appendChild(op); });
+      } else { saisie = el('input'); saisie.type = def[1]; }
+      saisie.id = idc; saisie.value = valeurs[k] || '';
+      champs[k] = saisie; boiteChamp.appendChild(lab); boiteChamp.appendChild(saisie); zone.appendChild(boiteChamp);
+    });
+    const ok = el('button', 'btn', 'Enregistrer'); ok.type = 'button'; ok.id = 'accueil-enregistrer';
+    const non = el('button', 'btn btn-doux-clair', 'Annuler'); non.type = 'button';
+    non.addEventListener('click', () => { zone.hidden = true; modif.hidden = false; st.textContent = ''; });
+    ok.addEventListener('click', async () => {
+      const envoi = {}; Object.keys(champs).forEach((k) => { envoi[k] = champs[k].value.trim(); });
+      ok.disabled = true; st.textContent = 'Enregistrement...';
+      const rep = await appel({ op: 'accueil_modifier', token: jeton, id: d.id, accueil: envoi });
+      ok.disabled = false;
+      if (sessionExpiree(rep)) return;
+      if (rep && rep.ok) {
+        d.accueil = rep.accueil; d.accueil_data = rep.accueil_data; dessinerTexte();
+        zone.hidden = true; modif.hidden = false; st.textContent = 'Enregistré. La modification est gardée dans l’onglet « Modifications dossier ».';
+      } else st.textContent = (rep && rep.error) || "L'enregistrement n'a pas pu se faire.";
+    });
+    zone.appendChild(ok); zone.appendChild(non);
+  });
+  boite.appendChild(modif); boite.appendChild(st); boite.appendChild(zone);
+  return boite;
+}
+function blocCorbeilleProfil(genre, d) {
+  const boite = carte('Mettre à la corbeille'); boite.id = 'zone-corbeille';
+  boite.appendChild(el('p', 'meta', "Retire cette personne du portail : sa fiche, son suivi et ses emails quittent le Sheet, et son dossier Drive est déplacé dans le dossier « Corbeille ». Rien n'est perdu : l'administrateur peut tout remettre en place (Administration, Corbeille)."));
+  const etat = el('p', 'compte'); etat.id = 'corbeille-etat'; etat.setAttribute('role', 'status');
+  const b = el('button', 'btn btn-doux-clair compte-supprimer', 'Mettre à la corbeille'); b.type = 'button'; b.id = 'profil-corbeille';
+  let sur = false;
+  b.addEventListener('click', async () => {
+    if (!sur) { sur = true; b.textContent = 'Presse encore pour mettre à la corbeille'; etat.textContent = ''; return; }
+    b.disabled = true; etat.textContent = 'En cours...';
+    const rep = await appel({ op: 'profil_corbeille', token: jeton, id: d.id, confirmation: 'SUPPRIMER' });
+    if (sessionExpiree(rep)) return;
+    if (rep && rep.ok) {
+      participants = null; benevoles = null;
+      await charger();
+      naviguer(({ candidature: 'candidatures', participant: 'participants', benevole: 'benevoles' })[genre]);
+    } else {
+      sur = false; b.disabled = false; b.textContent = 'Mettre à la corbeille';
+      etat.textContent = (rep && rep.error) || "Cela n'a pas pu se faire. Rien n'a été retiré, tu peux réessayer.";
+    }
+  });
+  boite.appendChild(etat); boite.appendChild(b);
+  return boite;
+}
 function blocSuppressionProfil(genre, d) {
-  const boite = carte('Supprimer ce profil'); boite.id = 'zone-suppression';
+  const boite = carte('Supprimer pour de bon'); boite.id = 'zone-suppression';
   if (!adminJeton) {
     boite.appendChild(el('p', 'meta', "Réservé à l'administrateur. Ouvre d'abord l'Administration avec le mot de passe administrateur, puis reviens sur cette fiche."));
     return boite;
@@ -3896,6 +4005,7 @@ function dessinerDetail(d, listes, mode) {
   }
 
   const cartesExtra = [];
+  if (genre === 'participant' && d.accueil_possible) cartesExtra.push(carteAccueil(d));
   if (genre === 'participant') (d.groupes || []).forEach((g) => cartesExtra.push(carteGroupe(g)));
   if (genre === 'benevole' && d.motivation) cartesExtra.push(carteMotivation(d.motivation));
   if (genre === 'benevole') { cartesExtra.push(carteInfosBenevole(d)); cartesExtra.push(cartePoleDefinitif(d)); }
@@ -4288,7 +4398,7 @@ function dessinerDetail(d, listes, mode) {
     // Trois onglets : le suivi, ce qui sert à la page du site, et les infos techniques.
     const panneaux = { suivi: el('div', 'onglet-contenu'), presentation: el('div', 'onglet-contenu'), technique: el('div', 'onglet-contenu') };
     [cs, emailsBoite].forEach((b) => panneaux.suivi.appendChild(b));
-    cartesExtra.forEach((c) => { (c.querySelector('h2').textContent === 'Infos techniques' ? panneaux.technique : panneaux.presentation).appendChild(c); });
+    cartesExtra.forEach((c) => { const t = c.querySelector('h2').textContent; (t === 'Infos techniques' ? panneaux.technique : (t === 'Accueil et invité' ? panneaux.suivi : panneaux.presentation)).appendChild(c); });
     panneaux.presentation.appendChild(cartePhotos);
     if (!panneaux.technique.childNodes.length) { const vide = carte('Infos techniques'); vide.appendChild(el('p', 'meta', "Aucune information technique n'a été donnée.")); panneaux.technique.appendChild(vide); }
     const barre = el('div', 'onglets'); barre.setAttribute('role', 'tablist');
@@ -4313,7 +4423,8 @@ function dessinerDetail(d, listes, mode) {
     }
     ordre.forEach((bloc) => { if (bloc) zone.appendChild(bloc); });
   }
-  zone.appendChild(blocSuppressionProfil(genre, d));   // tout en bas, réservé à l'administrateur
+  zone.appendChild(blocCorbeilleProfil(genre, d));      // tout en bas : chaque référente peut mettre à la corbeille (récupérable)
+  zone.appendChild(blocSuppressionProfil(genre, d));    // suppression définitive : réservée à l'administrateur
 }
 
 remplirSignatures();
