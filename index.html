@@ -1055,9 +1055,8 @@ html[lang=en] .note-en { display: block; }
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.73-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.79-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
-  code:      'MANTRA2027',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec',
   categories: ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'],
   typesArtiste: ['DJ ecstatic', 'Cercle de chants', 'Spectacle', 'Concert', 'Musicien volant', 'Danse'],
@@ -1473,11 +1472,15 @@ function ibanValide(s) {
   return reste === 1;
 }
 
-function verifierCode() {
+async function verifierCode() {
   if (derniereConfig && derniereConfig.code_partage_actif === false) return erreur('acces', 'Le code partagé n\u2019est plus accepté. Utilise le lien personnel reçu par email.');
   const code = valeur('access_code').toUpperCase();
   if (!code) return erreur('acces', 'Il te faut le code d\u2019acc\u00e8s du festival pour continuer.');
-  if (code !== CONFIG.code) return erreur('acces', 'Ce code ne correspond pas. V\u00e9rifie le message que tu as re\u00e7u.');
+  // v3.77 : le code n'est plus écrit dans la page, c'est le serveur qui le vérifie
+  try {
+    const r = await (await fetch(CONFIG.scriptUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: jsonEd({ kind: 'verifier_code', access_code: code }) })).json();
+    if (!r || !r.ok) return erreur('acces', (r && r.error) || 'Ce code ne correspond pas. V\u00e9rifie le message que tu as re\u00e7u.');
+  } catch (err) { return erreur('acces', 'Impossible de vérifier le code pour le moment. Vérifie ta connexion et réessaie.'); }
   aller(1);
 }
 
@@ -2427,6 +2430,10 @@ function actualiserMembres() {
       input.style.display = different ? '' : 'none';
       if (!different) input.value = valeur(index ? 'last_name' : 'first_name');
     });
+  } else {
+    // v3.79 : en passant de 1 personne à 2 ou plus, la première carte gardait ses champs prénom et nom CACHÉS (cachés quand on était seul) :
+    // la personne ne pouvait pas les remplir et le formulaire disait « Personne 1 : il manque le prénom et le nom ».
+    list.querySelectorAll('.membre-prenom, .membre-nom').forEach(input => { input.style.display = ''; if (input.previousElementSibling) input.previousElementSibling.style.display = ''; });
   }
   afficherPortraits();
 }
@@ -2555,7 +2562,7 @@ async function envoyerBenevole() {
   const btn = $('btn-benevole'); btn.disabled = true; btn.textContent = 'Envoi en cours… Garde cette page ouverte.'; volProgres(true);
   try {
     const res = await fetch(CONFIG.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:jsonEd({
-      kind:'volunteer', submission_id:submissionIds.volunteer, access_code:CONFIG.code, honeypot:$('honeypot').value, email:v('vol_email'),
+      kind:'volunteer', submission_id:submissionIds.volunteer, honeypot:$('honeypot').value, email:v('vol_email'),
       first_name:v('vol_first_name'), last_name:v('vol_last_name'), phone:v('vol_phone'), birth_date:v('vol_birth'), engagements:casesVol.map(c => c.value),
       teams:teams, motivation:v('vol_motivation'), gender:v('vol_gender'), fallback:v('vol_fallback'), languages:langues, languages_other:v('vol_lang_detail'),
       first_aid:v('vol_first_aid'), first_aid_detail:v('vol_first_aid_detail'), mantra_past:v('vol_mantra_past'), mantra_detail:v('vol_mantra_detail'),
