@@ -782,13 +782,15 @@ li .ico-btn img { width: 24px; height: 24px; }
 
 <div id="splash" hidden aria-hidden="true"><img src="assets/LOTUS%20PORTAL%20LOGO.png" alt=""><p>Portail Festival</p><p class="splash-sous">Mantra Joie 2027</p></div>
 <section id="ecran-connexion">
-  <form class="connexion" id="form-connexion" autocomplete="off">
+  <form class="connexion" id="form-connexion" method="post" action="#">
     <img class="lotus-connexion" src="assets/LOTUS%20PORTAL%20LOGO.png" alt="" onerror="this.remove()">
     <h1>Portail Festival</h1>
     <p>Mantra Joie 2027. Entre ton code pour voir les candidatures.</p>
     <p class="aide-connexion">Besoin d’aide ? <a href="manual.html" target="_blank" rel="noopener">Ouvrir le manuel</a></p>
+    <!-- v3.74 : Chrome ne propose d'enregistrer un mot de passe que s'il y a un champ « identifiant » : celui-ci est invisible et identifie l'édition (un mot de passe par édition, sans mélange) -->
+    <input type="text" id="identifiant-portail" name="username" value="Portail Mantra Joie 2027" autocomplete="username" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
     <label for="mot-de-passe">Mot de passe</label>
-    <input id="mot-de-passe" type="password" autocomplete="current-password" required>
+    <input id="mot-de-passe" name="password" type="password" autocomplete="current-password" required>
     <button class="btn" type="submit" id="btn-connexion">Se connecter</button>
     <div class="message-erreur" id="erreur-connexion" role="alert"></div>
     <a class="lien-formulaire-connexion" id="lien-formulaire-connexion" href="./" target="_blank" rel="noopener">Aller au formulaire public</a>
@@ -994,7 +996,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.73-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.79-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 const STATUTS_BENEVOLES = STATUTS.concat(['Confirmé', 'Désistement']);   // un bénévole peut aussi être confirmé, ou se désister
@@ -1151,7 +1153,7 @@ $('form-connexion').addEventListener('submit', async (e) => {
     if (r.ok && r.token) {
       jeton = r.token;
       try { sessionStorage.setItem('equipe_jeton', jeton); } catch (err) { /* stockage indisponible */ }
-      $('mot-de-passe').value = '';
+      setTimeout(() => { $('mot-de-passe').value = ''; }, 2000);   // pas tout de suite : le navigateur propose d'abord d'enregistrer le mot de passe
       if (r.compte) compte = r.compte;
       if (compte.doit_changer) montrerChangementCode(); else await charger();
     } else {
@@ -3791,7 +3793,9 @@ function ajouterPhoto(grille, src, url, texte) {
   a.href = '#'; a.title = 'Voir en grand'; a.setAttribute('role', 'button');
   a.addEventListener('click', (e) => {
     e.preventDefault();
-    const liens = Array.prototype.slice.call(grille.querySelectorAll('a[title="Voir en grand"]'));
+    const g = a.parentNode || grille;   // la photo est d'abord créée dans un conteneur temporaire puis déplacée dans la grille : on cherche les autres photos là où elle est MAINTENANT
+    const liens = Array.prototype.slice.call(g.querySelectorAll('a[title="Voir en grand"]'));
+    if (!liens.length) liens.push(a);
     ouvrirLightbox(liens.map((l) => ({ src: () => l.querySelector('img').src, texte: l.querySelector('img').alt })), Math.max(0, liens.indexOf(a)));
   });
   const img = document.createElement('img'); img.src = src; img.alt = texte; a.appendChild(img);
