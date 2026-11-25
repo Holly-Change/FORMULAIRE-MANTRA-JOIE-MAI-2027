@@ -263,9 +263,9 @@ main { padding: 0 0 40px; min-width: 0; }
 .statuts-boutons button:hover { filter: brightness(0.96); }
 .statuts-boutons button[aria-pressed="true"] { border-color: currentColor; box-shadow: 0 2px 8px rgba(11, 42, 71, 0.18); }
 .statuts-boutons button[aria-pressed="true"]::before { content: "\2713  "; }
-.autres-statuts select.etat-ok { background: #fff; color: #0B5568; border: 2px solid var(--turquoise-vif); }
-.autres-statuts select.etat-attention { background: #fff; color: #8A3A0A; border: 2px dashed #E07A2F; }
-.autres-statuts select.etat-neutre { background: #fff; color: var(--navy); }
+.autres-statuts select.etat-ok { background-color: #fff; color: #0B5568; border: 2px solid var(--turquoise-vif); }
+.autres-statuts select.etat-attention { background-color: #fff; color: #8A3A0A; border: 2px dashed #E07A2F; }
+.autres-statuts select.etat-neutre { background-color: #fff; color: var(--navy); }
 .note-suivi { color: var(--doux); margin: 14px 0 0; }
 .avis-email { background: #FFE5E2; border: 2px solid var(--erreur); color: var(--erreur); font-weight: 700; border-radius: 12px; padding: 10px 14px; margin: 0 0 12px; }
 .historique { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
@@ -796,8 +796,10 @@ li .ico-btn img { width: 24px; height: 24px; }
 @keyframes surligne { 0% { box-shadow: 0 0 0 0 rgba(242, 183, 5, .7); } 100% { box-shadow: 0 0 0 18px rgba(242, 183, 5, 0); } }
 @media (prefers-reduced-motion: reduce) { .champ-surligne { animation: none; } }
 
-.remplir-place { background: linear-gradient(135deg, #FFF3E6 0%, #F6F1FB 100%); border: 1px solid #F0D2B0; border-radius: 14px; padding: 12px 14px; margin: 0 0 14px; }
-.remplir-place .btn { margin-bottom: 6px; }
+.remplir-place { margin: 0 0 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.remplir-place .btn { margin: 0; }
+.remplir-place .meta { margin: 0; flex: 1 1 260px; }
+.remplir-place .message { flex-basis: 100%; margin: 0; min-height: 0; }
 </style>
 </head>
 <body>
@@ -1018,7 +1020,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.82-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.83-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 const STATUTS_BENEVOLES = STATUTS.concat(['Confirmé', 'Désistement']);   // un bénévole peut aussi être confirmé, ou se désister
@@ -3990,10 +3992,11 @@ function carteAccueil(d) {
   return boite;
 }
 // v3.82 : « Remplir le dossier à sa place » : ouvre le formulaire du dossier final déjà relié à cette personne, pour les artistes qui envoient un dossier (photos, textes) au lieu de remplir le formulaire.
-function blocRemplirAPlace(d) {
+function blocRemplirAPlace(d, etatFinal) {
+  const recu = !!etatFinal && etatFinal !== 'Non reçu';
   const b = el('div', 'remplir-place');
-  const bt = el('button', 'btn', 'Remplir le dossier à sa place'); bt.type = 'button'; bt.id = 'remplir-place';
-  const m = el('p', 'meta', 'Ouvre le formulaire de sa part (même formulaire que le sien). Tu ajoutes les textes, photos et documents reçus. L\u2019email « dossier reçu » ne part pas tout seul.');
+  const bt = el('button', 'btn btn-doux-clair', recu ? '✏️ Changer son arrivée et son invité' : '✏️ Remplir son dossier à sa place'); bt.type = 'button'; bt.id = 'remplir-place';
+  const m = el('p', 'meta', recu ? 'Son dossier est déjà reçu. Ça ouvre son récapitulatif : clique sur « Modifier mon invité et mon accueil » pour changer son arrivée, son départ ou son invité. Aucun email ne part tout seul.' : 'Son dossier n\u2019est pas encore reçu. Ça ouvre le formulaire de sa part : tu ajoutes les textes, photos et documents reçus. L\u2019email « dossier reçu » ne part pas tout seul.');
   const err = el('p', 'message'); err.setAttribute('role', 'status');
   bt.addEventListener('click', async () => {
     bt.disabled = true; err.className = 'message'; err.textContent = '';
@@ -4263,7 +4266,7 @@ function dessinerDetail(d, listes, mode) {
       alerte.appendChild(document.createTextNode(' ')); alerte.appendChild(b);
     }
   }
-  if (genre !== 'benevole') cs.appendChild(blocRemplirAPlace(d));
+  if (genre !== 'benevole') cs.appendChild(blocRemplirAPlace(d, statuts['Dossier final']));
   cs.appendChild(boutons); cs.appendChild(autres); cs.appendChild(message); cs.appendChild(alerte);
   if (genre === 'participant') {
     // Documents déposés dans le formulaire final : contrat signé (tout le monde) et preuve de paiement (pôles payants)

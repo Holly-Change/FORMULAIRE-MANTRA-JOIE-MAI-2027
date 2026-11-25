@@ -469,6 +469,9 @@ html[lang=en] .note-en { display: block; }
 .recu-photo figcaption { font-size: .8rem; color: #5C667D; margin-top: 3px; overflow-wrap: anywhere; }
 /* v3.80 : page « dossier reçu » en sections */
 .recu-carte { border-radius: 16px; padding: 14px 16px; margin: 0 0 14px; background: #F6F1FB; border: 1px solid #E4DAF6; }
+.btn-modif { background: #6E5BD0; color: #fff; box-shadow: 0 4px 14px rgba(110, 91, 208, .35); }
+.btn-modif:hover:not([disabled]) { background: #5B49B8; transform: translateY(-1px); }
+.btn-modif[disabled] { opacity: .55; cursor: not-allowed; box-shadow: none; }
 .recu-invite { background: linear-gradient(135deg, #EFE6FA 0%, #E3F4F4 100%); border-left: 6px solid #6E5BD0; }
 .recu-carte-titre { font-family: var(--police-titres); font-size: 20px; color: #2B1A5E; margin: 0 0 8px; }
 .recu-ligne { display: flex; gap: 10px; padding: 5px 0; border-top: 1px solid rgba(110,91,208,.15); }
@@ -1005,7 +1008,7 @@ html[lang=en] .note-en { display: block; }
         <div class="recu-carte-titre">🎟️ Ton invité</div>
         <div id="recu-invite"></div>
         <p id="recu-modif-info" class="aide"></p>
-        <div class="actions"><button type="button" class="btn" id="btn-modif-accueil">Modifier mon invité et mon accueil</button></div>
+        <div class="actions"><button type="button" class="btn btn-modif" id="btn-modif-accueil">✏️ Modifier mon invité et mon accueil</button></div>
       </div>
       <div id="recu-accueil-carte" class="recu-carte" style="display:none">
         <div class="recu-carte-titre">📍 Ton accueil au festival</div>
@@ -1081,7 +1084,7 @@ html[lang=en] .note-en { display: block; }
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.82-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.83-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec',
   categories: ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'],
@@ -1661,6 +1664,8 @@ function problemeAccueil() {
     const v = valeur('acc_' + f.k);
     if (f.r && !v) return 'À compléter : ' + f.l + '.';
     if (f.type === 'email' && v && !/^\S+@\S+\.\S+$/.test(v)) return f.l + ' : cette adresse ne semble pas valide.';
+    if ((f.k === 'guest_last' || f.k === 'guest_first') && v && (v.match(/\p{L}/gu) || []).length < 2) return f.l + ' : écris un vrai nom (pas un tiret ou un point).';
+    if (f.k === 'guest_phone' && v && v.replace(/\D/g, '').length < 6) return f.l + ' : écris un vrai numéro (au moins 6 chiffres).';
   }
   const ar = valeur('acc_arrival_date'), de = valeur('acc_departure_date');
   if (ar && de && de < ar) return 'La date de départ doit être après la date d’arrivée.';
