@@ -776,6 +776,28 @@ li .ico-btn img { width: 24px; height: 24px; }
 .lightbox-fleche { top: 50%; transform: translateY(-50%); }
 .lightbox-prec { left: 14px; } .lightbox-suiv { right: 14px; }
 .lightbox-x:hover, .lightbox-fleche:hover, .lightbox-x:focus-visible, .lightbox-fleche:focus-visible { background: rgba(255, 255, 255, .35); }
+
+/* v3.82 : une ligne cliquable partout se voit : curseur main, léger relief au survol */
+.cliquable { cursor: pointer; transition: box-shadow .15s, background .15s; }
+.cliquable:hover { box-shadow: 0 6px 20px rgba(110, 91, 208, .22); background: #FBF8FF; }
+.cliquable a, .cliquable button { cursor: pointer; }
+
+/* v3.82 : les menus du suivi se voient comme des menus : bordure nette, flèche dans un bouton, étiquette au-dessus, couleur de l'état */
+.autres-statuts select { -webkit-appearance: none; appearance: none; cursor: pointer; font-weight: 700; font-size: 1rem; padding: 11px 52px 11px 14px; border: 2px solid #6E5BD0; background-color: #fff; box-shadow: 0 2px 0 rgba(110, 91, 208, .18);
+  background-image: linear-gradient(#6E5BD0, #6E5BD0), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 16 10'><path d='M2 2l6 6 6-6' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat; background-position: right 0 top 0, right 14px center; background-size: 40px 100%, 16px 10px; }
+.autres-statuts select:hover:not([disabled]) { background-color: #FBF8FF; box-shadow: 0 3px 10px rgba(110, 91, 208, .28); }
+.autres-statuts select:focus-visible { outline: 3px solid #1FA8C3; outline-offset: 2px; }
+.autres-statuts select.etat-ok { background-color: #E6F6EC; border-color: #2F9E5B; color: #14532D; }
+.autres-statuts select.etat-attention { background-color: #FFF3E6; border-color: #E07A2F; border-style: solid; color: #8A3A0A; }
+.autres-statuts label { text-transform: uppercase; letter-spacing: .04em; font-size: .78rem; color: #6E5BD0; }
+.autres-statuts .aide-menus { grid-column: 1 / -1; margin: 0; color: var(--doux); font-size: .9rem; }
+.champ-surligne { outline: 4px solid #F2B705; outline-offset: 3px; border-radius: 14px; animation: surligne 2.4s ease-out 1; }
+@keyframes surligne { 0% { box-shadow: 0 0 0 0 rgba(242, 183, 5, .7); } 100% { box-shadow: 0 0 0 18px rgba(242, 183, 5, 0); } }
+@media (prefers-reduced-motion: reduce) { .champ-surligne { animation: none; } }
+
+.remplir-place { background: linear-gradient(135deg, #FFF3E6 0%, #F6F1FB 100%); border: 1px solid #F0D2B0; border-radius: 14px; padding: 12px 14px; margin: 0 0 14px; }
+.remplir-place .btn { margin-bottom: 6px; }
 </style>
 </head>
 <body>
@@ -996,7 +1018,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.79-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.82-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 const STATUTS_BENEVOLES = STATUTS.concat(['Confirmé', 'Désistement']);   // un bénévole peut aussi être confirmé, ou se désister
@@ -3147,6 +3169,7 @@ function dessinerAccueil() {
     const liens = document.createElement('div'); liens.className = 'liens';
     liens.appendChild(boutonOuvrir(i.id));
     ligne.appendChild(nom); ligne.appendChild(cat); ligne.appendChild(date); ligne.appendChild(liens);
+    rendreCliquable(ligne);
     liste.appendChild(ligne);
   });
 }
@@ -3331,7 +3354,7 @@ function dessinerCandidatures() {
     c4.appendChild(boutonOuvrir(i.id));
     const fiche = lienSur(i.fiche, 'Fiche'); if (fiche) c4.appendChild(fiche);
     const dossier = lienSur(i.dossier, 'Dossier'); if (dossier) c4.appendChild(dossier);
-    ligne.appendChild(c1); ligne.appendChild(c2); ligne.appendChild(c3); ligne.appendChild(c4);
+    ligne.appendChild(c1); ligne.appendChild(c2); ligne.appendChild(c3); ligne.appendChild(c4); rendreCliquable(ligne);
     if (i.alerte) { const a = document.createElement('div'); a.className = 'alerte'; a.textContent = i.alerte; ligne.appendChild(a); }
     liste.appendChild(ligne);
   });
@@ -3410,7 +3433,7 @@ function dessinerParticipants() {
     c4.appendChild(ouvrirLigne('participant', i));
     const fiche = lienSur(i.fiche, 'Fiche'); if (fiche) c4.appendChild(fiche);
     const dossier = lienSur(i.dossier, 'Dossier'); if (dossier) c4.appendChild(dossier);
-    ligne.appendChild(c1); ligne.appendChild(c2); ligne.appendChild(c3); ligne.appendChild(c4);
+    ligne.appendChild(c1); ligne.appendChild(c2); ligne.appendChild(c3); ligne.appendChild(c4); rendreCliquable(ligne);
     if (i.alerte) { const a = document.createElement('div'); a.className = 'alerte'; a.textContent = i.alerte; ligne.appendChild(a); }
     liste.appendChild(ligne);
   });
@@ -3472,7 +3495,7 @@ function dessinerBenevoles() {
     c4.appendChild(ouvrirLigne('benevole', i));
     const fiche = lienSur(i.fiche, 'Fiche'); if (fiche) c4.appendChild(fiche);
     const dossier = lienSur(i.dossier, 'Dossier'); if (dossier) c4.appendChild(dossier);
-    ligne.appendChild(c1); ligne.appendChild(c2); ligne.appendChild(c3); ligne.appendChild(c4);
+    ligne.appendChild(c1); ligne.appendChild(c2); ligne.appendChild(c3); ligne.appendChild(c4); rendreCliquable(ligne);
     if (i.alerte) { const a = document.createElement('div'); a.className = 'alerte'; a.textContent = i.alerte; ligne.appendChild(a); }
     liste.appendChild(ligne);
   });
@@ -3553,6 +3576,18 @@ function demanderDetail(genre, id, tab) {
   return promesse;
 }
 
+// v3.82 : toute la ligne ouvre la fiche (pas seulement le bouton « Ouvrir »). Les liens, boutons, champs et menus de la ligne gardent leur propre action.
+function rendreCliquable(ligne) {
+  const bouton = ligne.querySelector('.btn-ouvrir');
+  if (!bouton) return;
+  ligne.classList.add('cliquable');
+  ligne.addEventListener('mouseenter', () => bouton.dispatchEvent(new Event('mouseenter')));
+  ligne.addEventListener('click', (e) => {
+    if (e.target.closest('a, button, input, select, textarea, label, summary')) return;
+    if (window.getSelection && String(window.getSelection()).length) return;   // on est en train de copier du texte
+    bouton.click();
+  });
+}
 function boutonOuvrir(id) {
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'btn btn-ouvrir'; b.textContent = 'Ouvrir';
@@ -3954,6 +3989,27 @@ function carteAccueil(d) {
   boite.appendChild(modif); boite.appendChild(st); boite.appendChild(zone);
   return boite;
 }
+// v3.82 : « Remplir le dossier à sa place » : ouvre le formulaire du dossier final déjà relié à cette personne, pour les artistes qui envoient un dossier (photos, textes) au lieu de remplir le formulaire.
+function blocRemplirAPlace(d) {
+  const b = el('div', 'remplir-place');
+  const bt = el('button', 'btn', 'Remplir le dossier à sa place'); bt.type = 'button'; bt.id = 'remplir-place';
+  const m = el('p', 'meta', 'Ouvre le formulaire de sa part (même formulaire que le sien). Tu ajoutes les textes, photos et documents reçus. L\u2019email « dossier reçu » ne part pas tout seul.');
+  const err = el('p', 'message'); err.setAttribute('role', 'status');
+  bt.addEventListener('click', async () => {
+    bt.disabled = true; err.className = 'message'; err.textContent = '';
+    // la fenêtre s'ouvre tout de suite (le navigateur bloque une ouverture faite après une attente)
+    const fenetre = window.open('about:blank', '_blank');
+    try {
+      const r = await appel({ op: 'dossier_lien_equipe', token: jeton, id: d.id });
+      if (sessionExpiree(r)) { if (fenetre) fenetre.close(); return; }
+      if (!r.ok) throw new Error(r.error || r.message || 'Impossible d\u2019ouvrir le formulaire.');
+      if (fenetre) fenetre.location.href = r.url; else window.location.href = r.url;
+    } catch (e) { if (fenetre) fenetre.close(); err.className = 'message ko'; err.textContent = (e && e.message) || 'Impossible d\u2019ouvrir le formulaire.'; }
+    finally { bt.disabled = false; }
+  });
+  b.appendChild(bt); b.appendChild(m); b.appendChild(err);
+  return b;
+}
 function blocCorbeilleProfil(genre, d) {
   const boite = carte('Mettre à la corbeille'); boite.id = 'zone-corbeille';
   boite.appendChild(el('p', 'meta', "Retire cette personne du portail : sa fiche, son suivi et ses emails quittent le Sheet, et son dossier Drive est déplacé dans le dossier « Corbeille ». Rien n'est perdu : l'administrateur peut tout remettre en place (Administration, Corbeille)."));
@@ -4143,6 +4199,7 @@ function dessinerDetail(d, listes, mode) {
     autres.innerHTML = '';
     if (genre !== 'participant') { autres.style.display = 'none'; return; }   // paiement et confirmation : seulement pour un dossier final
     autres.style.display = '';
+    autres.appendChild(el('p', 'aide-menus', 'Clique sur un menu (flèche violette) pour changer le statut. C’est là que tu valides.'));
     ['Dossier final', 'Paiement', 'Confirmation'].forEach((piste) => {
       const w = el('div'); const id = 'st-' + piste.replace(/\s/g, '-');
       const lab = el('label', '', piste === 'Confirmation' ? 'Participation confirmée ?' : piste); lab.htmlFor = id;
@@ -4172,13 +4229,30 @@ function dessinerDetail(d, listes, mode) {
       if (r.emails) redessinerHistorique(r.emails);
       message.className = 'message ' + (r.ok ? 'ok' : 'ko');
       message.textContent = r.ok ? '✓ Statut enregistré : ' + (piste === 'Sélection' ? valeur : nomPiste(piste) + ' : ' + valeur) : (r.message || r.error || 'Changement refusé.');
+      if (!r.ok) { const pc = pisteCitee(r.message || r.error); if (pc) { const bm = el('button', 'btn btn-doux-clair', 'Aller au champ'); bm.type = 'button'; bm.id = 'message-aller-champ'; bm.addEventListener('click', () => allerAuChamp(pc)); message.appendChild(document.createTextNode(' ')); message.appendChild(bm); } }
     } catch (err) {
       message.className = 'message ko'; message.textContent = 'Le serveur ne répond pas. Réessaie.';
     } finally { redessinerStatuts(); verrouiller(false); redessinerAlerte(); }
   }
   const alerte = el('p', 'alerte');
+  // v3.82 : « Aller au champ » : fait défiler jusqu'au menu cité dans l'alerte et le surligne
+  function allerAuChamp(piste) {
+    const cible = piste === 'Sélection' ? cs.querySelector('.statuts-boutons') : document.getElementById('st-' + piste.replace(/\s/g, '-'));
+    if (!cible) return false;
+    cible.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    cible.classList.add('champ-surligne'); setTimeout(() => cible.classList.remove('champ-surligne'), 2600);
+    if (cible.focus) { try { cible.focus({ preventScroll: true }); } catch (e) { cible.focus(); } }
+    return true;
+  }
+  function pisteCitee(texte) { const m = /champ « (Sélection|Dossier final|Paiement|Confirmation) »/.exec(texte || ''); return m ? m[1] : ''; }
   function redessinerAlerte() {
     alerte.textContent = statuts.alerte || '';
+    const piste = pisteCitee(statuts.alerte);
+    if (piste) {
+      const bc = el('button', 'btn btn-doux-clair', 'Aller au champ'); bc.type = 'button'; bc.id = 'alerte-aller-champ';
+      bc.addEventListener('click', () => allerAuChamp(piste));
+      alerte.appendChild(document.createTextNode(' ')); alerte.appendChild(bc);
+    }
     if (/Email « [a-z_]+ » impossible/.test(statuts.alerte || '')) {
       const b = el('button', 'btn btn-doux-clair', 'Réessayer'); b.type = 'button'; b.id = 'alerte-reessayer';
       b.addEventListener('click', async () => {
@@ -4189,6 +4263,7 @@ function dessinerDetail(d, listes, mode) {
       alerte.appendChild(document.createTextNode(' ')); alerte.appendChild(b);
     }
   }
+  if (genre !== 'benevole') cs.appendChild(blocRemplirAPlace(d));
   cs.appendChild(boutons); cs.appendChild(autres); cs.appendChild(message); cs.appendChild(alerte);
   if (genre === 'participant') {
     // Documents déposés dans le formulaire final : contrat signé (tout le monde) et preuve de paiement (pôles payants)

@@ -461,6 +461,24 @@ html[lang=en] .note-en { display: block; }
 .cond-bloc p { margin: 4px 0; }
 .cond-liste { margin: 4px 0 4px 1.2em; padding: 0; }
 .cond-liste li { margin: 3px 0; }
+
+
+.recu-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.recu-photo { margin: 0; }
+.recu-photo img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; display: block; background: #F1ECFA; }
+.recu-photo figcaption { font-size: .8rem; color: #5C667D; margin-top: 3px; overflow-wrap: anywhere; }
+/* v3.80 : page « dossier reçu » en sections */
+.recu-carte { border-radius: 16px; padding: 14px 16px; margin: 0 0 14px; background: #F6F1FB; border: 1px solid #E4DAF6; }
+.recu-invite { background: linear-gradient(135deg, #EFE6FA 0%, #E3F4F4 100%); border-left: 6px solid #6E5BD0; }
+.recu-carte-titre { font-family: var(--police-titres); font-size: 20px; color: #2B1A5E; margin: 0 0 8px; }
+.recu-ligne { display: flex; gap: 10px; padding: 5px 0; border-top: 1px solid rgba(110,91,208,.15); }
+.recu-ligne:first-child { border-top: 0; }
+.recu-ligne .recu-et { flex: 0 0 38%; font-weight: 700; color: #2B1A5E; font-size: .9rem; }
+.recu-ligne .recu-va { flex: 1; white-space: pre-line; overflow-wrap: anywhere; }
+.recu-vide { color: #5C667D; margin: 0 0 8px; }
+.recu-groupe { border-radius: 16px; padding: 12px 16px; margin: 0 0 12px; background: #FFFDF9; border: 1px solid #E6E0EE; }
+.recu-groupe h3 { font-family: var(--police-titres); font-size: 18px; margin: 0 0 6px; color: #6E5BD0; }
+@media (max-width: 480px) { .recu-ligne { flex-direction: column; gap: 2px; } .recu-ligne .recu-et { flex-basis: auto; } }
 </style>
 </head>
 <body>
@@ -503,6 +521,7 @@ html[lang=en] .note-en { display: block; }
     </div>
 
     <!-- ============ ECRAN 0 : BIENVENUE ============ -->
+    <div id="bandeau-equipe" role="status" style="display:none;background:#FFF3E6;border:2px solid #E07A2F;border-radius:14px;padding:12px 16px;margin:0 0 14px;color:#6B2F05;font-weight:700"></div>
     <section class="ecran actif" id="ecran-0">
       <p class="surtitre">Festival Mantra Joie 2027</p>
       <h1>Bienvenue ! 🌈</h1>
@@ -982,11 +1001,17 @@ html[lang=en] .note-en { display: block; }
       <h2>Ton dossier est reçu ✅</h2>
       <p id="recu-date"></p>
       <p id="recu-ok" style="display:none;color:#1B5E20;font-weight:700"></p>
+      <div id="recu-invite-carte" class="recu-carte recu-invite" style="display:none">
+        <div class="recu-carte-titre">🎟️ Ton invité</div>
+        <div id="recu-invite"></div>
+        <p id="recu-modif-info" class="aide"></p>
+        <div class="actions"><button type="button" class="btn" id="btn-modif-accueil">Modifier mon invité et mon accueil</button></div>
+      </div>
+      <div id="recu-accueil-carte" class="recu-carte" style="display:none">
+        <div class="recu-carte-titre">📍 Ton accueil au festival</div>
+        <div id="recu-accueil"></div>
+      </div>
       <div id="recu-liste"></div>
-      <h3 style="font-family:var(--police-titres);font-size:20px;margin:22px 0 6px">Ton accueil et ton invité</h3>
-      <p id="recu-accueil" style="white-space:pre-line;background:#F6F1FB;border-radius:12px;padding:12px 14px;margin:0 0 12px"></p>
-      <p id="recu-modif-info" class="aide"></p>
-      <div class="actions"><button type="button" class="btn" id="btn-modif-accueil">Modifier mon invité et mon accueil</button></div>
       <p class="aide" style="margin-top:18px">Pour changer autre chose, écris à ta référente.</p>
       <p class="aide"><a href="#" id="lien-refaire">Refaire tout mon dossier</a></p>
     </section>
@@ -995,6 +1020,7 @@ html[lang=en] .note-en { display: block; }
       <p class="surtitre">Ton dossier final</p>
       <h2>Modifier mon invité et mon accueil</h2>
       <p>Change ce qu'il faut, puis enregistre. Ta référente est prévenue automatiquement.</p>
+      <p class="aide" id="modif-note" style="display:none">Ton accueil précédent n'a pas pu être rechargé dans ce formulaire : remplis-le à nouveau, il remplacera l'ancien.</p>
       <div id="modif-zone"></div>
       <div class="erreur" id="erreur-modif" role="alert"></div>
       <div class="actions"><button type="button" class="btn secondaire" id="btn-modif-annuler">Annuler</button><button type="button" class="btn" id="btn-modif-enregistrer">Enregistrer mes modifications</button></div>
@@ -1055,7 +1081,7 @@ html[lang=en] .note-en { display: block; }
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.79-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.82-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec',
   categories: ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'],
@@ -1147,6 +1173,7 @@ async function ouvrirDossierPersonnel(jeton) {
   }
   // La configuration (contrat obligatoire, etc.) est déjà en train de se charger depuis l'ouverture de la page (candPrefetch) : les deux requêtes partent en même temps.
   etat.jeton = jeton;
+  if (PAR_EQUIPE) { const bq = $('bandeau-equipe'); bq.textContent = 'Tu remplis ce dossier à la place de ' + ([rep.prenom, rep.nom].filter(Boolean).join(' ') || rep.projet || 'la personne') + '. L\u2019email « dossier reçu » ne partira pas tout seul : il t\u2019attend dans le Portail, tu choisis de l\u2019envoyer ou non.'; bq.style.display = 'block'; }
   if (rep.contacts) { CONFIG.contacts.fab = String(rep.contacts.fab || ''); }
   // v3.70 : dossier déjà reçu : on montre ce qui a été envoyé (jamais un formulaire vide) ; « ?refaire=1 » rouvre le formulaire complet.
   if (rep.recu && !/[?&]refaire=1/.test(location.search)) { etat.category = rep.pole; etat.recu = rep.recu; afficherRecu(); return; }
@@ -1321,14 +1348,66 @@ function afficherRecu(message) {
   const r = etat.recu || {};
   $('recu-date').textContent = r.date ? 'Reçu le ' + r.date + '.' : 'Dossier reçu.';
   const ok = $('recu-ok'); ok.style.display = message ? 'block' : 'none'; ok.textContent = message || '';
+  // v3.80 : sections lisibles. L'invité d'abord, puis l'accueil, puis ce qui a été envoyé par thèmes.
+  const D = r.accueil_data || {}, avecDonnees = Object.keys(D).length > 0;
+  const fd = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? v.slice(8) + '/' + v.slice(5, 7) + '/' + v.slice(0, 4) : (v || '');
+  const jh = (j, h) => [fd(j), h ? 'à ' + h : ''].filter(Boolean).join(' ');
+  let rowsAccueil = [], rowsInvite = [], aInvite = false;
+  if (avecDonnees) {
+    if (D.arrival_date) rowsAccueil.push(['Arrivée', jh(D.arrival_date, D.arrival_time) + (D.transfer === 'Oui' ? ' (à récupérer : ' + (D.transfer_details || '') + ')' : '')]);
+    if (D.transport) rowsAccueil.push(['Transport', D.transport + (D.transport_details ? ' (' + D.transport_details + ')' : '')]);
+    if (D.departure_date) rowsAccueil.push(['Départ', jh(D.departure_date, D.departure_time)]);
+    if (D.departure_station) rowsAccueil.push(['Gare ou aéroport de départ', D.departure_station + (D.departure_station_time ? ' à ' + D.departure_station_time : '')]);
+    if (D.food_needs) rowsAccueil.push(['Repas', D.food_needs]);
+    if (D.allergies) rowsAccueil.push(['Allergies', D.allergies]);
+    aInvite = D.invite === 'Oui';
+    if (aInvite) {
+      rowsInvite.push(['Nom', [D.guest_first, D.guest_last].filter(Boolean).join(' ')]);
+      if (D.guest_phone) rowsInvite.push(['Téléphone', D.guest_phone]);
+      if (D.guest_email) rowsInvite.push(['Email', D.guest_email]);
+      if (D.guest_arrival_date) rowsInvite.push(['Arrivée', jh(D.guest_arrival_date, D.guest_arrival_time)]);
+      if (D.guest_departure_date) rowsInvite.push(['Départ', jh(D.guest_departure_date, D.guest_departure_time)]);
+    }
+  } else {
+    // Dossier reçu avant que les données du formulaire soient gardées : on lit le texte enregistré.
+    String(r.accueil || '').split('\n').filter(Boolean).forEach(l => {
+      const m = /^([^:]+?) : (.*)$/.exec(l); const et = m ? m[1] : '', va = m ? m[2] : l;
+      if (/^Invité/.test(et)) { if (et === 'Invité' && /^aucun$/i.test(va)) return; aInvite = true; rowsInvite.push([et === 'Invité' ? 'Invité' : et.replace(/^Invité, /, ''), va]); }
+      else rowsAccueil.push([et || 'Info', va]);
+    });
+  }
+  const dessiner = (zone, rows) => { zone.textContent = ''; rows.forEach(x => { const l = document.createElement('div'); l.className = 'recu-ligne'; const a = document.createElement('div'); a.className = 'recu-et'; a.textContent = x[0]; const v = document.createElement('div'); v.className = 'recu-va'; v.textContent = x[1]; l.appendChild(a); l.appendChild(v); zone.appendChild(l); }); };
+  $('recu-invite-carte').style.display = r.pole_accueil ? 'block' : 'none';
+  $('recu-accueil-carte').style.display = r.pole_accueil ? 'block' : 'none';
+  if (aInvite) dessiner($('recu-invite'), rowsInvite);
+  else { const z = $('recu-invite'); z.textContent = ''; const p = document.createElement('p'); p.className = 'recu-vide'; p.textContent = 'Tu viens sans invité.'; z.appendChild(p); }
+  if (rowsAccueil.length) dessiner($('recu-accueil'), rowsAccueil);
+  else { const z = $('recu-accueil'); z.textContent = ''; const p = document.createElement('p'); p.className = 'recu-vide'; p.textContent = 'Aucun accueil enregistré.'; z.appendChild(p); }
   const liste = $('recu-liste'); liste.textContent = '';
-  (r.items || []).forEach(it => {
-    const bloc = document.createElement('div'); bloc.style.cssText = 'margin:0 0 10px';
-    const t = document.createElement('div'); t.style.cssText = 'font-weight:700;color:#2B1A5E;font-size:.9rem'; t.textContent = it.label;
-    const v = document.createElement('div'); v.style.cssText = 'white-space:pre-line'; v.textContent = it.valeur;
-    bloc.appendChild(t); bloc.appendChild(v); liste.appendChild(bloc);
+  // v3.81 : les photos envoyées
+  const PH = r.photos || {}, vignette = id => 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w640';
+  if (PH.principale || (PH.galerie || []).length || (PH.portraits || []).length) {
+    const bloc = document.createElement('div'); bloc.className = 'recu-groupe';
+    const h = document.createElement('h3'); h.textContent = 'Tes photos'; bloc.appendChild(h);
+    const grille = document.createElement('div'); grille.className = 'recu-photos';
+    const noms = (r.items || []).filter(it => /^member_\d+_name$/.test(it.key || '')).map(it => it.valeur);
+    const ajouter = (id, legende) => { const f = document.createElement('figure'); f.className = 'recu-photo'; const im = document.createElement('img'); im.loading = 'lazy'; im.alt = legende; im.src = vignette(id); const c = document.createElement('figcaption'); c.textContent = legende; f.appendChild(im); f.appendChild(c); grille.appendChild(f); };
+    if (PH.principale) ajouter(PH.principale, 'Photo principale');
+    (PH.galerie || []).forEach((id, i) => ajouter(id, 'Galerie ' + (i + 1)));
+    (PH.portraits || []).forEach((id, i) => ajouter(id, noms[i] ? 'Portrait : ' + noms[i] : 'Portrait ' + (i + 1)));
+    bloc.appendChild(grille); liste.appendChild(bloc);
+  }
+  const GROUPES = [['Ta présentation', /^(post_title|artist_type|title_pro|subtitle|post_content|bio)$/], ['Les personnes', /^member_/], ['Tes liens', /^(instagram|facebook|website|other_link|video_url)$/], ['Technique', /^(duration|people_on_stage|sound_connections|workshop_|stand_|other_needs)/], ['Documents reçus', /^(contract_file|payment_proof|insurance_file|hygiene_file|insurance_note|hygiene_note)$/]];
+  const items = (r.items || []).slice(), pris = {};
+  GROUPES.forEach(g => {
+    const rows = items.filter((it, i) => !pris[i] && g[1].test(it.key || '')).map((it, i) => { pris[items.indexOf(it)] = true; return [it.label, it.valeur]; });
+    if (!rows.length) return;
+    const bloc = document.createElement('div'); bloc.className = 'recu-groupe';
+    const h = document.createElement('h3'); h.textContent = g[0]; bloc.appendChild(h);
+    const zone = document.createElement('div'); dessiner(zone, rows); bloc.appendChild(zone); liste.appendChild(bloc);
   });
-  $('recu-accueil').textContent = r.accueil || 'Aucun accueil enregistré.';
+  const reste = items.filter((it, i) => !pris[i]);
+  if (reste.length) { const bloc = document.createElement('div'); bloc.className = 'recu-groupe'; const h = document.createElement('h3'); h.textContent = 'Autres informations'; bloc.appendChild(h); const zone = document.createElement('div'); dessiner(zone, reste.map(it => [it.label, it.valeur])); bloc.appendChild(zone); liste.appendChild(bloc); }
   const bouton = $('btn-modif-accueil'), info = $('recu-modif-info');
   if (r.pole_accueil && r.modifiable) { bouton.style.display = ''; info.textContent = r.limite ? 'Tu peux modifier ton accueil et ton invité jusqu’au ' + r.limite + '.' : ''; }
   else if (r.pole_accueil) { bouton.style.display = 'none'; info.textContent = 'Les modifications sont closes depuis le ' + r.limite + '. Écris à ta référente.'; }
@@ -1341,6 +1420,7 @@ function ouvrirModifAccueil() {
   const d = (etat.recu && etat.recu.accueil_data) || {};
   accueilListe().forEach(f => { const el = $('acc_' + f.k); if (el && d[f.k] !== undefined) el.value = d[f.k]; });
   majAccueil();
+  $('modif-note').style.display = Object.keys(d).length ? 'none' : 'block';
   $('erreur-modif').classList.remove('visible');
   aller('modif');
 }
@@ -1472,6 +1552,8 @@ function ibanValide(s) {
   return reste === 1;
 }
 
+// v3.82 : ?par=equipe dans le lien = ouvert depuis le Portail par l'équipe (bouton « Remplir le dossier à sa place »)
+const PAR_EQUIPE = /[?&]par=equipe(&|$)/.test(location.search);
 async function verifierCode() {
   if (derniereConfig && derniereConfig.code_partage_actif === false) return erreur('acces', 'Le code partagé n\u2019est plus accepté. Utilise le lien personnel reçu par email.');
   const code = valeur('access_code').toUpperCase();
@@ -2180,6 +2262,7 @@ async function envoyer() {
     submission_id: submissionIds.participant,
     access_code: etat.jeton ? '' : valeur('access_code').toUpperCase(),
     dossier_token: etat.jeton || '',
+    par_equipe: PAR_EQUIPE,   // v3.82 : dossier rempli par l'équipe à la place de la personne : l'email « dossier reçu » attend l'envoi manuel
     honeypot: $('honeypot').value,
     category: etat.category,
     artist_type: etat.artist_type,
