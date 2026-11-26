@@ -800,9 +800,41 @@ li .ico-btn img { width: 24px; height: 24px; }
 .remplir-place .btn { margin: 0; }
 .remplir-place .meta { margin: 0; flex: 1 1 260px; }
 .remplir-place .message { flex-basis: 100%; margin: 0; min-height: 0; }
+
+/* v3.83 : bandeau « Nouvelle version disponible » (page restée ouverte avec une ancienne version) */
+#bandeau-maj { position: fixed; top: 0; left: 0; right: 0; z-index: 3000; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 14px; padding: 10px 14px; background: #6E5BD0; color: #fff; font-weight: 700; box-shadow: 0 4px 14px rgba(0, 0, 0, .25); }
+#bandeau-maj[hidden] { display: none; }
+#bandeau-maj button { background: #fff; color: #4B3BA8; border: 0; border-radius: 999px; padding: 8px 18px; font-weight: 700; cursor: pointer; }
+
+/* ---------- Page Formulaires (assistant) ---------- */
+#vue-formulaires { font-size: 17px; }
+.fo-poles, .fo-onglets { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 16px; }
+.fo-poles button, .fo-onglets button { min-height: 52px; padding: 10px 18px; font-size: 17px; font-weight: 700; border-radius: 14px; border: 2px solid #c9bfe0; background: #fff; color: #3b2a63; cursor: pointer; }
+.fo-poles button[aria-pressed="true"], .fo-onglets button[aria-selected="true"] { background: #5b3fa0; border-color: #5b3fa0; color: #fff; }
+.fo-carte { background: #fff; border: 1px solid #e2dcef; border-radius: 16px; padding: 18px; margin: 0 0 16px; }
+.fo-carte h2 { font-size: 20px; margin: 0 0 8px; }
+.fo-ligne { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 12px 0; border-top: 1px solid #eee8f7; align-items: baseline; }
+.fo-ligne:first-of-type { border-top: 0; }
+.fo-ligne .fo-lib { flex: 0 0 220px; font-weight: 700; }
+.fo-ligne .fo-val { flex: 1 1 240px; overflow-wrap: anywhere; }
+.fo-ligne .fo-val.vide { color: #a1370f; font-weight: 700; }
+.fo-btn { min-height: 48px; padding: 10px 18px; font-size: 17px; font-weight: 700; border-radius: 12px; border: 0; background: #5b3fa0; color: #fff; cursor: pointer; }
+.fo-btn.doux { background: #efe9fb; color: #3b2a63; border: 2px solid #c9bfe0; }
+.fo-mail { white-space: pre-wrap; font-size: 17px; line-height: 1.55; background: #faf8ff; border: 1px solid #e2dcef; border-radius: 12px; padding: 14px; margin: 10px 0; overflow-wrap: anywhere; }
+.fo-mail .fo-objet { font-weight: 700; display: block; margin-bottom: 8px; }
+.fo-cadre { width: 100%; height: 70vh; min-height: 480px; border: 2px solid #c9bfe0; border-radius: 14px; background: #fff; }
+.fo-verif { list-style: none; margin: 0; padding: 0; }
+.fo-verif li { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid #eee8f7; align-items: baseline; }
+.fo-verif li:first-child { border-top: 0; }
+.fo-verif .fo-etat { flex: 0 0 120px; font-weight: 800; }
+.fo-verif .fo-etat.ok { color: #1c6b34; }
+.fo-verif .fo-etat.ko { color: #a1370f; }
+.fo-aide { color: #55496f; margin: 0 0 12px; }
+@media (max-width: 600px) { .fo-ligne .fo-lib { flex-basis: 100%; } .fo-verif li { flex-wrap: wrap; } }
 </style>
 </head>
 <body>
+<div id="bandeau-maj" role="status" hidden><span>Une nouvelle version du Portail est disponible.</span><button type="button" id="bandeau-maj-bouton">Mettre à jour</button></div>
 
 <div id="splash" hidden aria-hidden="true"><img src="assets/LOTUS%20PORTAL%20LOGO.png" alt=""><p>Portail Festival</p><p class="splash-sous">Mantra Joie 2027</p></div>
 <section id="ecran-connexion">
@@ -875,6 +907,7 @@ li .ico-btn img { width: 24px; height: 24px; }
       </button>
       <button type="button" data-vue="lieux" id="menu-lieux" hidden><span class="ico-nav" data-ico="HOME.png"></span>Lieux et infos
       </button>
+      <button type="button" data-vue="formulaires"><span class="ico-nav" data-ico="DOC.png"></span>Assistant formulaires et emails</button>
       <button type="button" data-vue="stats"><span class="ico-nav" data-ico="STATS.png"></span>Statistiques
       </button>
       <button type="button" data-vue="reglages"><span class="ico-nav" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.2" fill="#fff"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="15" cy="17" r="2.2" fill="#fff"/></svg></span>Réglages</button>
@@ -999,6 +1032,14 @@ li .ico-btn img { width: 24px; height: 24px; }
       </div>
     </section>
 
+    <section id="vue-formulaires" hidden>
+      <div class="page">
+        <div class="titre-page"><div class="rond rond-reglages" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><line x1="8.5" y1="8" x2="15.5" y2="8"/><line x1="8.5" y1="12" x2="15.5" y2="12"/><line x1="8.5" y1="16" x2="12.5" y2="16"/></svg></div>
+          <div><h1>Assistant : formulaires et emails</h1><p>Voir ce que la personne voit, et le modifier</p></div></div>
+        <div id="formulaires-contenu"></div>
+      </div>
+    </section>
+
     <section id="vue-inviter" hidden></section>
     <section id="vue-planning" hidden></section>
     <section id="vue-lieux" hidden></section>
@@ -1020,7 +1061,7 @@ li .ico-btn img { width: 24px; height: 24px; }
 </div>
 
 <script>
-const VERSION_PAGE = 'v3.83-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
+const VERSION_PAGE = 'v3.86-2027';   // version de CETTE page : comparée à celle du serveur pour repérer une page restée en mémoire
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec';
 const STATUTS = ['À étudier', 'Accepté', "Liste d'attente", 'Refusé'];
 const STATUTS_BENEVOLES = STATUTS.concat(['Confirmé', 'Désistement']);   // un bénévole peut aussi être confirmé, ou se désister
@@ -1839,8 +1880,30 @@ document.addEventListener('visibilitychange', () => {
   derniereMajVue = Date.now(); participants = null; benevoles = null; statsDetail = null; charger();
 });
 
+// v3.83 : une page restée ouverte (surtout l'application installée) peut être plus ancienne que le serveur.
+// Écran de connexion : elle se recharge toute seule, une fois (rien à perdre). Connecté : un bandeau « Mettre à jour » (rien n'est rechargé pendant qu'on écrit).
+let derniereVerifVersion = 0;
+async function verifierVersionPage(force) {
+  if (!force && Date.now() - derniereVerifVersion < 60000) return;
+  derniereVerifVersion = Date.now();
+  let r = null;
+  try { r = await appel({ op: 'version' }, 8000); } catch (err) { return; }
+  if (!r || !r.ok || !/^v\d/.test(String(r.version || '')) || r.version === VERSION_PAGE) return;
+  const deja = (() => { try { return sessionStorage.getItem('equipe_rechargee') === r.version; } catch (err) { return false; } })();
+  if (!$('ecran-connexion').hidden && !deja) {
+    try { sessionStorage.setItem('equipe_rechargee', r.version); } catch (err) { /* rien */ }
+    location.reload();
+    return;
+  }
+  $('bandeau-maj').hidden = false;
+}
+$('bandeau-maj-bouton').addEventListener('click', () => location.reload());
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') verifierVersionPage(false); });
+window.addEventListener('focus', () => verifierVersionPage(false));
+verifierVersionPage(true);
+
 function naviguer(nom) {
-  vue = ['candidatures', 'participants', 'benevoles', 'stats', 'reglages', 'detail', 'inviter', 'planning', 'lieux'].indexOf(nom) >= 0 ? nom : 'accueil';
+  vue = ['candidatures', 'participants', 'benevoles', 'stats', 'reglages', 'formulaires', 'detail', 'inviter', 'planning', 'lieux'].indexOf(nom) >= 0 ? nom : 'accueil';
   $('vue-accueil').hidden = vue !== 'accueil';
   $('vue-candidatures').hidden = vue !== 'candidatures';
   $('vue-participants').hidden = vue !== 'participants';
@@ -1850,6 +1913,7 @@ function naviguer(nom) {
   $('vue-planning').hidden = vue !== 'planning';
   $('vue-lieux').hidden = vue !== 'lieux';
   $('vue-reglages').hidden = vue !== 'reglages';
+  $('vue-formulaires').hidden = vue !== 'formulaires';
   $('vue-detail').hidden = vue !== 'detail';
   majBarreRetour();
   const actif = vue === 'detail' ? ({ candidature: 'candidatures', participant: 'participants', benevole: 'benevoles' })[detailGenre] : vue;
@@ -1863,6 +1927,7 @@ function naviguer(nom) {
   else if (vue === 'planning') dessinerPlanning();
   else if (vue === 'lieux') dessinerLieux();
   else if (vue === 'reglages') chargerReglages();
+  else if (vue === 'formulaires') chargerFormulaires();
   else if (vue === 'participants') { dessinerParticipants(); if (!participants) chargerParticipants(); }
   else if (vue === 'benevoles') { dessinerBenevoles(); if (!benevoles) chargerBenevoles(); }
   dessinerSousMenu();
@@ -2804,6 +2869,132 @@ async function chargerReglages() {
   } catch (err) {
     zone.textContent = ''; zone.appendChild(el('p', 'message ko', 'Impossible de charger les réglages pour le moment. Réessaie.'));
   } finally { reglagesEnCours = false; }
+}
+
+
+/* ---------- Page Formulaires : voir ce que la personne voit, et le modifier ---------- */
+const FO_SLUGS = { 'Artiste': 'artiste', 'Atelier': 'atelier', 'Bien-être': 'bien-etre', 'Artisan': 'artisan', "L'Antre deux mondes": 'antre', 'Stand / Miam Miam': 'stand', 'Autre': 'autre' };
+const FO_EMAILS = [['recue', 'Candidature reçue', 'Part tout de suite quand la personne envoie sa candidature.'], ['acceptee', 'Candidature acceptée', 'Part quand tu acceptes. Elle contient la liste à préparer et le lien du dossier final.'],
+  ['attente', "Liste d'attente", 'Part quand tu mets la candidature en liste d’attente.'], ['refusee', 'Candidature refusée', 'Part quand tu refuses.'],
+  ['final_recu', 'Dossier final reçu', 'Part quand la personne envoie son dossier final.'], ['confirmee', 'Participation confirmée', 'Part quand tu confirmes sa participation.']];
+let foPole = '', foOnglet = 'reglages', foEdition = false;
+
+async function chargerFormulaires() {
+  const zone = $('formulaires-contenu');
+  if (!reglagesDonnees) {
+    zone.textContent = ''; const a = el('p', 'compte'); a.appendChild(roue('Chargement...')); zone.appendChild(a);
+    const r = await appelReglages({ op: 'reglages_lire' });
+    if (r === null) return;
+    if (!r.ok) { zone.textContent = ''; zone.appendChild(el('p', 'message ko', 'Impossible de charger pour le moment. Réessaie.')); return; }
+    reglagesDonnees = r; reglagesCharge = Date.now();
+  }
+  dessinerFormulaires();
+}
+function foPoles() { return ((reglagesDonnees && reglagesDonnees.poles) || []).filter((p) => FO_SLUGS[p.nom]); }
+function dessinerFormulaires() {
+  const zone = $('formulaires-contenu'); zone.textContent = '';
+  const poles = foPoles();
+  if (!poles.length) { zone.appendChild(el('p', 'compte', "Aucun pôle n'est disponible pour ton compte.")); return; }
+  if (!poles.some((p) => p.nom === foPole)) foPole = poles[0].nom;
+  const pole = poles.find((p) => p.nom === foPole);
+  zone.appendChild(el('p', 'fo-aide', 'Choisis un pôle, puis un onglet. Les boutons ✏️ servent à modifier.'));
+  if (poles.length > 1) {
+    const bp = el('div', 'fo-poles'); bp.setAttribute('role', 'group'); bp.setAttribute('aria-label', 'Pôle');
+    poles.forEach((p) => { const b = el('button', '', nomPole(p.nom)); b.type = 'button'; b.dataset.foPole = p.nom; b.setAttribute('aria-pressed', String(p.nom === foPole)); b.addEventListener('click', () => { foPole = p.nom; foEdition = false; dessinerFormulaires(); }); bp.appendChild(b); });
+    zone.appendChild(bp);
+  } else zone.appendChild(el('h2', '', 'Pôle ' + nomPole(pole.nom)));
+  const onglets = [['reglages', 'Réglages'], ['f1', 'Formulaire 1 : candidature'], ['f2', 'Formulaire 2 : dossier final'], ['emails', 'Emails'], ['verifier', 'Vérifier']];
+  const bo = el('div', 'fo-onglets'); bo.setAttribute('role', 'tablist');
+  onglets.forEach((o) => { const b = el('button', '', o[1]); b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.foOnglet = o[0]; b.setAttribute('aria-selected', String(o[0] === foOnglet)); b.addEventListener('click', () => { foOnglet = o[0]; foEdition = false; dessinerFormulaires(); }); bo.appendChild(b); });
+  zone.appendChild(bo);
+  const corps = el('div', ''); corps.id = 'fo-corps'; zone.appendChild(corps);
+  if (foOnglet === 'reglages') foReglages(corps, pole);
+  else if (foOnglet === 'f1' || foOnglet === 'f2') foFormulaire(corps, pole, foOnglet === 'f2');
+  else if (foOnglet === 'emails') foEmails(corps, pole);
+  else foVerifier(corps, pole);
+}
+function foReglages(z, p) {
+  if (foEdition) {
+    const r = el('button', 'fo-btn doux', '← Revenir à la vue simple'); r.type = 'button'; r.addEventListener('click', () => { foEdition = false; dessinerFormulaires(); }); z.appendChild(r);
+    const c = el('div', ''); z.appendChild(c); construirePole(c, p, reglagesDonnees); return;
+  }
+  const c = el('section', 'fo-carte'); c.appendChild(el('h2', '', 'Réglages du pôle ' + nomPole(p.nom)));
+  const eur = (v) => (String(v || '').trim() ? (/\d$/.test(String(v).trim()) ? String(v).trim() + ' €' : String(v).trim()) : '');
+  const lignes = [['Candidatures', p.ouvert ? 'Ouvertes' : 'Fermées', true], ['Paiement', p.payant === 'OUI' ? 'Payant' : p.payant === 'NON' ? 'Gratuit' : '', true],
+    ['Montant', p.payant === 'OUI' ? eur(p.montant) : 'Pas de paiement', p.payant !== 'OUI' || !!p.montant], ['Lien de paiement', p.payant === 'OUI' ? p.lien : 'Pas de paiement', p.payant !== 'OUI' || !!p.lien],
+    ['Référente', p.referent, true], ['Email de la référente', p.email_referent, true], ['Groupe WhatsApp', p.whatsapp || 'Aucun (facultatif)', true],
+    ['Ligne sous le nom du pôle', p.description || p.description_defaut || '', true], ['Conditions de participation', p.conditions ? (String(p.conditions).slice(0, 160) + (String(p.conditions).length > 160 ? '…' : '')) : '', !!p.conditions]];
+  lignes.forEach((l) => {
+    const ligne = el('div', 'fo-ligne'); ligne.appendChild(el('span', 'fo-lib', l[0]));
+    const v = String(l[1] || '').trim(); ligne.appendChild(el('span', 'fo-val' + (v && l[2] ? '' : ' vide'), v && l[2] ? v : 'À compléter')); c.appendChild(ligne);
+  });
+  const b = el('button', 'fo-btn', '✏️ Modifier les réglages'); b.type = 'button'; b.dataset.foModifier = 'reglages'; b.style.marginTop = '12px';
+  b.addEventListener('click', () => { foEdition = true; dessinerFormulaires(); }); c.appendChild(b); z.appendChild(c);
+}
+function foFormulaire(z, p, final) {
+  const c = el('section', 'fo-carte');
+  c.appendChild(el('h2', '', final ? 'Formulaire 2 : le dossier final' : 'Formulaire 1 : la candidature'));
+  c.appendChild(el('p', 'fo-aide', final ? 'Voilà le dossier que la personne remplit après avoir été acceptée. C’est un aperçu : rien n’est enregistré ni envoyé.' : 'Voilà le formulaire que la personne remplit pour candidater. C’est un aperçu : rien n’est enregistré ni envoyé.'));
+  const url = 'index.html?apercu=' + (final ? 'dossier' : '1') + '&pole=' + FO_SLUGS[p.nom];
+  const f = document.createElement('iframe'); f.className = 'fo-cadre'; f.src = url; f.title = final ? 'Aperçu du dossier final' : 'Aperçu de la candidature'; f.dataset.foCadre = final ? 'f2' : 'f1'; c.appendChild(f);
+  const g = el('a', 'fo-btn doux', 'Ouvrir en grand'); g.href = url; g.target = '_blank'; g.rel = 'noopener'; g.style.cssText = 'display:inline-block;margin-top:12px;text-decoration:none'; c.appendChild(g);
+  z.appendChild(c);
+  const m = el('section', 'fo-carte'); m.appendChild(el('h2', '', 'Ce que tu peux modifier ici'));
+  m.appendChild(el('p', 'fo-aide', 'Les questions ne changent pas. Tu peux changer la ligne sous le nom du pôle, les conditions, le montant, le lien de paiement et la liste « à préparer ».'));
+  const b1 = el('button', 'fo-btn', '✏️ Modifier les textes et réglages'); b1.type = 'button'; b1.dataset.foModifier = 'reglages'; b1.addEventListener('click', () => { foOnglet = 'reglages'; foEdition = true; dessinerFormulaires(); }); m.appendChild(b1);
+  z.appendChild(m);
+}
+async function foEmails(z, p) {
+  const attente = el('p', 'compte'); attente.appendChild(roue('Chargement des emails...')); z.appendChild(attente);
+  const reponses = await Promise.all(FO_EMAILS.map((e) => appelReglages({ op: 'email_exemple', pole: p.nom, cle: e[0] })));
+  if (reponses.some((r) => r === null)) return;
+  if (!document.body.contains(attente)) return;
+  attente.remove();
+  z.appendChild(el('p', 'fo-aide', 'Voilà les 6 emails, comme la personne les reçoit. Le prénom « Léa » est un exemple. Clique sur ✏️ pour changer un texte.'));
+  FO_EMAILS.forEach((e, k) => {
+    const r = reponses[k]; const c = el('section', 'fo-carte'); c.dataset.foEmail = e[0];
+    c.appendChild(el('h2', '', e[1])); c.appendChild(el('p', 'fo-aide', e[2]));
+    if (!r.ok) { c.appendChild(el('p', 'message ko', r.error || 'Impossible de voir cet email.')); z.appendChild(c); return; }
+    const mail = el('div', 'fo-mail'); mail.appendChild(el('span', 'fo-objet', 'Objet : ' + r.objet)); mail.appendChild(document.createTextNode(r.corps)); c.appendChild(mail);
+    if (r.manquants && r.manquants.length) c.appendChild(el('p', 'message ko', 'À compléter dans les réglages : ' + r.manquants.join(', ') + '.'));
+    const zoneEd = el('div', ''); const rang = el('div', ''); rang.style.cssText = 'display:flex;flex-wrap:wrap;gap:10px';
+    const bm = el('button', 'fo-btn', '✏️ Modifier ce texte'); bm.type = 'button'; bm.dataset.foModifierEmail = e[0];
+    bm.addEventListener('click', () => {
+      if (zoneEd.firstChild) { zoneEd.textContent = ''; return; }
+      const tt = ((reglagesDonnees.poles.find((x) => x.nom === p.nom) || {}).textes || []).find((x) => x.cle === e[0]);
+      if (!tt) { zoneEd.appendChild(el('p', 'message ko', 'Texte introuvable. Recharge la page.')); return; }
+      const d = detailTexte({ cle: tt.cle, portee: 'fo-' + slug(p.nom), libelle: 'Modifier : ' + e[1], objet: tt.objet, corps: tt.corps, defaut: tt.commun, personnalise: tt.personnalise, badge: tt.personnalise ? 'Texte de ce pôle' : 'Texte commun',
+        libelleRemettre: 'Utiliser le texte commun', messageRemis: 'Texte commun rétabli',
+        estPerso: () => { const pp = (reglagesDonnees.poles || []).find((x) => x.nom === p.nom); const t2 = pp && (pp.textes || []).find((x) => x.cle === tt.cle); return !!(t2 && t2.personnalise); },
+        enregistrer: async (o, cc) => { const rr = gardeReglages(await appelReglages({ op: 'texte_ecrire', pole: p.nom, cle: tt.cle, objet: o, corps: cc })); if (rr && rr.ok) setTimeout(dessinerFormulaires, 900); return rr; },
+        remettre: async () => { const rr = gardeReglages(await appelReglages({ op: 'texte_ecrire', pole: p.nom, cle: tt.cle, remettre: true })); if (rr && rr.ok) setTimeout(dessinerFormulaires, 900); return rr; } });
+      d.open = true; zoneEd.appendChild(d);
+    });
+    rang.appendChild(bm);
+    const bt = el('button', 'fo-btn doux', "M'envoyer un test"); bt.type = 'button'; bt.dataset.foTest = e[0];
+    const st = el('div', ''); st.setAttribute('role', 'status');
+    bt.addEventListener('click', async () => {
+      const champ = c.querySelector('input.fo-test-adr') || (() => { const i = document.createElement('input'); i.type = 'email'; i.className = 'fo-test-adr'; i.placeholder = 'ton adresse email'; i.setAttribute('aria-label', 'Ton adresse email'); i.style.cssText = 'font-size:17px;min-height:48px;padding:8px 12px;margin-top:10px;width:100%;max-width:380px;box-sizing:border-box'; rang.after(i); return i; })();
+      if (!champ.value.trim()) { st.className = 'message ko'; st.textContent = 'Écris ton adresse email ci-dessus, puis clique encore sur « M’envoyer un test ».'; champ.focus(); return; }
+      await enregistrer(st, bt, async () => appelReglages({ op: 'email_test_moi', pole: p.nom, cle: e[0], vers: champ.value.trim() }), 'Test envoyé. Regarde aussi dans les indésirables.');
+    });
+    rang.appendChild(bt); c.appendChild(rang); c.appendChild(st); c.appendChild(zoneEd); z.appendChild(c);
+  });
+}
+async function foVerifier(z, p) {
+  const attente = el('p', 'compte'); attente.appendChild(roue('Vérification...')); z.appendChild(attente);
+  const r = await appelReglages({ op: 'formulaires_verifier', pole: p.nom });
+  if (r === null) return;
+  if (!document.body.contains(attente)) return;
+  attente.remove();
+  const c = el('section', 'fo-carte');
+  if (!r.ok) { c.appendChild(el('p', 'message ko', r.error || 'Impossible de vérifier.')); z.appendChild(c); return; }
+  c.appendChild(el('h2', '', r.nb_manquants ? r.nb_manquants + ' chose' + (r.nb_manquants > 1 ? 's' : '') + ' à compléter' : 'Tout est prêt pour ce pôle'));
+  const ul = el('ul', 'fo-verif');
+  r.controles.forEach((x) => { const li = document.createElement('li'); li.appendChild(el('span', 'fo-etat ' + (x.ok ? 'ok' : 'ko'), x.ok ? '✓ Prêt' : '✗ À compléter')); const t = el('span', '', x.libelle); if (!x.ok && x.ou) { t.appendChild(document.createElement('br')); t.appendChild(el('em', '', 'Où : ' + x.ou)); } li.appendChild(t); ul.appendChild(li); });
+  c.appendChild(ul);
+  const b = el('button', 'fo-btn', '✏️ Aller aux réglages'); b.type = 'button'; b.style.marginTop = '12px'; b.addEventListener('click', () => { foOnglet = 'reglages'; foEdition = true; dessinerFormulaires(); }); c.appendChild(b);
+  z.appendChild(c);
 }
 
 /* ---------- Page Statistiques ---------- */

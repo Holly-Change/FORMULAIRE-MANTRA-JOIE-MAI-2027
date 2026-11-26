@@ -485,6 +485,7 @@ html[lang=en] .note-en { display: block; }
 </style>
 </head>
 <body>
+<div id="bandeau-apercu" role="status" style="display:none;position:sticky;top:0;z-index:5000;background:#FFF3E6;border-bottom:2px solid #E07A2F;padding:10px 16px;color:#6B2F05;font-weight:700;text-align:center"></div>
 
 <canvas id="canvas-confettis"></canvas>
 
@@ -1084,7 +1085,7 @@ html[lang=en] .note-en { display: block; }
    ne jamais les renommer sans changer le script Apps Script aussi.
    ================================================================ */
 const CONFIG = {
-  version:   'v3.83-2027',   // affiche en bas de page, doit correspondre au script
+  version:   'v3.86-2027',   // affiche en bas de page, doit correspondre au script
   festival:  'Festival Mantra Joie',
   scriptUrl: 'https://script.google.com/macros/s/AKfycbzsbDi35dL6iDE5ziBui8ZOuhoL1LCbuMLpQCEeaa2njjiRxBDRiiszFhK0lue9P0v5eA/exec',
   categories: ['Artiste', 'Atelier', 'Bien-être', 'Artisan', "L'Antre deux mondes", 'Stand / Miam Miam', 'Autre'],
@@ -1164,7 +1165,8 @@ function allerOnglet(e) {
 async function ouvrirDossierPersonnel(jeton) {
   aller('ouverture');   // un écran clair tout de suite : jamais l'accueil, jamais la saisie du code
   let rep = null;
-  try {
+  if (jeton === 'apercu') rep = { ok: true, ouvert: true, pole: apercuPole(), projet: 'Ton projet (exemple)', prenom: 'Léa', nom: 'Exemple', email: 'lea@exemple.fr', telephone: '0600000000' };
+  else try {
     const r = await fetch(CONFIG.scriptUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: jsonEd({ kind: 'dossier_lookup', token: jeton }) });
     rep = await r.json();
   } catch (e) { rep = null; }
@@ -1194,7 +1196,8 @@ async function ouvrirDossierPersonnel(jeton) {
   aller(1);
   brouillonDernier = JSON.stringify(brouillonCollecter());   // l'état de départ : rien n'est renvoyé tant que rien n'a changé
   if (rep.brouillon && rep.brouillon.etape) { const k = ETAPES.map(String).indexOf(String(rep.brouillon.etape)); if (k > 0) { etapeMax = Math.max(etapeMax, k); majFil(etapeCourante); } }
-  clearInterval(brouillonTimer); brouillonTimer = setInterval(() => brouillonEnvoyer(false), 30000);
+  clearInterval(brouillonTimer); if (!APERCU) brouillonTimer = setInterval(() => brouillonEnvoyer(false), 30000);
+  if (APERCU) $('brouillon-barre').style.display = 'none';
 }
 // ------------------ Enregistrer et continuer plus tard (brouillon sous le lien personnel) ------------------
 let brouillonEnAttente = null, brouillonDernier = '', brouillonTimer = null;
@@ -1557,6 +1560,16 @@ function ibanValide(s) {
 
 // v3.82 : ?par=equipe dans le lien = ouvert depuis le Portail par l'équipe (bouton « Remplir le dossier à sa place »)
 const PAR_EQUIPE = /[?&]par=equipe(&|$)/.test(location.search);
+// v3.86 : « Aperçu » (page Formulaires de l'équipe) : ?pole=artiste&apercu=1 (candidature) ou ?pole=artiste&apercu=dossier (dossier final). Rien n'est enregistré ni envoyé : tout envoi est refusé ici.
+const APERCU = (/[?&]apercu=(1|dossier)(?:&|#|$)/.exec(location.search) || [])[1] || '';
+if (APERCU) {
+  const fetchVrai = window.fetch.bind(window);
+  window.fetch = function (url, opt) {
+    if (opt && String(opt.method || '').toUpperCase() === 'POST') { const corps = JSON.stringify({ ok: false, apercu: true, error: 'Aperçu : rien n’est enregistré ni envoyé.' }); return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(JSON.parse(corps)), text: () => Promise.resolve(corps) }); }
+    return fetchVrai(url, opt);
+  };
+}
+function apercuPole() { const q = /[?&]pole=([A-Za-z-]+)/.exec(location.search); return POLES_LIENS[String((q && q[1]) || '').toLowerCase()] || 'Artiste'; }
 async function verifierCode() {
   if (derniereConfig && derniereConfig.code_partage_actif === false) return erreur('acces', 'Le code partagé n\u2019est plus accepté. Utilise le lien personnel reçu par email.');
   const code = valeur('access_code').toUpperCase();
@@ -3488,6 +3501,8 @@ $('btn-contrat-benevole').addEventListener('click', envoyerContratBenevole);
   if (c) { contratJeton = c[1]; aller('contrat'); return; }
   const inv = /[?&]i=([a-f0-9]{40})(?:&|#|$)/.exec(location.search);
   if (inv) { ouvrirInvitation(inv[1]); return; }
+  if (APERCU) { const ba = $('bandeau-apercu'); ba.textContent = 'Aperçu : tu vois le formulaire comme la personne le voit. Rien n’est enregistré ni envoyé.'; ba.style.display = 'block'; }
+  if (APERCU === 'dossier') { ouvrirDossierPersonnel('apercu'); return; }
   const m = /[?&]d=([a-f0-9]{40})(?:&|#|$)/.exec(location.search);
   if (m) { ouvrirDossierPersonnel(m[1]); return; }
   const q = /[?&]pole=([A-Za-z-]+)(?:&|#|$)/.exec(location.search);
